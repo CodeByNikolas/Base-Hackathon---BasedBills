@@ -37,9 +37,9 @@ The BasedBills smart contract system consists of four main contracts:
 
 | Contract | Address | Status |
 |----------|---------|---------|
-| Group Logic | `0xa4cf50aa00c58852c37b3fa663d7ba032843d594` | ✅ Verified |
-| Registry | `0x6add08fb50b7e6def745a87a16254522713a5676` | ✅ Verified |
-| GroupFactory | `0xfdf8a83a3d1dc0aa285616883452a2824e559d74` | ✅ Verified |
+| Group Logic | `0x56bfa92a6e788f8a157e3f479dd326d93a9458ea` | ✅ Verified |
+| Registry | `0x01856ca0017a4f6f708b7f8df57a20d9ddf8dc74` | ✅ Verified |
+| GroupFactory | `0x06043efb63514bcc98f142bc4936ec66732a0729` | ✅ Verified |
 
 All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
 
@@ -56,8 +56,11 @@ cp .env.example .env
 # Deploy contracts
 npm run deploy
 
-# Verify contracts (optional)
+# Verify contracts on Blockscout (automatic)
 npm run verify
+
+# Verify contracts on BaseScan (requires API key)
+npm run verify-basescan
 ```
 
 ## 🧪 Testing
