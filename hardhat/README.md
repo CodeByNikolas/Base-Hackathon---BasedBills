@@ -1,57 +1,125 @@
-# Sample Hardhat 3 Beta Project (`node:test` and `viem`)
+# BasedBills Smart Contracts
 
-This project showcases a Hardhat 3 Beta project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+A decentralized bill splitting application built on Base network with on-chain USDC settlements.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## 🏗️ Architecture
 
-## Project Overview
+The BasedBills smart contract system consists of four main contracts:
 
-This example project includes:
+### Core Contracts
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+1. **`Group.sol`** - Core logic for expense groups and bill splitting
+2. **`GroupFactory.sol`** - Factory contract for creating new Group instances using EIP-1167 clones
+3. **`Registry.sol`** - Tracks user-to-group mappings
+4. **`IUSDC.sol`** - Interface for USDC token interactions
 
-## Usage
+## 📋 Contract Details
 
-### Running Tests
+### Group Contract
+- Manages group members and their expense balances
+- Handles bill creation and splitting logic
+- Implements settlement process with approval mechanism
+- Automatically distributes USDC when settlement conditions are met
 
-To run all the tests in the project, execute the following command:
+### GroupFactory Contract
+- Creates new Group instances using minimal proxy pattern (EIP-1167)
+- Registers new groups with the Registry
+- Ensures creators are members of groups they create
 
-```shell
-npx hardhat test
+### Registry Contract
+- Maintains mapping of users to their groups
+- Only allows GroupFactory to register new groups
+- Provides view functions for frontend integration
+
+## 🚀 Deployment
+
+### Deployed Contracts (Base Sepolia)
+
+| Contract | Address | Status |
+|----------|---------|---------|
+| Group Logic | `0xa4cf50aa00c58852c37b3fa663d7ba032843d594` | ✅ Verified |
+| Registry | `0x6add08fb50b7e6def745a87a16254522713a5676` | ✅ Verified |
+| GroupFactory | `0xfdf8a83a3d1dc0aa285616883452a2824e559d74` | ✅ Verified |
+
+All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
+
+### Deploy Your Own
+
+```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Add your PRIVATE_KEY and ETHERSCAN_API_KEY
+
+# Deploy contracts
+npm run deploy
+
+# Verify contracts (optional)
+npm run verify
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
+## 🧪 Testing
 
-```shell
-npx hardhat test solidity
-npx hardhat test nodejs
+The contracts have been thoroughly tested with multi-account scenarios including:
+- Group creation with multiple members
+- Bill splitting (shared and personal expenses)
+- Settlement process with approvals
+- USDC distribution mechanics
+
+## 🔧 Development
+
+### Prerequisites
+- Node.js 18+
+- Hardhat
+- Base Sepolia testnet access
+
+### Setup
+```bash
+npm install
+npx hardhat compile
 ```
 
-### Make a deployment to Sepolia
+### Configuration
+The project is configured for Base Sepolia testnet. Update `hardhat.config.ts` for other networks.
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+## 📚 Usage
 
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+### Creating a Group
+```solidity
+// Through GroupFactory
+address[] memory members = [alice, bob, charlie];
+address newGroup = groupFactory.createGroup(members);
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+### Adding Bills
+```solidity
+// Add a shared expense
+group.addBill("Dinner", 60e6, [alice, bob]); // 60 USDC split between alice and bob
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+### Settlement Process
+```solidity
+// 1. Trigger settlement
+group.triggerSettlement();
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
+// 2. Creditors approve
+group.approveSettlement(); // Called by each creditor
+
+// 3. Debtors fund their portion
+usdc.approve(groupAddress, amountOwed);
+group.fundSettlement();
+
+// 4. Automatic distribution when conditions met
 ```
+
+## 🔐 Security
+
+- Uses OpenZeppelin contracts for proven security patterns
+- Implements proper access controls and validation
+- All contracts verified on BaseScan for transparency
+
+## 📄 License
+
+MIT License - see LICENSE file for details.

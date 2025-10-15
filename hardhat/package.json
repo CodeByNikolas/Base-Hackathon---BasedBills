@@ -1,21 +1,13 @@
 {
-  "name": "contracts",
+  "name": "basedbills-contracts",
   "version": "1.0.0",
-  "description": "",
+  "description": "Smart contracts for BasedBills - decentralized bill splitting on Base",
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run scripts/deploy-simple.ts --network baseSepolia",
-    "deploy-verify": "npx hardhat run scripts/deploy-and-verify.ts --network baseSepolia",
-    "verify": "npx hardhat run scripts/verify-existing.ts --network baseSepolia",
-    "test-contracts": "npx hardhat run scripts/test-interactions.ts --network baseSepolia",
-    "comprehensive-test": "npx hardhat run scripts/comprehensive-test.ts --network baseSepolia",
-    "multi-account-test": "npx hardhat run scripts/multi-account-test.ts --network baseSepolia",
-    "manual-verify": "npx hardhat run scripts/manual-verify.ts --network baseSepolia",
-    "verify-bash": "./verify-contracts.sh",
-    "flatten-contracts": "mkdir -p flattened && npx hardhat flatten contracts/Group.sol > flattened/Group_flattened.sol && npx hardhat flatten contracts/Registry.sol > flattened/Registry_flattened.sol && npx hardhat flatten contracts/GroupFactory.sol > flattened/GroupFactory_flattened.sol",
-    "basescan-verify": "npx ts-node scripts/basescan-verify.ts"
+    "verify": "npx hardhat verify --network baseSepolia"
   },
   "keywords": [],
   "author": "",
@@ -34,6 +26,7 @@
     "@nomicfoundation/hardhat-verify": "^3.0.3",
     "@types/node": "^22.18.10",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "ts-node": "^10.9.2",
     "typescript": "~5.8.0",
     "viem": "^2.38.2"
   }
