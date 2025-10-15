@@ -1,0 +1,13 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "groupLogic": "0x8e36374afe7e093f721b88baad72aaf4536c9834",
+  "registry": "0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64",
+  "groupFactory": "0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629",
+  "deployer": "0x21750fc30922badd61c2f1e48b94683071dfbcaa",
+  "deployedAt": "2024-10-15T12:00:00Z",
+  "verified": {
+    "blockscout": true,
+    "basescan": true
+  }
+}

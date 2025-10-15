@@ -18,9 +18,9 @@ const balance = await publicClient.getBalance({
 });
 console.log("Account balance:", formatEther(balance));
 
-// Step 1: Deploy the Group logic contract (template)
-console.log("\n📋 Deploying Group logic contract...");
-const groupLogic = await viem.deployContract("Group");
+  // Step 1: Deploy the Group logic contract (template) - with optimizer enabled
+  console.log("\n📋 Deploying Group logic contract...");
+  const groupLogic = await viem.deployContract("Group");
 console.log("Group logic deployed to:", groupLogic.address);
 
 // Wait for transaction to be mined and nonce to update
@@ -62,16 +62,30 @@ console.log("Group Logic:", groupLogic.address);
 console.log("Registry:", registry.address);
 console.log("GroupFactory:", groupFactory.address);
 
-// Save addresses to a file for later use
+// Save addresses to deployments.json for verification script
 const addresses = {
+  network: "baseSepolia",
+  chainId: 84532,
   groupLogic: groupLogic.address,
   registry: registry.address,
   groupFactory: groupFactory.address,
-  network: "baseSepolia",
-  chainId: 84532
+  deployer: walletClient.account.address,
+  deployedAt: new Date().toISOString(),
+  verified: {
+    blockscout: false,
+    basescan: false
+  }
 };
 
-console.log("\n💾 Contract addresses saved for testing:");
+// Write to deployments.json
+const fs = require('fs');
+const path = require('path');
+fs.writeFileSync(
+  path.join(process.cwd(), 'deployments.json'), 
+  JSON.stringify(addresses, null, 2)
+);
+
+console.log("\n💾 Contract addresses saved to deployments.json:");
 console.log(JSON.stringify(addresses, null, 2));
 
 console.log("\n🎉 Ready for testing! You can now:");

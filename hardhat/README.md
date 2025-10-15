@@ -37,11 +37,35 @@ The BasedBills smart contract system consists of four main contracts:
 
 | Contract | Address | Status |
 |----------|---------|---------|
-| Group Logic | `0x56bfa92a6e788f8a157e3f479dd326d93a9458ea` | ✅ Verified |
-| Registry | `0x01856ca0017a4f6f708b7f8df57a20d9ddf8dc74` | ✅ Verified |
-| GroupFactory | `0x06043efb63514bcc98f142bc4936ec66732a0729` | ✅ Verified |
+| Group Logic | `0x8e36374afe7e093f721b88baad72aaf4536c9834` | ✅ Verified |
+| Registry | `0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64` | ✅ Verified |
+| GroupFactory | `0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629` | ✅ Verified |
 
 All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
+
+### Universal Verification Script
+
+The project includes a comprehensive verification script (`verify-all-contracts.ts`) that:
+
+- ✅ **Dynamically generates constructor arguments** using viem's `encodeAbiParameters`
+- ✅ **Loads deployment addresses** from `deployments.json` automatically  
+- ✅ **Resolves all dependencies** (OpenZeppelin, local contracts) automatically
+- ✅ **Handles all contract types** (Group, Registry, GroupFactory) with proper configurations
+- ✅ **Supports both BaseScan and Blockscout** verification
+- ✅ **Provides EIP-1167 proxy verification** instructions
+- ✅ **Rate limiting and error handling** built-in
+
+**Usage:**
+```bash
+npm run verify  # Universal verification script
+```
+
+The script automatically:
+1. Checks current verification status
+2. Generates constructor arguments for each contract
+3. Submits unverified contracts for verification
+4. Monitors verification progress
+5. Provides proxy verification instructions
 
 ### Deploy Your Own
 

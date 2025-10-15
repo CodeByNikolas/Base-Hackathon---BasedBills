@@ -4,11 +4,20 @@ A decentralized bill splitting application built on Base network with on-chain U
 
 ## 🌟 Features
 
+### Core Functionality
 - **Decentralized Groups**: Create expense groups with multiple members
-- **Smart Bill Splitting**: Automatically calculate who owes what
+- **Smart Bill Splitting**: Equal or custom split amounts per person
 - **On-chain Settlement**: Settle balances using USDC on Base network
 - **Transparent Process**: All transactions verified on BaseScan
 - **Mobile-First Design**: Optimized for mobile wallet interactions
+
+### Advanced Features
+- **🎲 Gamble Mode**: All-or-nothing settlement where one random member pays all debts
+- **📊 Enhanced Balance Views**: Real-time creditor/debtor breakdown
+- **📋 Complete Bill History**: Track all expenses with timestamps and settlement IDs
+- **🔍 Settlement Tracking**: Audit trail for every completed settlement
+- **⚡ Custom Bill Splitting**: Specify exact amounts per participant
+- **🏭 Gas-Efficient Groups**: EIP-1167 minimal proxy pattern for cheap group creation
 
 ## 🚀 Quick Start
 
@@ -63,9 +72,9 @@ See [hardhat/README.md](./hardhat/README.md) for detailed contract documentation
 
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| GroupFactory | `0xfdf8a83a3d1dc0aa285616883452a2824e559d74` | [View](https://sepolia.basescan.org/address/0xfdf8a83a3d1dc0aa285616883452a2824e559d74) |
-| Registry | `0x6add08fb50b7e6def745a87a16254522713a5676` | [View](https://sepolia.basescan.org/address/0x6add08fb50b7e6def745a87a16254522713a5676) |
-| Group Logic | `0xa4cf50aa00c58852c37b3fa663d7ba032843d594` | [View](https://sepolia.basescan.org/address/0xa4cf50aa00c58852c37b3fa663d7ba032843d594) |
+| GroupFactory | `0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629` | [View](https://sepolia.basescan.org/address/0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629) |
+| Registry | `0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64` | [View](https://sepolia.basescan.org/address/0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64) |
+| Group Logic | `0x8e36374afe7e093f721b88baad72aaf4536c9834` | [View](https://sepolia.basescan.org/address/0x8e36374afe7e093f721b88baad72aaf4536c9834) |
 
 All contracts are **verified** and open source on BaseScan.
 
