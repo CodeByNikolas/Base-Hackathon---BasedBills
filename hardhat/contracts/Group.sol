@@ -39,8 +39,26 @@ contract Group {
     /// @dev Flag to prevent reinitialization
     bool private initialized;
     
+    /// @dev Bill structure for tracking bill history
+    struct Bill {
+        uint256 id;
+        string description;
+        uint256 totalAmount;
+        address payer;
+        address[] participants;
+        uint256[] amounts;
+        uint256 timestamp;
+    }
+    
+    /// @dev Array to store all bills
+    Bill[] public bills;
+    
+    /// @dev Counter for bill IDs
+    uint256 public billCounter;
+    
     /// @dev Events
-    event BillAdded(string description, uint256 amount, address[] participants, address payer);
+    event BillAdded(uint256 indexed billId, string description, uint256 amount, address[] participants, uint256[] amounts, address payer);
+    event CustomBillAdded(uint256 indexed billId, string description, uint256 totalAmount, address[] participants, uint256[] customAmounts, address payer);
     event SettlementTriggered(uint256 totalOwed);
     event SettlementApproved(address indexed creditor);
     event SettlementFunded(address indexed debtor, uint256 amount);
@@ -97,7 +115,7 @@ contract Group {
     }
     
     /**
-     * @dev Add a new bill and update member balances
+     * @dev Add a new bill with equal split and update member balances
      * @param _description Description of the bill
      * @param _amount Total amount of the bill in USDC (with 6 decimals)
      * @param _participants Array of addresses who participated in this expense
@@ -119,6 +137,9 @@ contract Group {
         uint256 amountPerPerson = _amount / _participants.length;
         uint256 remainder = _amount % _participants.length;
         
+        // Create amounts array for equal split
+        uint256[] memory amounts = new uint256[](_participants.length);
+        
         // Update balances: payer gets positive balance, participants get negative
         balances[msg.sender] += int256(_amount);
         
@@ -128,10 +149,69 @@ contract Group {
             if (i == 0) {
                 personalShare += remainder;
             }
+            amounts[i] = personalShare;
             balances[_participants[i]] -= int256(personalShare);
         }
         
-        emit BillAdded(_description, _amount, _participants, msg.sender);
+        // Store bill in history
+        bills.push(Bill({
+            id: billCounter,
+            description: _description,
+            totalAmount: _amount,
+            payer: msg.sender,
+            participants: _participants,
+            amounts: amounts,
+            timestamp: block.timestamp
+        }));
+        
+        emit BillAdded(billCounter, _description, _amount, _participants, amounts, msg.sender);
+        billCounter++;
+    }
+    
+    /**
+     * @dev Add a new bill with custom amounts per participant
+     * @param _description Description of the bill
+     * @param _participants Array of addresses who participated in this expense
+     * @param _amounts Array of amounts each participant owes (must sum to total)
+     */
+    function addCustomBill(
+        string calldata _description,
+        address[] calldata _participants,
+        uint256[] calldata _amounts
+    ) external onlyMember settlementNotActive {
+        require(_participants.length > 0, "Group: No participants provided");
+        require(_participants.length == _amounts.length, "Group: Participants and amounts length mismatch");
+        
+        // Verify all participants are members and calculate total
+        uint256 totalAmount = 0;
+        for (uint256 i = 0; i < _participants.length; i++) {
+            require(isMember[_participants[i]], "Group: Participant not a member");
+            require(_amounts[i] > 0, "Group: Amount must be positive");
+            totalAmount += _amounts[i];
+        }
+        
+        require(totalAmount > 0, "Group: Total amount must be positive");
+        
+        // Update balances: payer gets positive balance, participants get negative
+        balances[msg.sender] += int256(totalAmount);
+        
+        for (uint256 i = 0; i < _participants.length; i++) {
+            balances[_participants[i]] -= int256(_amounts[i]);
+        }
+        
+        // Store bill in history
+        bills.push(Bill({
+            id: billCounter,
+            description: _description,
+            totalAmount: totalAmount,
+            payer: msg.sender,
+            participants: _participants,
+            amounts: _amounts,
+            timestamp: block.timestamp
+        }));
+        
+        emit CustomBillAdded(billCounter, _description, totalAmount, _participants, _amounts, msg.sender);
+        billCounter++;
     }
     
     /**
@@ -283,5 +363,149 @@ contract Group {
         }
         
         return true;
+    }
+    
+    /**
+     * @dev Get all member balances at once
+     * @return memberAddresses Array of member addresses
+     * @return memberBalances Array of corresponding balances
+     */
+    function getAllBalances() external view returns (address[] memory memberAddresses, int256[] memory memberBalances) {
+        memberAddresses = new address[](members.length);
+        memberBalances = new int256[](members.length);
+        
+        for (uint256 i = 0; i < members.length; i++) {
+            memberAddresses[i] = members[i];
+            memberBalances[i] = balances[members[i]];
+        }
+        
+        return (memberAddresses, memberBalances);
+    }
+    
+    /**
+     * @dev Get settlement amounts for creditors and debtors
+     * @return creditors Array of addresses who are owed money
+     * @return creditorAmounts Array of amounts owed to creditors
+     * @return debtors Array of addresses who owe money
+     * @return debtorAmounts Array of amounts owed by debtors
+     */
+    function getSettlementAmounts() external view returns (
+        address[] memory creditors,
+        uint256[] memory creditorAmounts,
+        address[] memory debtors,
+        uint256[] memory debtorAmounts
+    ) {
+        // Count creditors and debtors
+        uint256 creditorCount = 0;
+        uint256 debtorCount = 0;
+        
+        for (uint256 i = 0; i < members.length; i++) {
+            if (balances[members[i]] > 0) {
+                creditorCount++;
+            } else if (balances[members[i]] < 0) {
+                debtorCount++;
+            }
+        }
+        
+        // Initialize arrays
+        creditors = new address[](creditorCount);
+        creditorAmounts = new uint256[](creditorCount);
+        debtors = new address[](debtorCount);
+        debtorAmounts = new uint256[](debtorCount);
+        
+        // Fill arrays
+        uint256 creditorIndex = 0;
+        uint256 debtorIndex = 0;
+        
+        for (uint256 i = 0; i < members.length; i++) {
+            if (balances[members[i]] > 0) {
+                creditors[creditorIndex] = members[i];
+                creditorAmounts[creditorIndex] = uint256(balances[members[i]]);
+                creditorIndex++;
+            } else if (balances[members[i]] < 0) {
+                debtors[debtorIndex] = members[i];
+                debtorAmounts[debtorIndex] = uint256(-balances[members[i]]);
+                debtorIndex++;
+            }
+        }
+        
+        return (creditors, creditorAmounts, debtors, debtorAmounts);
+    }
+    
+    /**
+     * @dev Get all bills in the group
+     * @return Array of all bills
+     */
+    function getAllBills() external view returns (Bill[] memory) {
+        return bills;
+    }
+    
+    /**
+     * @dev Get a specific bill by ID
+     * @param _billId ID of the bill to retrieve
+     * @return Bill struct
+     */
+    function getBill(uint256 _billId) external view returns (Bill memory) {
+        require(_billId < bills.length, "Group: Bill does not exist");
+        return bills[_billId];
+    }
+    
+    /**
+     * @dev Get total number of bills
+     * @return Number of bills in the group
+     */
+    function getBillCount() external view returns (uint256) {
+        return bills.length;
+    }
+    
+    /**
+     * @dev Get bills paginated
+     * @param _offset Starting index
+     * @param _limit Number of bills to return
+     * @return Array of bills
+     */
+    function getBillsPaginated(uint256 _offset, uint256 _limit) external view returns (Bill[] memory) {
+        require(_offset < bills.length, "Group: Offset out of bounds");
+        
+        uint256 end = _offset + _limit;
+        if (end > bills.length) {
+            end = bills.length;
+        }
+        
+        Bill[] memory result = new Bill[](end - _offset);
+        for (uint256 i = _offset; i < end; i++) {
+            result[i - _offset] = bills[i];
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @dev Get bills paid by a specific member
+     * @param _payer Address of the payer
+     * @return Array of bill IDs paid by the member
+     */
+    function getBillsByPayer(address _payer) external view returns (uint256[] memory) {
+        require(isMember[_payer], "Group: Address is not a member");
+        
+        // Count bills by payer
+        uint256 count = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].payer == _payer) {
+                count++;
+            }
+        }
+        
+        // Fill result array
+        uint256[] memory result = new uint256[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].payer == _payer) {
+                result[index] = bills[i].id;
+                index++;
+            }
+        }
+        
+        return result;
     }
 }

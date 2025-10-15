@@ -23,12 +23,20 @@ console.log("\n📋 Deploying Group logic contract...");
 const groupLogic = await viem.deployContract("Group");
 console.log("Group logic deployed to:", groupLogic.address);
 
+// Wait for transaction to be mined and nonce to update
+console.log("⏳ Waiting 8 seconds for transaction to be processed...");
+await new Promise(resolve => setTimeout(resolve, 8000));
+
 // Step 2: Deploy the Registry contract with deployer as temporary factory address
 console.log("\n📚 Deploying Registry contract...");
 const registry = await viem.deployContract("Registry", [
   walletClient.account.address // Temporary factory address (will be updated later)
 ]);
 console.log("Registry deployed to:", registry.address);
+
+// Wait for transaction to be mined and nonce to update
+console.log("⏳ Waiting 8 seconds for transaction to be processed...");
+await new Promise(resolve => setTimeout(resolve, 8000));
 
 // Step 3: Deploy the GroupFactory with the logic contract and registry addresses
 console.log("\n🏭 Deploying GroupFactory contract...");
@@ -37,6 +45,10 @@ const groupFactory = await viem.deployContract("GroupFactory", [
   registry.address
 ]);
 console.log("GroupFactory deployed to:", groupFactory.address);
+
+// Wait for transaction to be mined and nonce to update
+console.log("⏳ Waiting 5 seconds for transaction to be processed...");
+await new Promise(resolve => setTimeout(resolve, 5000));
 
 // Step 4: Update the Registry with the actual factory address
 console.log("\n🔄 Updating Registry with factory address...");
