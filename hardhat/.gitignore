@@ -18,3 +18,10 @@
 
 # Hardhat coverage reports
 /coverage
+
+
+# env file
+.env
+
+# ignition deployments  
+/ignition/deployments
