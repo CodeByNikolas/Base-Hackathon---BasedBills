@@ -5,41 +5,19 @@ import "./IUSDC.sol";
 
 /**
  * @title Group
- * @dev Core logic contract for managing group expenses and settlements
- * This contract handles bill splitting and automatic USDC settlements
+ * @dev Core logic contract for managing group expenses and settlements.
+ * This contract handles bill splitting, automatic USDC settlements, and an optional gamble feature.
  */
 contract Group {
-    /// @dev Array of group member addresses
+    // --- State Variables ---
+
     address[] public members;
-    
-    /// @dev Mapping to check if an address is a member
     mapping(address => bool) public isMember;
-    
-    /// @dev Member balances: positive = owed money, negative = owes money
     mapping(address => int256) public balances;
-    
-    /// @dev Address of the USDC contract on Base network
     address public usdcAddress;
-    
-    /// @dev Flag indicating if a settlement process is active
-    bool public settlementActive;
-    
-    /// @dev Total amount that needs to be deposited by debtors
-    uint256 public totalOwed;
-    
-    /// @dev Amount currently deposited in the contract for settlement
-    uint256 public fundedAmount;
-    
-    /// @dev Tracks which debtors have deposited their share
-    mapping(address => bool) public hasFunded;
-    
-    /// @dev Tracks which creditors have approved the settlement
-    mapping(address => bool) public hasApproved;
-    
-    /// @dev Flag to prevent reinitialization
     bool private initialized;
-    
-    /// @dev Bill structure for tracking bill history
+
+    // Bill tracking
     struct Bill {
         uint256 id;
         string description;
@@ -48,59 +26,68 @@ contract Group {
         address[] participants;
         uint256[] amounts;
         uint256 timestamp;
+        uint256 settlementId; // ID of the settlement that cleared this bill
     }
-    
-    /// @dev Array to store all bills
     Bill[] public bills;
-    
-    /// @dev Counter for bill IDs
     uint256 public billCounter;
-    
-    /// @dev Events
+
+    // Settlement state
+    bool public settlementActive;
+    uint256 public totalOwed;
+    uint256 public fundedAmount;
+    mapping(address => bool) public hasFunded;
+    mapping(address => bool) public hasApproved;
+    uint256 public settlementCounter; // Counter for completed settlements
+
+    // Gamble state
+    bool public gambleActive;
+    address public gambleProposer;
+    mapping(address => bool) public hasVotedOnGamble;
+    uint256 public gambleVoteCount;
+
+    // --- Events ---
+
     event BillAdded(uint256 indexed billId, string description, uint256 amount, address[] participants, uint256[] amounts, address payer);
     event CustomBillAdded(uint256 indexed billId, string description, uint256 totalAmount, address[] participants, uint256[] customAmounts, address payer);
-    event SettlementTriggered(uint256 totalOwed);
+    event MemberAdded(address indexed member);
+
+    // Settlement Events
+    event SettlementTriggered(uint256 indexed settlementId, uint256 totalOwed);
     event SettlementApproved(address indexed creditor);
     event SettlementFunded(address indexed debtor, uint256 amount);
-    event SettlementCompleted(uint256 totalDistributed);
-    event MemberAdded(address indexed member);
-    
-    /**
-     * @dev Modifier to ensure only group members can call certain functions
-     */
+    event SettlementCompleted(uint256 indexed settlementId, uint256 totalDistributed);
+
+    // Gamble Events
+    event GambleProposed(address indexed proposer);
+    event GambleVoteCast(address indexed voter, bool vote);
+    event GambleExecuted(address indexed loser, uint256 amount);
+    event GambleCancelled();
+
+    // --- Modifiers ---
+
     modifier onlyMember() {
         require(isMember[msg.sender], "Group: Caller is not a member");
         _;
     }
-    
-    /**
-     * @dev Modifier to ensure settlement is active
-     */
+
     modifier settlementIsActive() {
         require(settlementActive, "Group: No active settlement");
         _;
     }
-    
-    /**
-     * @dev Modifier to ensure settlement is not active
-     */
-    modifier settlementNotActive() {
+
+    modifier noActiveProcess() {
         require(!settlementActive, "Group: Settlement is active");
+        require(!gambleActive, "Group: Gamble is active");
         _;
     }
-    
-    /**
-     * @dev Initialize the group with members (called by factory after deployment)
-     * @param _members Array of member addresses
-     */
+
+    // --- Initialization ---
+
     function initialize(address[] calldata _members) external {
         require(!initialized, "Group: Already initialized");
         require(_members.length > 0, "Group: No members provided");
         
-        // Set USDC address for Base network (this should be updated for mainnet)
-        // For Base Sepolia testnet: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
-        // For Base mainnet: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-        usdcAddress = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // Base Sepolia USDC for testing
+        usdcAddress = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // Base Sepolia USDC
         
         for (uint256 i = 0; i < _members.length; i++) {
             require(_members[i] != address(0), "Group: Invalid member address");
@@ -112,40 +99,32 @@ contract Group {
         }
         
         initialized = true;
+        settlementCounter = 1; // Start settlement IDs from 1
     }
-    
-    /**
-     * @dev Add a new bill with equal split and update member balances
-     * @param _description Description of the bill
-     * @param _amount Total amount of the bill in USDC (with 6 decimals)
-     * @param _participants Array of addresses who participated in this expense
-     */
+
+    // --- Bill Management ---
+
     function addBill(
         string calldata _description,
         uint256 _amount,
         address[] calldata _participants
-    ) external onlyMember settlementNotActive {
+    ) external onlyMember noActiveProcess {
         require(_amount > 0, "Group: Amount must be positive");
         require(_participants.length > 0, "Group: No participants provided");
         
-        // Verify all participants are members
         for (uint256 i = 0; i < _participants.length; i++) {
             require(isMember[_participants[i]], "Group: Participant not a member");
         }
         
-        // Calculate amount per participant
         uint256 amountPerPerson = _amount / _participants.length;
         uint256 remainder = _amount % _participants.length;
         
-        // Create amounts array for equal split
         uint256[] memory amounts = new uint256[](_participants.length);
         
-        // Update balances: payer gets positive balance, participants get negative
         balances[msg.sender] += int256(_amount);
         
         for (uint256 i = 0; i < _participants.length; i++) {
             uint256 personalShare = amountPerPerson;
-            // First person gets the remainder if amount doesn't divide evenly
             if (i == 0) {
                 personalShare += remainder;
             }
@@ -153,7 +132,6 @@ contract Group {
             balances[_participants[i]] -= int256(personalShare);
         }
         
-        // Store bill in history
         bills.push(Bill({
             id: billCounter,
             description: _description,
@@ -161,28 +139,22 @@ contract Group {
             payer: msg.sender,
             participants: _participants,
             amounts: amounts,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            settlementId: 0 // 0 means unsettled
         }));
         
         emit BillAdded(billCounter, _description, _amount, _participants, amounts, msg.sender);
         billCounter++;
     }
-    
-    /**
-     * @dev Add a new bill with custom amounts per participant
-     * @param _description Description of the bill
-     * @param _participants Array of addresses who participated in this expense
-     * @param _amounts Array of amounts each participant owes (must sum to total)
-     */
+
     function addCustomBill(
         string calldata _description,
         address[] calldata _participants,
         uint256[] calldata _amounts
-    ) external onlyMember settlementNotActive {
+    ) external onlyMember noActiveProcess {
         require(_participants.length > 0, "Group: No participants provided");
         require(_participants.length == _amounts.length, "Group: Participants and amounts length mismatch");
         
-        // Verify all participants are members and calculate total
         uint256 totalAmount = 0;
         for (uint256 i = 0; i < _participants.length; i++) {
             require(isMember[_participants[i]], "Group: Participant not a member");
@@ -192,14 +164,12 @@ contract Group {
         
         require(totalAmount > 0, "Group: Total amount must be positive");
         
-        // Update balances: payer gets positive balance, participants get negative
         balances[msg.sender] += int256(totalAmount);
         
         for (uint256 i = 0; i < _participants.length; i++) {
             balances[_participants[i]] -= int256(_amounts[i]);
         }
         
-        // Store bill in history
         bills.push(Bill({
             id: billCounter,
             description: _description,
@@ -207,46 +177,32 @@ contract Group {
             payer: msg.sender,
             participants: _participants,
             amounts: _amounts,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            settlementId: 0 // 0 means unsettled
         }));
         
         emit CustomBillAdded(billCounter, _description, totalAmount, _participants, _amounts, msg.sender);
         billCounter++;
     }
-    
-    /**
-     * @dev Trigger a settlement process
-     * Calculates total owed and prepares for funding/approval
-     */
-    function triggerSettlement() external onlyMember settlementNotActive {
-        uint256 _totalOwed = 0;
-        
-        // Calculate total amount owed by debtors
-        for (uint256 i = 0; i < members.length; i++) {
-            if (balances[members[i]] < 0) {
-                _totalOwed += uint256(-balances[members[i]]);
-            }
-        }
-        
+
+    // --- Settlement Logic ---
+
+    function triggerSettlement() external onlyMember noActiveProcess {
+        uint256 _totalOwed = _calculateTotalOwed();
         require(_totalOwed > 0, "Group: No debts to settle");
         
-        // Reset settlement state
         totalOwed = _totalOwed;
         fundedAmount = 0;
         settlementActive = true;
         
-        // Reset funding and approval status for all members
         for (uint256 i = 0; i < members.length; i++) {
             hasFunded[members[i]] = false;
             hasApproved[members[i]] = false;
         }
         
-        emit SettlementTriggered(_totalOwed);
+        emit SettlementTriggered(settlementCounter, _totalOwed);
     }
-    
-    /**
-     * @dev Approve settlement (for creditors with positive balances)
-     */
+
     function approveSettlement() external onlyMember settlementIsActive {
         require(balances[msg.sender] > 0, "Group: Only creditors can approve");
         require(!hasApproved[msg.sender], "Group: Already approved");
@@ -256,22 +212,14 @@ contract Group {
         
         _checkAndDistribute();
     }
-    
-    /**
-     * @dev Fund settlement (for debtors with negative balances)
-     * Requires prior USDC approval for this contract
-     */
+
     function fundSettlement() external onlyMember settlementIsActive {
         require(balances[msg.sender] < 0, "Group: Only debtors can fund");
         require(!hasFunded[msg.sender], "Group: Already funded");
         
         uint256 amountOwed = uint256(-balances[msg.sender]);
         
-        // Transfer USDC from debtor to this contract
-        require(
-            IUSDC(usdcAddress).transferFrom(msg.sender, address(this), amountOwed),
-            "Group: USDC transfer failed"
-        );
+        require(IUSDC(usdcAddress).transferFrom(msg.sender, address(this), amountOwed), "Group: USDC transfer failed");
         
         hasFunded[msg.sender] = true;
         fundedAmount += amountOwed;
@@ -280,77 +228,179 @@ contract Group {
         
         _checkAndDistribute();
     }
-    
-    /**
-     * @dev Internal function to check if settlement can be completed and distribute funds
-     */
+
     function _checkAndDistribute() internal {
-        // Check if all funds are collected
-        if (fundedAmount != totalOwed) {
-            return;
-        }
+        if (fundedAmount != totalOwed) return;
         
-        // Check if all creditors have approved
         for (uint256 i = 0; i < members.length; i++) {
             if (balances[members[i]] > 0 && !hasApproved[members[i]]) {
-                return; // Not all creditors have approved yet
+                return;
             }
         }
         
-        // All conditions met - distribute funds
         uint256 totalDistributed = 0;
-        
         for (uint256 i = 0; i < members.length; i++) {
             if (balances[members[i]] > 0) {
-                uint256 amountOwed = uint256(balances[members[i]]);
-                require(
-                    IUSDC(usdcAddress).transfer(members[i], amountOwed),
-                    "Group: USDC distribution failed"
-                );
-                totalDistributed += amountOwed;
-                balances[members[i]] = 0;
-            } else if (balances[members[i]] < 0) {
-                balances[members[i]] = 0;
+                uint256 amountToReceive = uint256(balances[members[i]]);
+                require(IUSDC(usdcAddress).transfer(members[i], amountToReceive), "Group: USDC distribution failed");
+                totalDistributed += amountToReceive;
+            }
+        }
+
+        // Mark all unsettled bills as settled with current settlement ID
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == 0) {
+                bills[i].settlementId = settlementCounter;
             }
         }
         
-        // Reset settlement state
+        // Reset all balances to zero
+        for (uint256 i = 0; i < members.length; i++) {
+            balances[members[i]] = 0;
+        }
+
+        emit SettlementCompleted(settlementCounter, totalDistributed);
+        
+        _resetSettlementState();
+        settlementCounter++;
+    }
+
+    function _resetSettlementState() internal {
         settlementActive = false;
         totalOwed = 0;
         fundedAmount = 0;
+    }
+
+    // --- Gamble Logic ---
+
+    function proposeGamble() external onlyMember noActiveProcess {
+        require(_calculateTotalOwed() > 0, "Group: No debts to gamble");
+        gambleActive = true;
+        gambleProposer = msg.sender;
         
-        emit SettlementCompleted(totalDistributed);
+        gambleVoteCount = 0;
+        for(uint i = 0; i < members.length; i++) {
+            hasVotedOnGamble[members[i]] = false;
+        }
+
+        emit GambleProposed(msg.sender);
+    }
+
+    function voteOnGamble(bool _accept) external onlyMember {
+        require(gambleActive, "Group: No active gamble");
+        require(!hasVotedOnGamble[msg.sender], "Group: Already voted");
+
+        hasVotedOnGamble[msg.sender] = true;
+
+        if (_accept) {
+            gambleVoteCount++;
+            emit GambleVoteCast(msg.sender, true);
+
+            if (gambleVoteCount == members.length) {
+                _executeGamble();
+            }
+        } else {
+            emit GambleVoteCast(msg.sender, false);
+            _cancelGamble();
+        }
+    }
+
+    function cancelGamble() external {
+        require(gambleActive, "Group: No active gamble");
+        require(msg.sender == gambleProposer, "Group: Only proposer can cancel");
+        _cancelGamble();
+    }
+
+    function _executeGamble() internal {
+        // WARNING: Insecure pseudo-randomness. Use Chainlink VRF for production.
+        uint256 randomIndex = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, members))) % members.length;
+        address loser = members[randomIndex];
+
+        // Step 1: Calculate total unsettled amount
+        uint256 totalUnsettledAmount = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == 0) {
+                totalUnsettledAmount += bills[i].totalAmount;
+            }
+        }
+
+        // Step 2: Reset all member balances to zero for a clean slate
+        for (uint i = 0; i < members.length; i++) {
+            balances[members[i]] = 0;
+        }
+
+        // Step 3: Assign the total debt to the loser
+        balances[loser] -= int256(totalUnsettledAmount);
+
+        // Step 4: Credit the original payers for their unsettled bills
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == 0) {
+                balances[bills[i].payer] += int256(bills[i].totalAmount);
+            }
+        }
+
+        // Step 5: Mark all unsettled bills as settled with current settlement ID
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == 0) {
+                bills[i].settlementId = settlementCounter;
+            }
+        }
+
+        // Step 6: Clean up gamble state
+        gambleActive = false;
+        gambleVoteCount = 0;
+        
+        emit GambleExecuted(loser, totalUnsettledAmount);
+        emit SettlementCompleted(settlementCounter, 0);
+        settlementCounter++;
+
+        // Step 7: If there are still debts after gamble, trigger a new settlement
+        uint256 newTotalOwed = _calculateTotalOwed();
+        if (newTotalOwed > 0) {
+            totalOwed = newTotalOwed;
+            fundedAmount = 0;
+            settlementActive = true;
+            
+            for (uint256 i = 0; i < members.length; i++) {
+                hasFunded[members[i]] = false;
+                hasApproved[members[i]] = false;
+            }
+            
+            emit SettlementTriggered(settlementCounter, newTotalOwed);
+        }
+    }
+
+    function _cancelGamble() internal {
+        gambleActive = false;
+        gambleProposer = address(0);
+        gambleVoteCount = 0;
+        emit GambleCancelled();
+    }
+
+    // --- View Functions ---
+
+    function _calculateTotalOwed() internal view returns (uint256) {
+        uint256 _totalOwed = 0;
+        for (uint256 i = 0; i < members.length; i++) {
+            if (balances[members[i]] < 0) {
+                _totalOwed += uint256(-balances[members[i]]);
+            }
+        }
+        return _totalOwed;
     }
     
-    /**
-     * @dev Get all group members
-     * @return Array of member addresses
-     */
     function getMembers() external view returns (address[] memory) {
         return members;
     }
     
-    /**
-     * @dev Get member count
-     * @return Number of members in the group
-     */
     function getMemberCount() external view returns (uint256) {
         return members.length;
     }
     
-    /**
-     * @dev Get balance for a specific member
-     * @param _member Address of the member
-     * @return Balance (positive = owed, negative = owes)
-     */
     function getBalance(address _member) external view returns (int256) {
         return balances[_member];
     }
     
-    /**
-     * @dev Check if settlement conditions are met
-     * @return bool indicating if settlement can be completed
-     */
     function canCompleteSettlement() external view returns (bool) {
         if (!settlementActive || fundedAmount != totalOwed) {
             return false;
@@ -365,11 +415,6 @@ contract Group {
         return true;
     }
     
-    /**
-     * @dev Get all member balances at once
-     * @return memberAddresses Array of member addresses
-     * @return memberBalances Array of corresponding balances
-     */
     function getAllBalances() external view returns (address[] memory memberAddresses, int256[] memory memberBalances) {
         memberAddresses = new address[](members.length);
         memberBalances = new int256[](members.length);
@@ -382,20 +427,12 @@ contract Group {
         return (memberAddresses, memberBalances);
     }
     
-    /**
-     * @dev Get settlement amounts for creditors and debtors
-     * @return creditors Array of addresses who are owed money
-     * @return creditorAmounts Array of amounts owed to creditors
-     * @return debtors Array of addresses who owe money
-     * @return debtorAmounts Array of amounts owed by debtors
-     */
     function getSettlementAmounts() external view returns (
         address[] memory creditors,
         uint256[] memory creditorAmounts,
         address[] memory debtors,
         uint256[] memory debtorAmounts
     ) {
-        // Count creditors and debtors
         uint256 creditorCount = 0;
         uint256 debtorCount = 0;
         
@@ -407,13 +444,11 @@ contract Group {
             }
         }
         
-        // Initialize arrays
         creditors = new address[](creditorCount);
         creditorAmounts = new uint256[](creditorCount);
         debtors = new address[](debtorCount);
         debtorAmounts = new uint256[](debtorCount);
         
-        // Fill arrays
         uint256 creditorIndex = 0;
         uint256 debtorIndex = 0;
         
@@ -432,38 +467,19 @@ contract Group {
         return (creditors, creditorAmounts, debtors, debtorAmounts);
     }
     
-    /**
-     * @dev Get all bills in the group
-     * @return Array of all bills
-     */
     function getAllBills() external view returns (Bill[] memory) {
         return bills;
     }
     
-    /**
-     * @dev Get a specific bill by ID
-     * @param _billId ID of the bill to retrieve
-     * @return Bill struct
-     */
     function getBill(uint256 _billId) external view returns (Bill memory) {
         require(_billId < bills.length, "Group: Bill does not exist");
         return bills[_billId];
     }
     
-    /**
-     * @dev Get total number of bills
-     * @return Number of bills in the group
-     */
     function getBillCount() external view returns (uint256) {
         return bills.length;
     }
     
-    /**
-     * @dev Get bills paginated
-     * @param _offset Starting index
-     * @param _limit Number of bills to return
-     * @return Array of bills
-     */
     function getBillsPaginated(uint256 _offset, uint256 _limit) external view returns (Bill[] memory) {
         require(_offset < bills.length, "Group: Offset out of bounds");
         
@@ -480,15 +496,9 @@ contract Group {
         return result;
     }
     
-    /**
-     * @dev Get bills paid by a specific member
-     * @param _payer Address of the payer
-     * @return Array of bill IDs paid by the member
-     */
     function getBillsByPayer(address _payer) external view returns (uint256[] memory) {
         require(isMember[_payer], "Group: Address is not a member");
         
-        // Count bills by payer
         uint256 count = 0;
         for (uint256 i = 0; i < bills.length; i++) {
             if (bills[i].payer == _payer) {
@@ -496,7 +506,6 @@ contract Group {
             }
         }
         
-        // Fill result array
         uint256[] memory result = new uint256[](count);
         uint256 index = 0;
         for (uint256 i = 0; i < bills.length; i++) {
@@ -507,5 +516,63 @@ contract Group {
         }
         
         return result;
+    }
+
+    // --- Additional View Functions for Gamble Feature ---
+
+    function getUnsettledBills() external view returns (Bill[] memory) {
+        uint256 unsettledCount = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == 0) {
+                unsettledCount++;
+            }
+        }
+        
+        Bill[] memory unsettledBills = new Bill[](unsettledCount);
+        uint256 index = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == 0) {
+                unsettledBills[index] = bills[i];
+                index++;
+            }
+        }
+        
+        return unsettledBills;
+    }
+
+    function getBillsBySettlement(uint256 _settlementId) external view returns (Bill[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == _settlementId) {
+                count++;
+            }
+        }
+        
+        Bill[] memory result = new Bill[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < bills.length; i++) {
+            if (bills[i].settlementId == _settlementId) {
+                result[index] = bills[i];
+                index++;
+            }
+        }
+        
+        return result;
+    }
+
+    function getGambleStatus() external view returns (
+        bool active,
+        address proposer,
+        uint256 voteCount,
+        uint256 totalMembers,
+        bool hasVoted
+    ) {
+        return (
+            gambleActive,
+            gambleProposer,
+            gambleVoteCount,
+            members.length,
+            hasVotedOnGamble[msg.sender]
+        );
     }
 }

@@ -117,11 +117,44 @@ group.fundSettlement();
 // 4. Automatic distribution when conditions met
 ```
 
+## 🎲 Gamble Feature
+
+The gamble feature provides a fun, all-or-nothing alternative to traditional settlements:
+
+### How It Works
+1. **Propose**: Any member can propose a gamble when there are unsettled debts
+2. **Vote**: ALL members must unanimously vote "yes" for the gamble to proceed
+3. **Execute**: A random member is selected as the "loser" who pays for all unsettled bills
+4. **Settle**: The loser owes the full amount to the original bill payers
+
+### Gamble Logic
+- **Fair Distribution**: The loser reimburses original payers for the full gross amount
+- **Clean Slate**: All previous balances are reset before applying gamble results
+- **Audit Trail**: Bills are marked as settled with a settlement ID for tracking
+- **Automatic Settlement**: After gamble execution, a new settlement is triggered
+
+### Security Considerations
+⚠️ **IMPORTANT**: The current randomness uses `block.prevrandao` which is **NOT SECURE** for production. For real-world use with actual value, implement **Chainlink VRF** for verifiable randomness.
+
+### Example Scenario
+```
+Before Gamble:
+- Alice paid $60 lunch (Bob owes $30, Charlie owes $30)  
+- Bob paid $40 groceries (Alice owes $20, Charlie owes $20)
+- Net: Alice owes $10, Bob is owed $10, Charlie owes $20
+
+After Gamble (Charlie loses):
+- Charlie owes Alice $60 (for lunch bill)
+- Charlie owes Bob $40 (for groceries bill)  
+- Total: Charlie owes $100, Alice/Bob get reimbursed fully
+```
+
 ## 🔐 Security
 
 - Uses OpenZeppelin contracts for proven security patterns
 - Implements proper access controls and validation
 - All contracts verified on BaseScan for transparency
+- **Gamble randomness is NOT production-ready** - use Chainlink VRF for real deployments
 
 ## 📚 Complete API Reference
 
@@ -251,7 +284,37 @@ mapping(address => bool) public hasFunded;   // Has member funded settlement
 mapping(address => bool) public hasApproved; // Has member approved settlement
 ```
 
-### Bill Structure
+#### Gamble Functions (New!)
+```solidity
+// Propose a gamble to settle all debts (requires unanimous approval)
+function proposeGamble() external
+
+// Vote on an active gamble proposal
+function voteOnGamble(bool _accept) external
+
+// Cancel a gamble (only proposer can call)
+function cancelGamble() external
+
+// Get current gamble status
+function getGambleStatus() external view returns (
+    bool active,
+    address proposer, 
+    uint256 voteCount,
+    uint256 totalMembers,
+    bool hasVoted
+)
+```
+
+#### Settlement Tracking Functions (New!)
+```solidity
+// Get bills that haven't been settled yet
+function getUnsettledBills() external view returns (Bill[] memory)
+
+// Get bills settled in a specific settlement
+function getBillsBySettlement(uint256 _settlementId) external view returns (Bill[] memory)
+```
+
+### Enhanced Bill Structure
 ```solidity
 struct Bill {
     uint256 id;              // Unique bill ID
@@ -261,6 +324,7 @@ struct Bill {
     address[] participants;  // Who participated in the expense
     uint256[] amounts;       // Exact amount each participant owes
     uint256 timestamp;       // When bill was created (block.timestamp)
+    uint256 settlementId;    // ID of settlement that cleared this bill (0 = unsettled)
 }
 ```
 
@@ -321,6 +385,32 @@ await group.write.approveSettlement();
 const amountOwed = debtorAmounts[debtorIndex];
 await usdc.write.approve([groupAddress, amountOwed]);
 await group.write.fundSettlement();
+
+// === NEW: Gamble Feature ===
+
+// Propose a gamble (alternative to normal settlement)
+await group.write.proposeGamble();
+
+// Vote on a gamble
+await group.write.voteOnGamble([true]); // Accept
+// await group.write.voteOnGamble([false]); // Reject
+
+// Check gamble status
+const [active, proposer, voteCount, totalMembers, hasVoted] = await group.read.getGambleStatus();
+console.log(`Gamble active: ${active}, Votes: ${voteCount}/${totalMembers}`);
+
+// Cancel gamble (only proposer)
+await group.write.cancelGamble();
+
+// === NEW: Settlement Tracking ===
+
+// Get unsettled bills
+const unsettledBills = await group.read.getUnsettledBills();
+console.log(`${unsettledBills.length} bills pending settlement`);
+
+// Get bills from a specific settlement
+const settlementBills = await group.read.getBillsBySettlement([1]); // Settlement ID 1
+console.log(`Settlement 1 included ${settlementBills.length} bills`);
 ```
 
 ### React Hook Examples
@@ -366,6 +456,64 @@ function useSettlementStatus(groupAddress: string) {
     }, [groupAddress]);
 
     return { canSettle, settlementActive };
+}
+
+// Custom hook for gamble feature (NEW!)
+function useGambleStatus(groupAddress: string) {
+    const [gambleStatus, setGambleStatus] = useState({
+        active: false,
+        proposer: '',
+        voteCount: 0,
+        totalMembers: 0,
+        hasVoted: false
+    });
+    
+    useEffect(() => {
+        async function fetchGambleStatus() {
+            const [active, proposer, voteCount, totalMembers, hasVoted] = await group.read.getGambleStatus();
+            setGambleStatus({
+                active,
+                proposer,
+                voteCount: Number(voteCount),
+                totalMembers: Number(totalMembers),
+                hasVoted
+            });
+        }
+        fetchGambleStatus();
+    }, [groupAddress]);
+
+    return gambleStatus;
+}
+
+// Custom hook for bill tracking (NEW!)
+function useBillTracking(groupAddress: string) {
+    const [unsettledBills, setUnsettledBills] = useState<Bill[]>([]);
+    const [settlementHistory, setSettlementHistory] = useState<{[key: number]: Bill[]}>({});
+    
+    useEffect(() => {
+        async function fetchBillData() {
+            const unsettled = await group.read.getUnsettledBills();
+            setUnsettledBills(unsettled);
+            
+            // Fetch settlement history (example for settlements 1-5)
+            const history: {[key: number]: Bill[]} = {};
+            for (let i = 1; i <= 5; i++) {
+                try {
+                    const settlementBills = await group.read.getBillsBySettlement([i]);
+                    if (settlementBills.length > 0) {
+                        history[i] = settlementBills;
+                    }
+                } catch (error) {
+                    // Settlement doesn't exist yet
+                    break;
+                }
+            }
+            setSettlementHistory(history);
+        }
+        fetchBillData();
+    }, [groupAddress]);
+
+    return { unsettledBills, settlementHistory };
 }
 ```
 
