@@ -34,7 +34,8 @@ export function HeaderBar() {
               className={styles.addressBookButton}
               title="Address Book"
             >
-              📇
+              <span className={styles.addressBookIcon}>📇</span>
+              <span className={styles.addressBookText}>Addresses</span>
             </button>
             
             <Wallet>

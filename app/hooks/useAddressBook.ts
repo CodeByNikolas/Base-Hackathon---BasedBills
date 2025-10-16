@@ -59,11 +59,11 @@ export function useAddressBook() {
 
   const getAllEntries = useCallback(() => {
     return getAllAddressBookEntries();
-  }, []);
+  }, [addressBook]);
 
   const search = useCallback((query: string) => {
     return searchAddressBook(query);
-  }, []);
+  }, [addressBook]);
 
   return {
     addressBook,
@@ -189,7 +189,7 @@ export function useBatchDisplayNames(addresses: `0x${string}`[]) {
       setDisplayNames({});
       setIsLoading(false);
     }
-  }, [addresses, addressBook]);
+  }, [addresses.join(','), Object.keys(addressBook).join(',')]);
 
   const getDisplayNameForAddress = useCallback((address: `0x${string}`) => {
     return displayNames[address.toLowerCase()] || getDisplayName(address);

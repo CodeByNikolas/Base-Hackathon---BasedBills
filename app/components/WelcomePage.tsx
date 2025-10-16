@@ -3,7 +3,7 @@ import {
   ConnectWallet,
   Wallet,
 } from "@coinbase/onchainkit/wallet";
-import styles from "../page.module.css";
+import styles from "./WelcomePage.module.css";
 
 export function WelcomePage() {
   return (
