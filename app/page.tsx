@@ -6,36 +6,40 @@ import { WelcomePage } from "./components/WelcomePage";
 import { HeaderBar } from "./components/HeaderBar";
 import { GroupCard } from "./components/GroupCard";
 import { useUserGroups, useMultipleGroupsData } from "./hooks/useGroups";
-import { 
-  calculateOutstandingBalance, 
+import {
+  calculateOutstandingBalance,
   formatUSDCWithSymbol,
   sortGroupsByActivity,
-  filterGroupsByStatus 
+  filterGroupsByStatus
 } from "./utils/groupUtils";
 import { useState } from "react";
 
+/**
+ * Main page component that shows either the welcome page (for non-connected users)
+ * or the groups dashboard (for connected users)
+ */
 export default function Home() {
   const { isConnected } = useAccount();
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled' | 'pending-settlement'>('all');
 
-  // Get user's groups
-  const { 
-    groupAddresses, 
-    groupCount, 
-    isLoading: isLoadingAddresses, 
+  // Get user's groups (only if connected)
+  const {
+    groupAddresses,
+    groupCount,
+    isLoading: isLoadingAddresses,
     error: addressesError,
-    refetch: refetchAddresses 
+    refetch: refetchAddresses
   } = useUserGroups();
 
-  // Get detailed data for all groups
-  const { 
-    groupsData, 
-    isLoading: isLoadingGroupsData, 
+  // Get detailed data for all groups (only if connected)
+  const {
+    groupsData,
+    isLoading: isLoadingGroupsData,
     error: groupsDataError,
-    refetch: refetchGroupsData 
+    refetch: refetchGroupsData
   } = useMultipleGroupsData(groupAddresses);
 
-  // Welcome screen for non-connected users
+  // Show welcome page if wallet is not connected
   if (!isConnected) {
     return <WelcomePage />;
   }
@@ -57,13 +61,12 @@ export default function Home() {
     refetchGroupsData();
   };
 
-  // Main app for connected users
   return (
     <div className={styles.container}>
       <HeaderBar />
-      
+
       <main className={styles.main}>
-        <div className={styles.content}>
+      <div className={styles.content}>
           {/* Header Section */}
           <div className={styles.header}>
             <div className={styles.titleSection}>
@@ -72,7 +75,7 @@ export default function Home() {
                 Manage your expense groups and settle bills onchain
               </p>
             </div>
-            
+
             {/* Overall Balance Summary */}
             {groupsData.length > 0 && (
               <div className={styles.balanceSummary}>
@@ -96,8 +99,8 @@ export default function Home() {
                       outstandingBalance.netBalance < 0n ? styles.negative :
                       styles.neutral
                     }`}>
-                      {formatUSDCWithSymbol(outstandingBalance.netBalance < 0n 
-                        ? -outstandingBalance.netBalance 
+                      {formatUSDCWithSymbol(outstandingBalance.netBalance < 0n
+                        ? -outstandingBalance.netBalance
                         : outstandingBalance.netBalance)}
                       {outstandingBalance.netBalance < 0n && ' owed'}
                       {outstandingBalance.netBalance > 0n && ' owed to you'}
@@ -151,11 +154,11 @@ export default function Home() {
                         🔄
                       </button>
                     </div>
-                    
+
                     {/* Status Filter */}
                     <div className={styles.filterSection}>
                       <label className={styles.filterLabel}>Filter:</label>
-                      <select 
+                      <select
                         className={styles.filterSelect}
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -186,7 +189,7 @@ export default function Home() {
                   {filteredGroups.length === 0 && groupsData.length > 0 && (
                     <div className={styles.noFilterResults}>
                       <p>No groups match the selected filter.</p>
-                      <button 
+                      <button
                         className={styles.clearFilterButton}
                         onClick={() => setStatusFilter('all')}
                       >
@@ -198,7 +201,7 @@ export default function Home() {
               )}
             </>
           )}
-        </div>
+      </div>
       </main>
     </div>
   );

@@ -160,7 +160,7 @@ export function useDisplayName(
 /**
  * Hook for batch resolving multiple addresses
  */
-export function useBatchDisplayNames(addresses: `0x${string}`[]) {
+export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?: number) {
   const [displayNames, setDisplayNames] = useState<{ [address: string]: string }>({});
   const { addressBook } = useAddressBook();
 
@@ -193,7 +193,7 @@ export function useBatchDisplayNames(addresses: `0x${string}`[]) {
     } else {
       setDisplayNames({});
     }
-  }, [addresses.join(','), Object.keys(addressBook).join(',')]);
+  }, [addresses.join(','), Object.keys(addressBook).join(','), refreshTrigger]);
 
   const getDisplayNameForAddress = useCallback((address: `0x${string}`) => {
     return displayNames[address.toLowerCase()] || getDisplayName(address);

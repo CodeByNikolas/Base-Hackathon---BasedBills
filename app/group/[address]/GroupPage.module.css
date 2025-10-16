@@ -369,6 +369,102 @@
   font-family: 'Monaco', 'Menlo', monospace;
 }
 
+.memberAddressSection {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.memberAddressWithAction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.nameInputContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.nameInput {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.8rem;
+  font-family: inherit;
+}
+
+.nameInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.nameInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.nameInputActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.saveNameButton,
+.cancelNameButton,
+.addNameButton {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+}
+
+.addNameButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.addNameButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.saveNameButton {
+  background: #4ade80;
+  color: white;
+}
+
+.saveNameButton:hover:not(:disabled) {
+  background: #22c55e;
+}
+
+.saveNameButton:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+}
+
+.cancelNameButton {
+  background: #ef4444;
+  color: white;
+}
+
+.cancelNameButton:hover {
+  background: #dc2626;
+}
+
 .memberBalance {
   font-weight: 600;
   font-size: 1.1rem;

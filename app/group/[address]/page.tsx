@@ -6,9 +6,11 @@ import { useAccount } from 'wagmi';
 import { HeaderBar } from '../../components/HeaderBar';
 import { Modal } from '../../components/Modal';
 import { AddBillModal } from '../../components/AddBillModal';
+import { WalletGuard } from '../../components/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
-import { useBatchDisplayNames } from '../../hooks/useAddressBook';
+import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
 import { formatUnits } from 'viem';
+import { hasCustomName } from '../../utils/addressBook';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
@@ -20,9 +22,17 @@ export default function GroupPage() {
   const { groupData, isLoading, error } = useGroupData(groupAddress);
   const [activeTab, setActiveTab] = useState<'overview' | 'bills' | 'members'>('overview');
   const [showAddBillModal, setShowAddBillModal] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Get display names for all members
-  const memberDisplayNames = useBatchDisplayNames(groupData?.members.map((m: { address: `0x${string}` }) => m.address) || []);
+  const memberDisplayNames = useBatchDisplayNames(
+    groupData?.members.map((m: { address: `0x${string}` }) => m.address) || [],
+    refreshTrigger
+  );
+
+  const handleNameAdded = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   useEffect(() => {
     if (error) {
@@ -62,10 +72,11 @@ export default function GroupPage() {
   const isUserDebtor = userBalance < 0n;
 
   return (
-    <div className={styles.container}>
-      <HeaderBar />
+    <WalletGuard>
+      <div className={styles.container}>
+        <HeaderBar />
 
-      {/* Group Header */}
+        {/* Group Header */}
       <div className={styles.groupHeader}>
         <div className={styles.groupInfo}>
           <h1 className={styles.groupName}>{groupData.name}</h1>
@@ -127,7 +138,7 @@ export default function GroupPage() {
       <div className={styles.tabContent}>
         {activeTab === 'overview' && <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />}
         {activeTab === 'bills' && <BillsTab bills={groupData.bills} />}
-        {activeTab === 'members' && <MembersTab members={groupData.members} memberDisplayNames={memberDisplayNames} />}
+        {activeTab === 'members' && <MembersTab members={groupData.members} memberDisplayNames={memberDisplayNames} userAddress={userAddress} onNameAdded={handleNameAdded} />}
       </div>
 
       {/* Action Buttons */}
@@ -151,14 +162,15 @@ export default function GroupPage() {
         )}
       </div>
 
-      {/* Add Bill Modal */}
-      <AddBillModal
-        isOpen={showAddBillModal}
-        onClose={() => setShowAddBillModal(false)}
-        groupAddress={groupAddress}
-        groupMembers={groupData.members}
-      />
-    </div>
+        {/* Add Bill Modal */}
+        <AddBillModal
+          isOpen={showAddBillModal}
+          onClose={() => setShowAddBillModal(false)}
+          groupAddress={groupAddress}
+          groupMembers={groupData.members}
+        />
+      </div>
+    </WalletGuard>
   );
 }
 
@@ -235,7 +247,33 @@ function BillsTab({ bills }: { bills: any[] }) {
 }
 
 // Members Tab Component
-function MembersTab({ members, memberDisplayNames }: { members: any[], memberDisplayNames: any }) {
+function MembersTab({ members, memberDisplayNames, userAddress, onNameAdded }: { members: any[], memberDisplayNames: any, userAddress?: `0x${string}`, onNameAdded?: () => void }) {
+  const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
+  const [nameInput, setNameInput] = useState('');
+  const { addAddress } = useAddressBook();
+
+  const handleAddName = (address: `0x${string}`) => {
+    setEditingAddress(address);
+    setNameInput('');
+  };
+
+  const handleSaveName = () => {
+    if (editingAddress && nameInput.trim()) {
+      addAddress(editingAddress, nameInput.trim());
+      setEditingAddress(null);
+      setNameInput('');
+      // Trigger parent component re-render
+      if (onNameAdded) {
+        onNameAdded();
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAddress(null);
+    setNameInput('');
+  };
+
   return (
     <div className={styles.membersTab}>
       <div className={styles.membersList}>
@@ -243,6 +281,7 @@ function MembersTab({ members, memberDisplayNames }: { members: any[], memberDis
           const balance = formatUnits(member.balance, 6);
           const isPositive = member.balance > 0n;
           const isCurrentUser = member.address.toLowerCase() === userAddress?.toLowerCase();
+          const hasName = hasCustomName(member.address);
           const displayName = isCurrentUser
             ? 'You'
             : (memberDisplayNames.displayNames?.[member.address.toLowerCase()] || `${member.address.slice(0, 6)}...${member.address.slice(-4)}`);
@@ -252,7 +291,52 @@ function MembersTab({ members, memberDisplayNames }: { members: any[], memberDis
               <div className={styles.memberInfo}>
                 <div className={styles.memberName}>{displayName}</div>
                 {!isCurrentUser && (
-                  <div className={styles.memberAddress}>{member.address.slice(0, 6)}...{member.address.slice(-4)}</div>
+                  <div className={styles.memberAddressSection}>
+                    {editingAddress === member.address ? (
+                      <div className={styles.nameInputContainer}>
+                        <input
+                          type="text"
+                          value={nameInput}
+                          onChange={(e) => setNameInput(e.target.value)}
+                          placeholder="Enter name..."
+                          className={styles.nameInput}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveName();
+                            if (e.key === 'Escape') handleCancelEdit();
+                          }}
+                        />
+                        <div className={styles.nameInputActions}>
+                          <button
+                            onClick={handleSaveName}
+                            className={styles.saveNameButton}
+                            disabled={!nameInput.trim()}
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className={styles.cancelNameButton}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.memberAddressWithAction}>
+                        <span className={styles.memberAddress}>{member.address.slice(0, 6)}...{member.address.slice(-4)}</span>
+                        {!hasName && (
+                          <button
+                            onClick={() => handleAddName(member.address)}
+                            className={styles.addNameButton}
+                            title="Add name for this address"
+                          >
+                            + Name
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <div className={`${styles.memberBalance} ${isPositive ? styles.positive : styles.negative}`}>
