@@ -1,32 +1,33 @@
 import { network } from "hardhat";
 import { formatUnits, parseUnits } from "viem";
+import fs from 'fs';
+import path from 'path';
 
-console.log("🎲 Testing BasedBills Gamble Feature...");
+async function main() {
+  console.log("🎲 Testing BasedBills Gamble Feature...");
 
-const { viem } = await network.connect({
-  network: "baseSepolia",
-  chainType: "op",
-});
+  const { viem } = await network.connect({
+    network: "baseSepolia",
+    chainType: "op",
+  });
 
-const publicClient = await viem.getPublicClient();
-const walletClients = await viem.getWalletClients();
+  const publicClient = await viem.getPublicClient();
+  const walletClients = await viem.getWalletClients();
 
-if (walletClients.length < 2) {
-  console.log("❌ Need at least 2 wallet accounts for gamble testing");
-  process.exit(1);
-}
+  if (walletClients.length < 2) {
+    console.log("❌ Need at least 2 wallet accounts for gamble testing");
+    process.exit(1);
+  }
 
-const alice = walletClients[0];
-const bob = walletClients[1];
+  const alice = walletClients[0];
+  const bob = walletClients[1];
 
-console.log("👤 Alice:", alice.account.address);
-console.log("👤 Bob:", bob.account.address);
+  console.log("👤 Alice:", alice.account.address);
+  console.log("👤 Bob:", bob.account.address);
 
-// Load contract addresses from deployments.json
-const fs = require('fs');
-const path = require('path');
-const deploymentsPath = path.join(process.cwd(), 'deployments.json');
-const deployments = JSON.parse(fs.readFileSync(deploymentsPath, 'utf8'));
+  // Load contract addresses from deployments.json
+  const deploymentsPath = path.join(process.cwd(), 'deployments.json');
+  const deployments = JSON.parse(fs.readFileSync(deploymentsPath, 'utf8'));
 
 const contractAddresses = {
   groupFactory: deployments.groupFactory,
@@ -62,11 +63,13 @@ try {
 
   const group = await viem.getContractAt("Group", newGroupAddress);
 
-  // Step 2: Add multiple bills to create debts
+  // Step 2: Add some bills to create debts
   console.log("\n2️⃣ Adding bills to create debts...");
+  const lunchAmount = parseUnits("60", 6); // Alice pays 60
+  const groceriesAmount = parseUnits("90", 6); // Bob pays 90
+  const uberAmount = parseUnits("25", 6);
   
   // Alice pays for lunch - $60 split equally
-  const lunchAmount = parseUnits("60", 6);
   const lunchHash = await group.write.addBill([
     "Team Lunch",
     lunchAmount,
@@ -77,19 +80,18 @@ try {
   
   await new Promise(resolve => setTimeout(resolve, 3000));
 
-  // Bob pays for groceries - $80 split equally  
-  const groceryAmount = parseUnits("80", 6);
+  // Bob pays for groceries - $90 split equally
   const groceryHash = await group.write.addBill([
-    "Weekly Groceries", 
-    groceryAmount,
+    "Weekly Groceries",
+    groceriesAmount,
     [alice.account.address, bob.account.address]
   ], { account: bob.account });
   await publicClient.waitForTransactionReceipt({ hash: groceryHash });
-  console.log("✅ Bob paid for groceries ($80)");
+  console.log("✅ Bob paid for groceries ($90)");
   
   await new Promise(resolve => setTimeout(resolve, 3000));
 
-  // Alice pays for Uber - $25 custom split (Alice: $15, Bob: $10)
+  // Alice pays for Uber - $25 (Alice: $15, Bob: $10)
   const uberHash = await group.write.addCustomBill([
     "Uber Ride",
     [alice.account.address, bob.account.address],
@@ -138,7 +140,7 @@ try {
   await new Promise(resolve => setTimeout(resolve, 3000));
 
   // Check gamble status
-  const gambleStatus = await group.read.getGambleStatus([alice.account.address]);
+  const gambleStatus = await group.read.getGambleStatus();
   console.log("🎲 Gamble Status:");
   console.log(`   Active: ${gambleStatus[0]}`);
   console.log(`   Proposer: ${gambleStatus[1] === alice.account.address ? "Alice" : "Bob"}`);
@@ -156,7 +158,7 @@ try {
   await new Promise(resolve => setTimeout(resolve, 3000));
 
   // Check status after Alice's vote
-  const statusAfterAlice = await group.read.getGambleStatus([alice.account.address]);
+  const statusAfterAlice = await group.read.getGambleStatus();
   console.log(`🗳️ After Alice's vote: ${statusAfterAlice[2]}/${statusAfterAlice[3]} votes`);
 
   // Bob votes yes (this should trigger gamble execution)
@@ -171,7 +173,7 @@ try {
   console.log("\n7️⃣ Checking results after gamble execution...");
   
   // Check if gamble is still active (should be false)
-  const finalGambleStatus = await group.read.getGambleStatus([alice.account.address]);
+  const finalGambleStatus = await group.read.getGambleStatus();
   console.log(`🎲 Gamble still active: ${finalGambleStatus[0]}`);
 
   // Check new balances
@@ -255,3 +257,9 @@ try {
   }
   throw error;
 }
+}
+
+main().catch((error) => {
+  console.error("❌ Test script failed:", error);
+  process.exit(1);
+});
