@@ -3,10 +3,10 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { HeaderBar } from '../../components/HeaderBar';
-import { Modal } from '../../components/Modal';
-import { AddBillModal } from '../../components/AddBillModal';
-import { WalletGuard } from '../../components/WalletGuard';
+import { HeaderBar } from '../../components/ui/HeaderBar';
+import { Modal } from '../../components/ui/Modal';
+import { AddBillModal } from '../../components/features/AddBillModal';
+import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
 import { formatUnits } from 'viem';

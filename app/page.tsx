@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { useAccount } from "wagmi";
 import styles from "./page.module.css";
-import { WelcomePage } from "./components/WelcomePage";
-import { HeaderBar } from "./components/HeaderBar";
-import { GroupCard } from "./components/GroupCard";
+import { WelcomePage } from "./components/features/WelcomePage";
+import { HeaderBar } from "./components/ui/HeaderBar";
+import { GroupCard } from "./components/features/GroupCard";
 import { useUserGroups, useMultipleGroupsData } from "./hooks/useGroups";
 import {
   calculateOutstandingBalance,

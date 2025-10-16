@@ -2,14 +2,14 @@
 import { useAccount } from 'wagmi';
 import Link from 'next/link';
 import styles from './GroupCard.module.css';
-import { GroupData } from '../utils/groupUtils';
+import { GroupData } from '../../utils/groupUtils';
 import {
   getUserGroupStatus,
   formatUSDCWithSymbol,
   getGroupActivitySummary,
   getRelativeTime,
-} from '../utils/groupUtils';
-import { useBatchDisplayNames } from '../hooks/useAddressBook';
+} from '../../utils/groupUtils';
+import { useBatchDisplayNames } from '../../hooks/useAddressBook';
 
 interface GroupCardProps {
   group: GroupData;

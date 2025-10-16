@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
-import { useDisplayName, useAddressBook } from '../hooks/useAddressBook';
-import { getBlockExplorerUrl } from '../config/contracts';
+import { useDisplayName, useAddressBook } from '../../hooks/useAddressBook';
+import { getBlockExplorerUrl } from '../../config/contracts';
 import { useChainId } from 'wagmi';
 import styles from './AddressDisplay.module.css';
 

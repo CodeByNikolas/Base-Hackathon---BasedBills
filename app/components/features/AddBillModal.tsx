@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
-import { Modal } from './Modal';
-import { GROUP_ABI } from '../config/contracts';
+import { Modal } from '../ui/Modal';
+import { GROUP_ABI } from '../../config/contracts';
 import styles from './AddBillModal.module.css';
 
 interface AddBillModalProps {
