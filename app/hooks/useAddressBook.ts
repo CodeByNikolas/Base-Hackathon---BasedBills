@@ -205,7 +205,7 @@ export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?
     } else {
       setDisplayNames({});
     }
-  }, [addresses.join(','), Object.keys(addressBook).join(','), refreshTrigger]);
+  }, [JSON.stringify(addresses), Object.keys(addressBook).join(','), refreshTrigger]);
 
   const getDisplayNameForAddress = useCallback((address: `0x${string}`) => {
     return displayNames[address.toLowerCase()] || getDisplayName(address);

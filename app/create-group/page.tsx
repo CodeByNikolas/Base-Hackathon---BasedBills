@@ -57,6 +57,8 @@ export default function CreateGroupPage() {
 
     if (newSelected.has(address)) {
       newSelected.delete(address);
+      // Remove from members if it was added from address book
+      setMembers(members.filter(member => member !== address));
     } else {
       newSelected.add(address);
       // Add to members if not already there
@@ -71,6 +73,15 @@ export default function CreateGroupPage() {
   const getAllMembers = () => {
     const addressBookMembers = Array.from(selectedAddressBookMembers);
     return [...new Set([...members, ...addressBookMembers])];
+  };
+
+  const getDisplayName = (address: string) => {
+    if (address.toLowerCase() === userAddress?.toLowerCase()) {
+      return 'You';
+    }
+
+    const addressBookEntry = addressBook[address.toLowerCase()];
+    return addressBookEntry?.name || `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   const handleCreateGroup = async () => {
@@ -134,6 +145,17 @@ export default function CreateGroupPage() {
     <WalletGuard>
       <div className={styles.container}>
         <HeaderBar />
+
+        {/* Back Button */}
+        <div className={styles.backButtonContainer}>
+          <button
+            onClick={() => router.push('/')}
+            className={styles.backButton}
+            title="Back to Groups"
+          >
+            ← Back to Groups
+          </button>
+        </div>
 
         <main className={styles.main}>
           <div className={styles.content}>
@@ -238,8 +260,7 @@ export default function CreateGroupPage() {
                     <label className={styles.label}>Group Members ({getAllMembers().length})</label>
                     <div className={styles.membersList}>
                       {getAllMembers().map((member) => {
-                        const addressBookEntry = addressBook[member.toLowerCase()];
-                        const displayName = addressBookEntry?.name || `${member.slice(0, 6)}...${member.slice(-4)}`;
+                        const displayName = getDisplayName(member);
 
                         return (
                           <div key={member} className={styles.memberItem}>

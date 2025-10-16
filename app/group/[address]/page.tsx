@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
 import { Modal } from '../../components/ui/Modal';
@@ -23,12 +23,32 @@ export default function GroupPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'bills' | 'members'>('overview');
   const [showAddBillModal, setShowAddBillModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
+  const [nameInput, setNameInput] = useState('');
 
-  // Get display names for all members
-  const memberDisplayNames = useBatchDisplayNames(
-    groupData?.members.map((m: { address: `0x${string}` }) => m.address) || [],
-    refreshTrigger
+  // Get display names for all members - ensure consistent hook call
+  const membersAddresses = useMemo(() =>
+    groupData?.members?.map((m: { address: `0x${string}` }) => m.address) || [],
+    [groupData?.members]
   );
+  const memberDisplayNames = useBatchDisplayNames(membersAddresses, refreshTrigger);
+  const { addAddress } = useAddressBook();
+
+  const handleNameAdded = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  // Error logging effect - must be before any conditional returns
+  useEffect(() => {
+    if (error) {
+      console.error('Error loading group:', error);
+    }
+  }, [error]);
+
+  // Calculate user balance only if we have the data
+  const userBalance = groupData?.members?.find(m => m.address.toLowerCase() === userAddress?.toLowerCase())?.balance || 0n;
+  const isUserCreditor = userBalance > 0n;
+  const isUserDebtor = userBalance < 0n;
 
   // Show loading state while display names are initializing
   if (!memberDisplayNames.isInitialized) {
@@ -45,16 +65,7 @@ export default function GroupPage() {
     );
   }
 
-  const handleNameAdded = () => {
-    setRefreshTrigger(prev => prev + 1);
-  };
-
-  useEffect(() => {
-    if (error) {
-      console.error('Error loading group:', error);
-    }
-  }, [error]);
-
+  // Show loading state while group data is loading
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -67,6 +78,7 @@ export default function GroupPage() {
     );
   }
 
+  // Show error state if there's an error or no group data
   if (error || !groupData) {
     return (
       <div className={styles.container}>
@@ -81,10 +93,6 @@ export default function GroupPage() {
       </div>
     );
   }
-
-  const userBalance = groupData.members.find(m => m.address.toLowerCase() === userAddress?.toLowerCase())?.balance || 0n;
-  const isUserCreditor = userBalance > 0n;
-  const isUserDebtor = userBalance < 0n;
 
   return (
     <WalletGuard>
@@ -164,7 +172,17 @@ export default function GroupPage() {
       <div className={styles.tabContent}>
         {activeTab === 'overview' && <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />}
         {activeTab === 'bills' && <BillsTab bills={groupData.bills} />}
-        {activeTab === 'members' && <MembersTab members={groupData.members} memberDisplayNames={memberDisplayNames} userAddress={userAddress} onNameAdded={handleNameAdded} />}
+        {activeTab === 'members' && <MembersTab
+          members={groupData.members}
+          memberDisplayNames={memberDisplayNames}
+          userAddress={userAddress}
+          onNameAdded={handleNameAdded}
+          editingAddress={editingAddress}
+          setEditingAddress={setEditingAddress}
+          nameInput={nameInput}
+          setNameInput={setNameInput}
+          addAddress={addAddress}
+        />}
       </div>
 
       {/* Action Buttons */}
@@ -273,10 +291,27 @@ function BillsTab({ bills }: { bills: any[] }) {
 }
 
 // Members Tab Component
-function MembersTab({ members, memberDisplayNames, userAddress, onNameAdded }: { members: any[], memberDisplayNames: any, userAddress?: `0x${string}`, onNameAdded?: () => void }) {
-  const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
-  const [nameInput, setNameInput] = useState('');
-  const { addAddress } = useAddressBook();
+function MembersTab({
+  members,
+  memberDisplayNames,
+  userAddress,
+  onNameAdded,
+  editingAddress,
+  setEditingAddress,
+  nameInput,
+  setNameInput,
+  addAddress
+}: {
+  members: any[],
+  memberDisplayNames: any,
+  userAddress?: `0x${string}`,
+  onNameAdded?: () => void,
+  editingAddress: `0x${string}` | null,
+  setEditingAddress: (address: `0x${string}` | null) => void,
+  nameInput: string,
+  setNameInput: (name: string) => void,
+  addAddress: (address: `0x${string}`, name: string) => void
+}) {
 
   const handleAddName = (address: `0x${string}`) => {
     setEditingAddress(address);

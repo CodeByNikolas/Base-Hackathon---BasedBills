@@ -3,6 +3,28 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
+.backButtonContainer {
+  padding: 0 20px;
+  margin-bottom: 1rem;
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
 .main {
   padding: 0 20px;
 }
@@ -434,6 +456,18 @@
 
   .successContent p {
     color: #9ca3af;
+  }
+}
+
+/* Dark mode support for back button */
+@media (prefers-color-scheme: dark) {
+  .backButtonContainer .backButton {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .backButtonContainer .backButton:hover {
+    background: rgba(51, 65, 85, 0.9);
   }
 }
 
