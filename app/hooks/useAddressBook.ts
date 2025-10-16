@@ -21,17 +21,27 @@ import {
 export function useAddressBook() {
   const [addressBook, setAddressBook] = useState<{ [address: string]: AddressBookEntry }>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load address book on mount
+  // Load address book on mount, but only on client side
   useEffect(() => {
+    // Skip during SSR
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      setIsInitialized(true);
+      return;
+    }
+
     const loadAddressBook = () => {
       try {
         const book = getAddressBook();
         setAddressBook(book);
       } catch (error) {
         console.error('Error loading address book:', error);
+        setAddressBook({});
       } finally {
         setIsLoading(false);
+        setIsInitialized(true);
       }
     };
 
@@ -69,6 +79,7 @@ export function useAddressBook() {
   return {
     addressBook,
     isLoading,
+    isInitialized,
     addAddress,
     removeAddress,
     updateAddress,
@@ -138,7 +149,7 @@ export function useDisplayName(
   } = {}
 ) {
   const { ensName } = useEnsResolver(address);
-  const { getEntry } = useAddressBook();
+  const { getEntry, isInitialized } = useAddressBook();
 
   const displayName = address ? getDisplayName(address, {
     ensName, // Use ENS name when available, fallback to address
@@ -154,6 +165,7 @@ export function useDisplayName(
     customName: entry?.name,
     hasCustomName: hasCustom,
     isLoading: false, // Never show loading state
+    isInitialized,
   };
 }
 
@@ -162,7 +174,7 @@ export function useDisplayName(
  */
 export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?: number) {
   const [displayNames, setDisplayNames] = useState<{ [address: string]: string }>({});
-  const { addressBook } = useAddressBook();
+  const { addressBook, isInitialized } = useAddressBook();
 
   useEffect(() => {
     const resolveNames = async () => {
@@ -202,6 +214,7 @@ export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?
   return {
     displayNames,
     isLoading: false, // Never show loading state
+    isInitialized,
     getDisplayNameForAddress,
   };
 }

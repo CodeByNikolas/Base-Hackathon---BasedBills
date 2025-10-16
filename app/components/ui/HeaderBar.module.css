@@ -22,11 +22,33 @@
   align-items: center;
 }
 
+.logoLink {
+  text-decoration: none;
+  color: inherit;
+}
+
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
   color: #0052ff;
   margin: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.logo:hover {
+  color: #0041cc;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .logo {
+    color: #60a5fa;
+  }
+
+  .logo:hover {
+    color: #3b82f6;
+  }
 }
 
 .nav {

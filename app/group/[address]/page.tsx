@@ -30,6 +30,21 @@ export default function GroupPage() {
     refreshTrigger
   );
 
+  // Show loading state while display names are initializing
+  if (!memberDisplayNames.isInitialized) {
+    return (
+      <WalletGuard>
+        <div className={styles.container}>
+          <HeaderBar />
+          <div className={styles.loadingState}>
+            <div className={styles.spinner}></div>
+            <p>Loading display names...</p>
+          </div>
+        </div>
+      </WalletGuard>
+    );
+  }
+
   const handleNameAdded = () => {
     setRefreshTrigger(prev => prev + 1);
   };
@@ -76,12 +91,23 @@ export default function GroupPage() {
       <div className={styles.container}>
         <HeaderBar />
 
-        {/* Group Header */}
-      <div className={styles.groupHeader}>
-        <div className={styles.groupInfo}>
-          <h1 className={styles.groupName}>{groupData.name}</h1>
-          <p className={styles.groupAddress}>{groupAddress.slice(0, 6)}...{groupAddress.slice(-4)}</p>
+        {/* Back Button */}
+        <div className={styles.backButtonContainer}>
+          <button
+            onClick={() => router.push('/')}
+            className={styles.backButton}
+            title="Back to Groups"
+          >
+            ← Back
+          </button>
         </div>
+
+        {/* Group Header */}
+        <div className={styles.groupHeader}>
+          <div className={styles.groupInfo}>
+            <h1 className={styles.groupName}>{groupData.name}</h1>
+            <p className={styles.groupAddress}>{groupAddress.slice(0, 6)}...{groupAddress.slice(-4)}</p>
+          </div>
 
         <div className={styles.groupStats}>
           <div className={styles.stat}>

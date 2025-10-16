@@ -23,29 +23,46 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const { address: userAddress } = useAccount();
-  const { getAllEntries, search, addAddress, removeAddress } = useAddressBook();
+  const addressBookData = useAddressBook();
+  const { getAllEntries, search, addAddress, removeAddress, isInitialized } = addressBookData;
   const stats = useAddressBookStats();
-  
-  // Get user's groups to suggest addresses
+
+  // Get user's groups to suggest addresses (only if address book is initialized)
   const { groupAddresses } = useUserGroups();
   const { groupsData } = useMultipleGroupsData(groupAddresses);
-  
+
   // Get suggested addresses from groups (addresses without custom names, excluding user's own address)
   const suggestedAddresses = useMemo(() => {
     const allAddresses = new Set<`0x${string}`>();
-    
+
     groupsData.forEach(group => {
       group.members.forEach(member => {
         // Exclude user's own address and addresses that already have custom names
-        if (member.address.toLowerCase() !== userAddress?.toLowerCase() && 
+        if (member.address.toLowerCase() !== userAddress?.toLowerCase() &&
             !hasCustomName(member.address)) {
           allAddresses.add(member.address);
         }
       });
     });
-    
+
     return Array.from(allAddresses);
   }, [groupsData, userAddress]);
+
+  // Show loading state while address book is initializing
+  if (!isInitialized) {
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <div className={styles.loadingState}>
+              <div className={styles.spinner}></div>
+              <p>Loading address book...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const entries = searchQuery ? search(searchQuery) : getAllEntries();
 

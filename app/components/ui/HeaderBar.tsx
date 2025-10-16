@@ -1,5 +1,7 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ConnectWallet,
   Wallet,
@@ -21,12 +23,15 @@ import styles from "./HeaderBar.module.css";
 
 export function HeaderBar() {
   const [showAddressBook, setShowAddressBook] = useState(false);
+  const router = useRouter();
 
   return (
     <>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.logo}>BasedBills</h1>
+          <Link href="/" className={styles.logoLink}>
+            <h1 className={styles.logo}>BasedBills</h1>
+          </Link>
           
           <div className={styles.nav}>
             <button

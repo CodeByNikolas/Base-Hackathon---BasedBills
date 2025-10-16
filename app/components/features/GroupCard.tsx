@@ -9,7 +9,6 @@ import {
   getGroupActivitySummary,
   getRelativeTime,
 } from '../../utils/groupUtils';
-import { useBatchDisplayNames } from '../../hooks/useAddressBook';
 
 interface GroupCardProps {
   group: GroupData;

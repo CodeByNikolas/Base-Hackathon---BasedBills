@@ -4,6 +4,13 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  }
+}
+
 .main {
   padding: 0 20px;
 }
@@ -54,6 +61,14 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .balanceCard {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
 .balanceItem {
   display: flex;
   flex-direction: column;
@@ -65,6 +80,13 @@
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .balanceLabel {
+    color: #9ca3af;
+  }
 }
 
 .balanceValue {
@@ -86,13 +108,21 @@
 
 /* Loading State */
 .loadingState {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   padding: 60px 40px;
   text-align: center;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   max-width: 500px;
   margin: 0 auto;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .loadingState {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .spinner {
@@ -105,6 +135,14 @@
   margin: 0 auto 20px;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .spinner {
+    border-color: #374151;
+    border-top-color: #60a5fa;
+  }
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -112,13 +150,21 @@
 
 /* Error State */
 .errorState {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   padding: 60px 40px;
   text-align: center;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   max-width: 500px;
   margin: 0 auto;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .errorState {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .errorIcon {
@@ -135,6 +181,17 @@
 .errorState p {
   color: #6b7280;
   margin: 0 0 24px 0;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .errorState h3 {
+    color: #ef4444;
+  }
+
+  .errorState p {
+    color: #9ca3af;
+  }
 }
 
 .retryButton {
@@ -154,7 +211,7 @@
 
 /* Empty State */
 .emptyState {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   padding: 60px 40px;
   text-align: center;
@@ -180,6 +237,22 @@
   font-size: 1rem;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .emptyState {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .emptyState h3 {
+    color: #f9fafb;
+  }
+
+  .emptyState p {
+    color: #9ca3af;
+  }
+}
+
 .createButton {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -201,10 +274,18 @@
 
 /* Groups Section */
 .groupsSection {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   padding: 32px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .groupsSection {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .groupsHeader {
@@ -228,6 +309,13 @@
   margin: 0;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .groupsTitle h2 {
+    color: #f9fafb;
+  }
+}
+
 .refreshButton {
   background: none;
   border: none;
@@ -242,6 +330,13 @@
   background: #f3f4f6;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .refreshButton:hover {
+    background: #374151;
+  }
+}
+
 .filterSection {
   display: flex;
   align-items: center;
@@ -252,6 +347,13 @@
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .filterLabel {
+    color: #9ca3af;
+  }
 }
 
 .filterSelect {
@@ -267,6 +369,20 @@
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .filterSelect {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .filterSelect:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  }
 }
 
 /* Create Group Section */
@@ -311,6 +427,13 @@
   color: #6b7280;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .noFilterResults {
+    color: #9ca3af;
+  }
+}
+
 .clearFilterButton {
   background: #667eea;
   color: white;
@@ -325,6 +448,13 @@
 
 .clearFilterButton:hover {
   background: #5a67d8;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .clearFilterButton:hover {
+    background: #4338ca;
+  }
 }
 
 /* Mobile Responsive Design */
