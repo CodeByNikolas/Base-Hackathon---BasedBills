@@ -150,7 +150,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
 
     const groupName = groupNameResult.result as string;
     const memberAddresses = membersResult.result as `0x${string}`[];
-    const [memberAddressesFromBalances, memberBalances] = balancesResult.result as [`0x${string}`[], bigint[]];
+    const [_memberAddressesFromBalances, memberBalances] = balancesResult.result as [`0x${string}`[], bigint[]];
     
     // Create member objects with balances
     const members: GroupMember[] = memberAddresses.map((address, index) => ({
@@ -159,8 +159,17 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
     }));
 
     // Parse bills data
-    const allBills = billsResult.status === 'success' 
-      ? (billsResult.result as any[]).map(bill => ({
+    const allBills = billsResult.status === 'success'
+      ? (billsResult.result as Array<{
+          id: bigint;
+          description: string;
+          totalAmount: bigint;
+          payer: `0x${string}`;
+          participants: `0x${string}`[];
+          amounts: bigint[];
+          timestamp: bigint;
+          settlementId: bigint;
+        }>).map(bill => ({
           id: bill.id,
           description: bill.description,
           totalAmount: bill.totalAmount,
@@ -173,7 +182,16 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       : [];
 
     const unsettledBills = unsettledBillsResult.status === 'success'
-      ? (unsettledBillsResult.result as any[]).map(bill => ({
+      ? (unsettledBillsResult.result as Array<{
+          id: bigint;
+          description: string;
+          totalAmount: bigint;
+          payer: `0x${string}`;
+          participants: `0x${string}`[];
+          amounts: bigint[];
+          timestamp: bigint;
+          settlementId: bigint;
+        }>).map(bill => ({
           id: bill.id,
           description: bill.description,
           totalAmount: bill.totalAmount,
@@ -190,7 +208,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       : false;
 
     const gambleActive = gambleStatusResult.status === 'success'
-      ? (gambleStatusResult.result as any[])[0] as boolean
+      ? (gambleStatusResult.result as [boolean])[0]
       : false;
 
     // Calculate total owed from unsettled bills
@@ -221,7 +239,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
  * Hook to get data for multiple groups
  */
 export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefined) {
-  const { address: userAddress } = useAccount();
+  const { address: _userAddress } = useAccount();
 
   // Prepare contracts for all groups
   const contracts = useMemo(() => {
@@ -300,7 +318,7 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
 
       const groupName = groupNameResult.result as string;
       const memberAddresses = membersResult.result as `0x${string}`[];
-      const [, memberBalances] = balancesResult.result as [`0x${string}`[], bigint[]];
+      const [, memberBalances] = balancesResult.result as [unknown, bigint[]];
       
       const members: GroupMember[] = memberAddresses.map((address, index) => ({
         address,
@@ -308,7 +326,16 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
       }));
 
       const unsettledBills = unsettledBillsResult?.status === 'success'
-        ? (unsettledBillsResult.result as any[]).map(bill => ({
+        ? (unsettledBillsResult.result as Array<{
+            id: bigint;
+            description: string;
+            totalAmount: bigint;
+            payer: `0x${string}`;
+            participants: `0x${string}`[];
+            amounts: bigint[];
+            timestamp: bigint;
+            settlementId: bigint;
+          }>).map(bill => ({
             id: bill.id,
             description: bill.description,
             totalAmount: bill.totalAmount,

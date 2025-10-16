@@ -1,4 +1,4 @@
-import { normalize } from 'viem/ens';
+import { normalize as _normalize } from 'viem/ens';
 
 // Types for address book
 export interface AddressBookEntry {
@@ -240,7 +240,7 @@ export function importAddressBook(jsonData: string): boolean {
     // Validate the structure
     if (typeof imported !== 'object') return false;
     
-    for (const [address, entry] of Object.entries(imported)) {
+    for (const [_address, entry] of Object.entries(imported)) {
       if (typeof entry !== 'object' || entry === null || 
           !('address' in entry) || !('name' in entry) ||
           typeof entry.address !== 'string' || typeof entry.name !== 'string') {
@@ -270,7 +270,7 @@ export function isValidEnsName(name: string): boolean {
   try {
     // Basic validation for ENS names
     return /^[a-zA-Z0-9-]+\.(eth|base\.eth)$/.test(name) && name.length >= 7;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

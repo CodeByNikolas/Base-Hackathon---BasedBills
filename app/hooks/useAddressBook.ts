@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useEnsName } from 'wagmi';
-import { base, baseSepolia } from 'wagmi/chains';
+import { base, baseSepolia as _baseSepolia } from 'wagmi/chains';
 import {
   getAddressBook,
   addToAddressBook,
@@ -11,7 +11,7 @@ import {
   hasCustomName,
   getAllAddressBookEntries,
   searchAddressBook,
-  shortenAddress,
+  shortenAddress as _shortenAddress,
   type AddressBookEntry,
 } from '../utils/addressBook';
 
@@ -70,11 +70,11 @@ export function useAddressBook() {
 
   const getAllEntries = useCallback(() => {
     return getAllAddressBookEntries();
-  }, [addressBook]);
+  }, []);
 
   const search = useCallback((query: string) => {
     return searchAddressBook(query);
-  }, [addressBook]);
+  }, []);
 
   return {
     addressBook,
@@ -176,6 +176,9 @@ export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?
   const [displayNames, setDisplayNames] = useState<{ [address: string]: string }>({});
   const { addressBook, isInitialized } = useAddressBook();
 
+  // Extract complex expressions for static checking
+  const addressBookKeys = Object.keys(addressBook).join(',');
+
   useEffect(() => {
     const resolveNames = async () => {
       // First, immediately show addresses/custom names
@@ -205,7 +208,7 @@ export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?
     } else {
       setDisplayNames({});
     }
-  }, [JSON.stringify(addresses), Object.keys(addressBook).join(','), refreshTrigger]);
+  }, [addresses, addressBookKeys, refreshTrigger]);
 
   const getDisplayNameForAddress = useCallback((address: `0x${string}`) => {
     return displayNames[address.toLowerCase()] || getDisplayName(address);

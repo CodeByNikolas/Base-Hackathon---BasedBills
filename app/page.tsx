@@ -81,7 +81,7 @@ export default function Home() {
               <div className={styles.balanceSummary}>
                 <div className={styles.balanceCard}>
                   <div className={styles.balanceItem}>
-                    <span className={styles.balanceLabel}>You're owed</span>
+                    <span className={styles.balanceLabel}>You&apos;re owed</span>
                     <span className={`${styles.balanceValue} ${styles.positive}`}>
                       {formatUSDCWithSymbol(outstandingBalance.totalOwed)}
                     </span>
@@ -161,7 +161,7 @@ export default function Home() {
                       <select
                         className={styles.filterSelect}
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value as any)}
+                        onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'settled' | 'pending-settlement')}
                       >
                         <option value="all">All Groups</option>
                         <option value="active">Active (Unsettled)</option>

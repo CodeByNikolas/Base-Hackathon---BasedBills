@@ -28,12 +28,12 @@ export function AddressDisplay({
   const [editName, setEditName] = useState('');
   const chainId = useChainId();
   
-  const { displayName, customName, hasCustomName, isLoading, isInitialized: displayNameInitialized } = useDisplayName(address, {
+  const { displayName, customName, hasCustomName, isLoading, isInitialized: _displayNameInitialized } = useDisplayName(address, {
     maxLength: showFullAddress ? undefined : maxLength,
     fallbackToShortened: !showFullAddress,
   });
   
-  const { addAddress, removeAddress, isInitialized } = useAddressBook();
+  const { addAddress, removeAddress, isInitialized: _addressBookInitialized } = useAddressBook();
 
   const handleEdit = () => {
     setEditName(customName || '');
@@ -200,7 +200,7 @@ export function AddressInput({
 }: AddressInputProps) {
   const [suggestions, setSuggestions] = useState<`0x${string}`[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const { search, isInitialized: addressBookInitialized } = useAddressBook();
+  const { search, isInitialized: _addressBookInitialized } = useAddressBook();
 
   const handleInputChange = (inputValue: string) => {
     onChange(inputValue);

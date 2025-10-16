@@ -27,7 +27,7 @@ export default function CreateGroupPage() {
   const [selectedAddressBookMembers, setSelectedAddressBookMembers] = useState<Set<string>>(new Set());
   const [isCreating, setIsCreating] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [createdGroupAddress, setCreatedGroupAddress] = useState('');
+  const [, setCreatedGroupAddress] = useState('');
 
   // Initialize with current user as first member
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function CreateGroupPage() {
     try {
       const allMembers = getAllMembers();
 
-      const txHash = await writeContractAsync({
+      const _txHash = await writeContractAsync({
         address: '0xffd6df1076a30891d662068a61aa0baae63fb1bf', // GroupFactory address
         abi: GROUP_FACTORY_ABI,
         functionName: 'createGroup',
@@ -309,7 +309,7 @@ export default function CreateGroupPage() {
           <div className={styles.successContent}>
             <div className={styles.successIcon}>🎉</div>
             <h3>Group Created Successfully!</h3>
-            <p>Your new group has been created and you're ready to start splitting expenses.</p>
+            <p>Your new group has been created and you&apos;re ready to start splitting expenses.</p>
             <button onClick={handleGoToGroup} className={styles.successButton}>
               Go to Groups
             </button>

@@ -23,7 +23,7 @@ import styles from "./HeaderBar.module.css";
 
 export function HeaderBar() {
   const [showAddressBook, setShowAddressBook] = useState(false);
-  const router = useRouter();
+  const _router = useRouter();
 
   return (
     <>

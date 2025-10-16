@@ -230,7 +230,7 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
                 <div className={styles.suggestionsSection}>
                   <h3>Suggested from Your Groups</h3>
                   <p className={styles.suggestionsDescription}>
-                    These addresses are from your groups but don't have custom names yet.
+                    These addresses are from your groups but don&apos;t have custom names yet.
                   </p>
                   <div className={styles.suggestionsList}>
                     {suggestedAddresses.slice(0, 10).map((address) => (

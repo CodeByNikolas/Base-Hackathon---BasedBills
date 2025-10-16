@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
-import { Modal } from '../../components/ui/Modal';
 import { AddBillModal } from '../../components/features/AddBillModal';
 import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
@@ -12,6 +11,31 @@ import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook
 import { formatUnits } from 'viem';
 import { hasCustomName } from '../../utils/addressBook';
 import styles from './GroupPage.module.css';
+
+interface GroupMember {
+  address: `0x${string}`;
+  balance: bigint;
+}
+
+interface GroupBill {
+  id: string;
+  amount: bigint;
+  description: string;
+  payer: `0x${string}`;
+  participants: `0x${string}`[];
+  settled: boolean;
+  createdAt: Date;
+}
+
+interface GroupData {
+  address: `0x${string}`;
+  name: string;
+  members: GroupMember[];
+  bills: GroupBill[];
+  totalOwed: bigint;
+  totalOwes: bigint;
+  isActive: boolean;
+}
 
 export default function GroupPage() {
   const params = useParams();
@@ -85,7 +109,7 @@ export default function GroupPage() {
         <HeaderBar />
         <div className={styles.error}>
           <h2>Group Not Found</h2>
-          <p>The group you're looking for doesn't exist or you don't have access to it.</p>
+          <p>The group you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
           <button onClick={() => router.push('/')} className={styles.backButton}>
             ← Back to Groups
           </button>
@@ -219,7 +243,7 @@ export default function GroupPage() {
 }
 
 // Overview Tab Component
-function OverviewTab({ groupData, memberDisplayNames }: { groupData: any, memberDisplayNames: any }) {
+function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { groupData: GroupData, memberDisplayNames: Record<string, string> }) {
   return (
     <div className={styles.overviewTab}>
       <div className={styles.summaryCards}>
@@ -246,7 +270,7 @@ function OverviewTab({ groupData, memberDisplayNames }: { groupData: any, member
       <div className={styles.recentActivity}>
         <h4>Recent Activity</h4>
         <div className={styles.activityList}>
-          {groupData.bills.slice(0, 3).map((bill: any) => (
+          {groupData.bills.slice(0, 3).map((bill: GroupBill) => (
             <div key={bill.id} className={styles.activityItem}>
               <div className={styles.activityInfo}>
                 <span className={styles.activityDescription}>{bill.description}</span>
@@ -266,11 +290,11 @@ function OverviewTab({ groupData, memberDisplayNames }: { groupData: any, member
 }
 
 // Bills Tab Component
-function BillsTab({ bills }: { bills: any[] }) {
+function BillsTab({ bills }: { bills: GroupBill[] }) {
   return (
     <div className={styles.billsTab}>
       <div className={styles.billsList}>
-        {bills.map((bill) => (
+        {bills.map((bill: GroupBill) => (
           <div key={bill.id} className={styles.billCard}>
             <div className={styles.billHeader}>
               <h4>{bill.description}</h4>
@@ -302,8 +326,8 @@ function MembersTab({
   setNameInput,
   addAddress
 }: {
-  members: any[],
-  memberDisplayNames: any,
+  members: GroupMember[],
+  memberDisplayNames: Record<string, string>,
   userAddress?: `0x${string}`,
   onNameAdded?: () => void,
   editingAddress: `0x${string}` | null,

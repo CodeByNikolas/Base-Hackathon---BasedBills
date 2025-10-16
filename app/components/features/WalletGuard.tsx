@@ -13,8 +13,8 @@ interface WalletGuardProps {
  * WalletGuard component that redirects to welcome page if wallet is not connected
  * This provides a clean, global wallet connection check for the entire app
  */
-export function WalletGuard({ children, redirectTo = '/' }: WalletGuardProps) {
-  const { address, isConnected, isConnecting } = useAccount();
+export function WalletGuard({ children, redirectTo: _redirectTo = '/' }: WalletGuardProps) {
+  const { address: _address, isConnected, isConnecting } = useAccount();
   const router = useRouter();
   const pathname = usePathname();
   const [hasInitialized, setHasInitialized] = useState(false);
