@@ -11,6 +11,7 @@ import "./IUSDC.sol";
 contract Group {
     // --- State Variables ---
 
+    string public groupName;
     address[] public members;
     mapping(address => bool) public isMember;
     mapping(address => int256) public balances;
@@ -50,6 +51,7 @@ contract Group {
     event BillAdded(uint256 indexed billId, string description, uint256 amount, address[] participants, uint256[] amounts, address payer);
     event CustomBillAdded(uint256 indexed billId, string description, uint256 totalAmount, address[] participants, uint256[] customAmounts, address payer);
     event MemberAdded(address indexed member);
+    event GroupNameUpdated(string newName, address indexed updatedBy);
 
     // Settlement Events
     event SettlementTriggered(uint256 indexed settlementId, uint256 totalOwed);
@@ -83,10 +85,13 @@ contract Group {
 
     // --- Initialization ---
 
-    function initialize(address[] calldata _members) external {
+    function initialize(address[] calldata _members, string calldata _groupName) external {
         require(!initialized, "Group: Already initialized");
         require(_members.length > 0, "Group: No members provided");
+        require(bytes(_groupName).length > 0, "Group: Group name cannot be empty");
+        require(bytes(_groupName).length <= 100, "Group: Group name too long");
         
+        groupName = _groupName;
         usdcAddress = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // Base Sepolia USDC
         
         for (uint256 i = 0; i < _members.length; i++) {
@@ -395,6 +400,17 @@ contract Group {
     
     function getMemberCount() external view returns (uint256) {
         return members.length;
+    }
+    
+    function getGroupName() external view returns (string memory) {
+        return groupName;
+    }
+    
+    function updateGroupName(string calldata _newName) external onlyMember {
+        require(bytes(_newName).length > 0, "Group: Group name cannot be empty");
+        require(bytes(_newName).length <= 100, "Group: Group name too long");
+        groupName = _newName;
+        emit GroupNameUpdated(_newName, msg.sender);
     }
     
     function getBalance(address _member) external view returns (int256) {

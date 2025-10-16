@@ -1,8 +1,9 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAddressBook, useAddressBookStats } from '../hooks/useAddressBook';
+import { useUserGroups, useMultipleGroupsData } from '../hooks/useGroups';
 import { AddressDisplay, AddressInput } from './AddressDisplay';
-import { isValidAddress, exportAddressBook, importAddressBook } from '../utils/addressBook';
+import { isValidAddress, exportAddressBook, importAddressBook, hasCustomName } from '../utils/addressBook';
 import styles from './AddressBookManager.module.css';
 
 interface AddressBookManagerProps {
@@ -15,12 +16,32 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
   const [newAddress, setNewAddress] = useState('');
   const [newName, setNewName] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [importData, setImportData] = useState('');
   const [showImportExport, setShowImportExport] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const { getAllEntries, search, addAddress, removeAddress } = useAddressBook();
   const stats = useAddressBookStats();
+  
+  // Get user's groups to suggest addresses
+  const { groupAddresses } = useUserGroups();
+  const { groupsData } = useMultipleGroupsData(groupAddresses);
+  
+  // Get suggested addresses from groups (addresses without custom names)
+  const suggestedAddresses = useMemo(() => {
+    const allAddresses = new Set<`0x${string}`>();
+    
+    groupsData.forEach(group => {
+      group.members.forEach(member => {
+        if (!hasCustomName(member.address)) {
+          allAddresses.add(member.address);
+        }
+      });
+    });
+    
+    return Array.from(allAddresses);
+  }, [groupsData]);
 
   const entries = searchQuery ? search(searchQuery) : getAllEntries();
 
@@ -110,6 +131,14 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
           >
             {showAddForm ? 'Cancel' : 'Add Address'}
           </button>
+          {suggestedAddresses.length > 0 && (
+            <button
+              onClick={() => setShowSuggestions(!showSuggestions)}
+              className={styles.actionButton}
+            >
+              Suggestions ({suggestedAddresses.length})
+            </button>
+          )}
           <button
             onClick={() => setShowImportExport(!showImportExport)}
             className={styles.actionButton}
@@ -153,6 +182,44 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
                 Cancel
               </button>
             </div>
+          </div>
+        )}
+
+        {showSuggestions && suggestedAddresses.length > 0 && (
+          <div className={styles.suggestionsSection}>
+            <h3>Suggested from Your Groups</h3>
+            <p className={styles.suggestionsDescription}>
+              These addresses are from your groups but don't have custom names yet.
+            </p>
+            <div className={styles.suggestionsList}>
+              {suggestedAddresses.slice(0, 10).map((address) => (
+                <div key={address} className={styles.suggestionItem}>
+                  <AddressDisplay
+                    address={address}
+                    showEditButton={false}
+                    showExplorerLink={false}
+                    maxLength={25}
+                  />
+                  <button
+                    onClick={() => {
+                      setNewAddress(address);
+                      setNewName('');
+                      setShowAddForm(true);
+                      setShowSuggestions(false);
+                    }}
+                    className={styles.addSuggestionButton}
+                    title="Add name for this address"
+                  >
+                    Add Name
+                  </button>
+                </div>
+              ))}
+            </div>
+            {suggestedAddresses.length > 10 && (
+              <p className={styles.moreSuggestions}>
+                And {suggestedAddresses.length - 10} more addresses from your groups...
+              </p>
+            )}
           </div>
         )}
 

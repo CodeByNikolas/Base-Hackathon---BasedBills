@@ -17,32 +17,8 @@ interface GroupCardProps {
 
 export function GroupCard({ group }: GroupCardProps) {
   const { address: userAddress } = useAccount();
-  const { getDisplayNameForAddress, isLoading: isLoadingNames } = useBatchDisplayNames(
-    group.members.map(m => m.address)
-  );
   
   if (!userAddress) return null;
-
-  // Generate group name using display names
-  const generateGroupName = () => {
-    if (isLoadingNames) return 'Loading...';
-    
-    const otherMembers = group.members
-      .map(m => m.address)
-      .filter(addr => addr.toLowerCase() !== userAddress.toLowerCase());
-    
-    if (otherMembers.length === 0) return 'Solo Group';
-    if (otherMembers.length === 1) {
-      return `You & ${getDisplayNameForAddress(otherMembers[0])}`;
-    }
-    if (otherMembers.length === 2) {
-      return `You, ${getDisplayNameForAddress(otherMembers[0])} & ${getDisplayNameForAddress(otherMembers[1])}`;
-    }
-    
-    return `You & ${otherMembers.length} others`;
-  };
-
-  const groupName = generateGroupName();
   
   const userStatus = getUserGroupStatus(userAddress, group.members);
   const activitySummary = getGroupActivitySummary(group);
@@ -74,7 +50,7 @@ export function GroupCard({ group }: GroupCardProps) {
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.groupInfo}>
-            <h3 className={styles.groupName}>{groupName}</h3>
+            <h3 className={styles.groupName}>{group.name}</h3>
             <p className={styles.memberCount}>
               {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
             </p>

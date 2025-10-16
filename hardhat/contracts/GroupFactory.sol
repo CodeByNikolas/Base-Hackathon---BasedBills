@@ -28,6 +28,7 @@ contract GroupFactory {
         uint256 indexed groupId,
         address indexed groupAddress,
         address[] members,
+        string groupName,
         address indexed creator
     );
     
@@ -47,9 +48,10 @@ contract GroupFactory {
     /**
      * @dev Create a new group using minimal proxy pattern
      * @param _members Array of member addresses for the new group
+     * @param _groupName Name for the new group
      * @return groupAddress Address of the newly created group
      */
-    function createGroup(address[] calldata _members) external returns (address groupAddress) {
+    function createGroup(address[] calldata _members, string calldata _groupName) external returns (address groupAddress) {
         require(_members.length > 0, "GroupFactory: No members provided");
         require(_members.length <= 50, "GroupFactory: Too many members"); // Reasonable limit
         
@@ -77,7 +79,7 @@ contract GroupFactory {
         groupAddress = Clones.clone(logicContract);
         
         // Initialize the new group's state
-        Group(groupAddress).initialize(_members);
+        Group(groupAddress).initialize(_members, _groupName);
         
         // Register the group and its members in the registry
         registry.registerGroup(_members, groupAddress);
@@ -87,7 +89,7 @@ contract GroupFactory {
         groups[groupId] = groupAddress;
         totalGroups++;
         
-        emit GroupCreated(groupId, groupAddress, _members, msg.sender);
+        emit GroupCreated(groupId, groupAddress, _members, _groupName, msg.sender);
         
         return groupAddress;
     }
@@ -127,6 +129,7 @@ contract GroupFactory {
      */
     function createGroupDeterministic(
         address[] calldata _members,
+        string calldata _groupName,
         bytes32 _salt
     ) external returns (address groupAddress) {
         require(_members.length > 0, "GroupFactory: No members provided");
@@ -155,7 +158,7 @@ contract GroupFactory {
         groupAddress = Clones.cloneDeterministic(logicContract, _salt);
         
         // Initialize the new group's state
-        Group(groupAddress).initialize(_members);
+        Group(groupAddress).initialize(_members, _groupName);
         
         // Register the group and its members in the registry
         registry.registerGroup(_members, groupAddress);
@@ -165,7 +168,7 @@ contract GroupFactory {
         groups[groupId] = groupAddress;
         totalGroups++;
         
-        emit GroupCreated(groupId, groupAddress, _members, msg.sender);
+        emit GroupCreated(groupId, groupAddress, _members, _groupName, msg.sender);
         
         return groupAddress;
     }

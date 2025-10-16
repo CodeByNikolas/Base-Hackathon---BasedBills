@@ -79,6 +79,11 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       {
         address: groupAddress,
         abi: GROUP_ABI,
+        functionName: 'getGroupName',
+      },
+      {
+        address: groupAddress,
+        abi: GROUP_ABI,
         functionName: 'getMembers',
       },
       {
@@ -127,6 +132,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
     if (!contractResults || !groupAddress) return null;
 
     const [
+      groupNameResult,
       membersResult,
       balancesResult,
       billsResult,
@@ -136,11 +142,13 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
     ] = contractResults;
 
     // Handle potential errors in individual contract calls
-    if (membersResult.status === 'failure' || 
+    if (groupNameResult.status === 'failure' ||
+        membersResult.status === 'failure' || 
         balancesResult.status === 'failure') {
       return null;
     }
 
+    const groupName = groupNameResult.result as string;
     const memberAddresses = membersResult.result as `0x${string}`[];
     const [memberAddressesFromBalances, memberBalances] = balancesResult.result as [`0x${string}`[], bigint[]];
     
@@ -190,6 +198,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
 
     return {
       address: groupAddress,
+      name: groupName,
       members,
       bills: allBills,
       unsettledBills,
@@ -222,6 +231,11 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
     
     for (const groupAddress of groupAddresses) {
       allContracts.push(
+        {
+          address: groupAddress,
+          abi: GROUP_ABI,
+          functionName: 'getGroupName',
+        },
         {
           address: groupAddress,
           abi: GROUP_ABI,
@@ -265,22 +279,26 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
     if (!contractResults || !groupAddresses) return [];
 
     const groups: GroupData[] = [];
-    const contractsPerGroup = 4; // members, balances, unsettled bills, settlement active
+    const contractsPerGroup = 5; // group name, members, balances, unsettled bills, settlement active
 
     for (let i = 0; i < groupAddresses.length; i++) {
       const baseIndex = i * contractsPerGroup;
       const groupAddress = groupAddresses[i];
       
-      const membersResult = contractResults[baseIndex];
-      const balancesResult = contractResults[baseIndex + 1];
-      const unsettledBillsResult = contractResults[baseIndex + 2];
-      const settlementActiveResult = contractResults[baseIndex + 3];
+      const groupNameResult = contractResults[baseIndex];
+      const membersResult = contractResults[baseIndex + 1];
+      const balancesResult = contractResults[baseIndex + 2];
+      const unsettledBillsResult = contractResults[baseIndex + 3];
+      const settlementActiveResult = contractResults[baseIndex + 4];
 
       // Skip if essential data failed to load
-      if (membersResult?.status !== 'success' || balancesResult?.status !== 'success') {
+      if (groupNameResult?.status !== 'success' || 
+          membersResult?.status !== 'success' || 
+          balancesResult?.status !== 'success') {
         continue;
       }
 
+      const groupName = groupNameResult.result as string;
       const memberAddresses = membersResult.result as `0x${string}`[];
       const [, memberBalances] = balancesResult.result as [`0x${string}`[], bigint[]];
       
@@ -310,6 +328,7 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
 
       groups.push({
         address: groupAddress,
+        name: groupName,
         members,
         bills: [], // We don't load all bills for the list view for performance
         unsettledBills,

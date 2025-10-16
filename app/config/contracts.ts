@@ -35,6 +35,11 @@ export const GROUP_FACTORY_ABI = [
         "internalType": "address[]",
         "name": "_members",
         "type": "address[]"
+      },
+      {
+        "internalType": "string",
+        "name": "_groupName",
+        "type": "string"
       }
     ],
     "name": "createGroup",
@@ -146,6 +151,19 @@ export const GROUP_ABI = [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getGroupName",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",

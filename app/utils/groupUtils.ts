@@ -20,6 +20,7 @@ export interface GroupMember {
 
 export interface GroupData {
   address: `0x${string}`;
+  name: string;
   members: GroupMember[];
   bills: Bill[];
   unsettledBills: Bill[];
