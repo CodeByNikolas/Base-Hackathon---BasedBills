@@ -63,6 +63,7 @@ console.log("Registry:", registry.address);
 console.log("GroupFactory:", groupFactory.address);
 
 // Save addresses to deployments.json for verification script
+console.log("\n💾 Updating deployments.json...");
 const addresses = {
   network: "baseSepolia",
   chainId: 84532,
@@ -74,7 +75,14 @@ const addresses = {
   verified: {
     blockscout: false,
     basescan: false
-  }
+  },
+  features: [
+    "Group Names",
+    "Address Book Suggestions", 
+    "Enhanced Bill Splitting",
+    "Gamble Feature",
+    "Settlement Tracking"
+  ]
 };
 
 // Write to deployments.json
@@ -85,7 +93,7 @@ fs.writeFileSync(
   JSON.stringify(addresses, null, 2)
 );
 
-console.log("\n💾 Contract addresses saved to deployments.json:");
+console.log("✅ deployments.json updated successfully!");
 console.log(JSON.stringify(addresses, null, 2));
 
 console.log("\n🎉 Ready for testing! You can now:");

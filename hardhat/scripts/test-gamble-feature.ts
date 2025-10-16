@@ -22,11 +22,16 @@ const bob = walletClients[1];
 console.log("👤 Alice:", alice.account.address);
 console.log("👤 Bob:", bob.account.address);
 
-// Using the newly deployed contracts with optimizer enabled
+// Load contract addresses from deployments.json
+const fs = require('fs');
+const path = require('path');
+const deploymentsPath = path.join(process.cwd(), 'deployments.json');
+const deployments = JSON.parse(fs.readFileSync(deploymentsPath, 'utf8'));
+
 const contractAddresses = {
-  groupFactory: "0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629",
-  registry: "0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64",
-  groupLogic: "0x8e36374afe7e093f721b88baad72aaf4536c9834"
+  groupFactory: deployments.groupFactory,
+  registry: deployments.registry,
+  groupLogic: deployments.groupLogic
 };
 
 console.log("\n📋 Using deployed contracts:");
@@ -42,8 +47,9 @@ try {
   // Step 1: Create a new group for gamble testing
   console.log("\n1️⃣ Creating new group with Alice and Bob...");
   const members = [alice.account.address, bob.account.address];
+  const groupName = "Alice & Bob's Gamble Group";
   
-  const createGroupHash = await groupFactory.write.createGroup([members], { account: alice.account });
+  const createGroupHash = await groupFactory.write.createGroup([members, groupName], { account: alice.account });
   await publicClient.waitForTransactionReceipt({ hash: createGroupHash });
   console.log("✅ Group created!");
   

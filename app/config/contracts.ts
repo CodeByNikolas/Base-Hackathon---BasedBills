@@ -10,10 +10,10 @@ export const CONTRACT_ADDRESSES = {
     usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
   },
   [baseSepolia.id]: {
-    // Testnet addresses (currently deployed)
-    groupFactory: '0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629',
-    registry: '0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64',
-    groupLogic: '0x8e36374afe7e093f721b88baad72aaf4536c9834',
+    // Testnet addresses (updated with group name support)
+    groupFactory: '0xffd6df1076a30891d662068a61aa0baae63fb1bf',
+    registry: '0x6b30775dd78d0492077666708a7e2e6f8582e527',
+    groupLogic: '0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c',
     usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // Base Sepolia USDC
   },
 } as const;

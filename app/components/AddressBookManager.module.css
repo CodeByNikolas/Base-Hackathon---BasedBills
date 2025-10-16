@@ -10,6 +10,7 @@
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal {
@@ -22,6 +23,13 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.modalContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 24px 24px;
+  min-height: 0; /* Important for flex child to be scrollable */
 }
 
 .header {
@@ -128,6 +136,35 @@
   border-color: #9ca3af;
 }
 
+.actionButton.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #2563eb;
+}
+
+.actionButton.active:hover {
+  background: #2563eb;
+  border-color: #1d4ed8;
+}
+
+.sectionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.section .actionButton {
+  width: 100%;
+  justify-content: flex-start;
+  margin-bottom: 0;
+}
+
 .addForm,
 .importExport,
 .suggestionsSection {
@@ -135,7 +172,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 20px;
-  margin: 0 24px 20px 24px;
+  margin: 8px 0 0 0;
 }
 
 .addForm h3,
@@ -550,4 +587,27 @@
   .removeButton {
     align-self: flex-end;
   }
+}
+
+.entriesList {
+  margin-top: 16px;
+}
+
+/* Scrollbar styles for modal content */
+.modalContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalContent::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.modalContent::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

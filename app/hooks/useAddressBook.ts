@@ -11,6 +11,7 @@ import {
   hasCustomName,
   getAllAddressBookEntries,
   searchAddressBook,
+  shortenAddress,
   type AddressBookEntry,
 } from '../utils/addressBook';
 
@@ -136,11 +137,11 @@ export function useDisplayName(
     fallbackToShortened?: boolean;
   } = {}
 ) {
-  const { ensName, isLoading } = useEnsResolver(address);
+  const { ensName } = useEnsResolver(address);
   const { getEntry } = useAddressBook();
 
   const displayName = address ? getDisplayName(address, {
-    ensName,
+    ensName, // Use ENS name when available, fallback to address
     ...options,
   }) : '';
 
@@ -152,7 +153,7 @@ export function useDisplayName(
     ensName,
     customName: entry?.name,
     hasCustomName: hasCustom,
-    isLoading,
+    isLoading: false, // Never show loading state
   };
 }
 
@@ -161,33 +162,36 @@ export function useDisplayName(
  */
 export function useBatchDisplayNames(addresses: `0x${string}`[]) {
   const [displayNames, setDisplayNames] = useState<{ [address: string]: string }>({});
-  const [isLoading, setIsLoading] = useState(true);
   const { addressBook } = useAddressBook();
 
   useEffect(() => {
     const resolveNames = async () => {
-      setIsLoading(true);
-      const names: { [address: string]: string } = {};
-
+      // First, immediately show addresses/custom names
+      const immediateNames: { [address: string]: string } = {};
       for (const address of addresses) {
-        // Get cached ENS name
+        immediateNames[address.toLowerCase()] = getDisplayName(address, {
+          ensName: null, // Don't use ENS initially
+          fallbackToShortened: true,
+        });
+      }
+      setDisplayNames(immediateNames);
+
+      // Then, update with cached ENS names
+      const names: { [address: string]: string } = {};
+      for (const address of addresses) {
         const cachedEns = getCachedEnsName(address);
-        
         names[address.toLowerCase()] = getDisplayName(address, {
           ensName: cachedEns,
           fallbackToShortened: true,
         });
       }
-
       setDisplayNames(names);
-      setIsLoading(false);
     };
 
     if (addresses.length > 0) {
       resolveNames();
     } else {
       setDisplayNames({});
-      setIsLoading(false);
     }
   }, [addresses.join(','), Object.keys(addressBook).join(',')]);
 
@@ -197,7 +201,7 @@ export function useBatchDisplayNames(addresses: `0x${string}`[]) {
 
   return {
     displayNames,
-    isLoading,
+    isLoading: false, // Never show loading state
     getDisplayNameForAddress,
   };
 }

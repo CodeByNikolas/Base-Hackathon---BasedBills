@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo } from 'react';
+import { useAccount } from 'wagmi';
 import { useAddressBook, useAddressBookStats } from '../hooks/useAddressBook';
 import { useUserGroups, useMultipleGroupsData } from '../hooks/useGroups';
 import { AddressDisplay, AddressInput } from './AddressDisplay';
@@ -21,6 +22,7 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
   const [showImportExport, setShowImportExport] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const { address: userAddress } = useAccount();
   const { getAllEntries, search, addAddress, removeAddress } = useAddressBook();
   const stats = useAddressBookStats();
   
@@ -28,20 +30,22 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
   const { groupAddresses } = useUserGroups();
   const { groupsData } = useMultipleGroupsData(groupAddresses);
   
-  // Get suggested addresses from groups (addresses without custom names)
+  // Get suggested addresses from groups (addresses without custom names, excluding user's own address)
   const suggestedAddresses = useMemo(() => {
     const allAddresses = new Set<`0x${string}`>();
     
     groupsData.forEach(group => {
       group.members.forEach(member => {
-        if (!hasCustomName(member.address)) {
+        // Exclude user's own address and addresses that already have custom names
+        if (member.address.toLowerCase() !== userAddress?.toLowerCase() && 
+            !hasCustomName(member.address)) {
           allAddresses.add(member.address);
         }
       });
     });
     
     return Array.from(allAddresses);
-  }, [groupsData]);
+  }, [groupsData, userAddress]);
 
   const entries = searchQuery ? search(searchQuery) : getAllEntries();
 
@@ -103,13 +107,14 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
           </button>
         </div>
 
-        {message && (
-          <div className={`${styles.message} ${styles[message.type]}`}>
-            {message.text}
-          </div>
-        )}
+        <div className={styles.modalContent}>
+          {message && (
+            <div className={`${styles.message} ${styles[message.type]}`}>
+              {message.text}
+            </div>
+          )}
 
-        <div className={styles.stats}>
+          <div className={styles.stats}>
           <div className={styles.stat}>
             <span className={styles.statValue}>{stats.totalEntries}</span>
             <span className={styles.statLabel}>Total</span>
@@ -124,139 +129,170 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
           </div>
         </div>
 
-        <div className={styles.actions}>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className={styles.actionButton}
-          >
-            {showAddForm ? 'Cancel' : 'Add Address'}
-          </button>
-          {suggestedAddresses.length > 0 && (
+        <div className={styles.sectionsContainer}>
+          {/* Add Address Section */}
+          <div className={styles.section}>
             <button
-              onClick={() => setShowSuggestions(!showSuggestions)}
-              className={styles.actionButton}
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                // Close other sections when opening this one
+                if (!showAddForm) {
+                  setShowSuggestions(false);
+                  setShowImportExport(false);
+                }
+              }}
+              className={`${styles.actionButton} ${showAddForm ? styles.active : ''}`}
             >
-              Suggestions ({suggestedAddresses.length})
+              {showAddForm ? '▼' : '▶'} Add Address
             </button>
-          )}
-          <button
-            onClick={() => setShowImportExport(!showImportExport)}
-            className={styles.actionButton}
-          >
-            Import/Export
-          </button>
-        </div>
-
-        {showAddForm && (
-          <div className={styles.addForm}>
-            <h3>Add New Address</h3>
-            <div className={styles.formGroup}>
-              <label>Address</label>
-              <input
-                type="text"
-                value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
-                placeholder="0x..."
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Name</label>
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Enter a name..."
-                className={styles.input}
-                maxLength={50}
-              />
-            </div>
-            <div className={styles.formButtons}>
-              <button onClick={handleAddAddress} className={styles.saveButton}>
-                Add Address
-              </button>
-              <button 
-                onClick={() => setShowAddForm(false)} 
-                className={styles.cancelButton}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showSuggestions && suggestedAddresses.length > 0 && (
-          <div className={styles.suggestionsSection}>
-            <h3>Suggested from Your Groups</h3>
-            <p className={styles.suggestionsDescription}>
-              These addresses are from your groups but don't have custom names yet.
-            </p>
-            <div className={styles.suggestionsList}>
-              {suggestedAddresses.slice(0, 10).map((address) => (
-                <div key={address} className={styles.suggestionItem}>
-                  <AddressDisplay
-                    address={address}
-                    showEditButton={false}
-                    showExplorerLink={false}
-                    maxLength={25}
+            
+            {showAddForm && (
+              <div className={styles.addForm}>
+                <h3>Add New Address</h3>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Address</label>
+                  <input
+                    type="text"
+                    value={newAddress}
+                    onChange={(e) => setNewAddress(e.target.value)}
+                    placeholder="0x..."
+                    className={styles.input}
                   />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Name</label>
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Enter a name for this address"
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formActions}>
+                  <button
+                    onClick={handleAddAddress}
+                    className={styles.saveButton}
+                    disabled={!newAddress || !newName}
+                  >
+                    Save Address
+                  </button>
                   <button
                     onClick={() => {
-                      setNewAddress(address);
+                      setShowAddForm(false);
+                      setNewAddress('');
                       setNewName('');
-                      setShowAddForm(true);
-                      setShowSuggestions(false);
                     }}
-                    className={styles.addSuggestionButton}
-                    title="Add name for this address"
+                    className={styles.cancelButton}
                   >
-                    Add Name
+                    Cancel
                   </button>
                 </div>
-              ))}
-            </div>
-            {suggestedAddresses.length > 10 && (
-              <p className={styles.moreSuggestions}>
-                And {suggestedAddresses.length - 10} more addresses from your groups...
-              </p>
+              </div>
             )}
           </div>
-        )}
 
-        {showImportExport && (
-          <div className={styles.importExport}>
-            <h3>Import/Export</h3>
-            <div className={styles.exportSection}>
-              <button onClick={handleExport} className={styles.exportButton}>
-                Export to Clipboard
+          {/* Suggestions Section */}
+          {suggestedAddresses.length > 0 && (
+            <div className={styles.section}>
+              <button
+                onClick={() => {
+                  setShowSuggestions(!showSuggestions);
+                  // Close other sections when opening this one
+                  if (!showSuggestions) {
+                    setShowAddForm(false);
+                    setShowImportExport(false);
+                  }
+                }}
+                className={`${styles.actionButton} ${showSuggestions ? styles.active : ''}`}
+              >
+                {showSuggestions ? '▼' : '▶'} Suggestions ({suggestedAddresses.length})
               </button>
-              <p className={styles.helpText}>
-                Copy your address book data for backup
-              </p>
+              
+              {showSuggestions && (
+                <div className={styles.suggestionsSection}>
+                  <h3>Suggested from Your Groups</h3>
+                  <p className={styles.suggestionsDescription}>
+                    These addresses are from your groups but don't have custom names yet.
+                  </p>
+                  <div className={styles.suggestionsList}>
+                    {suggestedAddresses.slice(0, 10).map((address) => (
+                      <div key={address} className={styles.suggestionItem}>
+                        <AddressDisplay
+                          address={address}
+                          showEditButton={false}
+                          showExplorerLink={false}
+                          maxLength={25}
+                        />
+                        <button
+                          onClick={() => {
+                            setNewAddress(address);
+                            setNewName('');
+                            setShowAddForm(true);
+                            setShowSuggestions(false);
+                          }}
+                          className={styles.addSuggestionButton}
+                          title="Add name for this address"
+                        >
+                          Add Name
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {suggestedAddresses.length > 10 && (
+                    <p className={styles.moreSuggestions}>
+                      And {suggestedAddresses.length - 10} more addresses from your groups...
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-            <div className={styles.importSection}>
-              <label>Import Data</label>
-              <textarea
-                value={importData}
-                onChange={(e) => setImportData(e.target.value)}
-                placeholder="Paste exported address book data here..."
-                className={styles.textarea}
-                rows={4}
-              />
-              <div className={styles.formButtons}>
-                <button onClick={handleImport} className={styles.saveButton}>
-                  Import
-                </button>
-                <button 
-                  onClick={() => setShowImportExport(false)} 
-                  className={styles.cancelButton}
-                >
-                  Cancel
-                </button>
+          )}
+
+          {/* Import/Export Section */}
+          <div className={styles.section}>
+            <button
+              onClick={() => {
+                setShowImportExport(!showImportExport);
+                // Close other sections when opening this one
+                if (!showImportExport) {
+                  setShowAddForm(false);
+                  setShowSuggestions(false);
+                }
+              }}
+              className={`${styles.actionButton} ${showImportExport ? styles.active : ''}`}
+            >
+              {showImportExport ? '▼' : '▶'} Import/Export
+            </button>
+            
+            {showImportExport && (
+              <div className={styles.importExport}>
+                <h3>Import/Export</h3>
+                <div className={styles.exportSection}>
+                  <button onClick={handleExport} className={styles.exportButton}>
+                    Export to Clipboard
+                  </button>
+                  <p className={styles.exportDescription}>
+                    Copy all your address book entries as JSON
+                  </p>
+                </div>
+                <div className={styles.importSection}>
+                  <label className={styles.label}>Import from JSON</label>
+                  <textarea
+                    value={importData}
+                    onChange={(e) => setImportData(e.target.value)}
+                    placeholder="Paste JSON data here..."
+                    className={styles.importTextarea}
+                    rows={4}
+                  />
+                  <button onClick={handleImport} className={styles.importButton}>
+                    Import Addresses
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
         <div className={styles.searchSection}>
           <AddressInput
@@ -305,6 +341,7 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
               </div>
             ))
           )}
+        </div>
         </div>
       </div>
     </div>

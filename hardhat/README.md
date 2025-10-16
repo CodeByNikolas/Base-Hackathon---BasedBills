@@ -17,12 +17,16 @@ The BasedBills smart contract system consists of four main contracts:
 
 ### Group Contract
 - Manages group members and their expense balances
-- Handles bill creation and splitting logic
+- **NEW**: Custom group names instead of auto-generated ones
+- Handles bill creation and splitting logic (including custom amounts)
 - Implements settlement process with approval mechanism
+- **NEW**: Gamble feature for all-or-nothing settlements
 - Automatically distributes USDC when settlement conditions are met
+- **NEW**: Complete settlement history tracking
 
 ### GroupFactory Contract
 - Creates new Group instances using minimal proxy pattern (EIP-1167)
+- **NEW**: Accepts group names during creation
 - Registers new groups with the Registry
 - Ensures creators are members of groups they create
 
@@ -35,13 +39,21 @@ The BasedBills smart contract system consists of four main contracts:
 
 ### Deployed Contracts (Base Sepolia)
 
-| Contract | Address | Status |
-|----------|---------|---------|
-| Group Logic | `0x8e36374afe7e093f721b88baad72aaf4536c9834` | ✅ Verified |
-| Registry | `0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64` | ✅ Verified |
-| GroupFactory | `0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629` | ✅ Verified |
+| Contract | Address | BaseScan |
+|----------|---------|----------|
+| Group Logic | [`0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c`](https://sepolia.basescan.org/address/0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c) | [Read Contract](https://sepolia.basescan.org/address/0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c#readContract) |
+| Registry | [`0x6b30775dd78d0492077666708a7e2e6f8582e527`](https://sepolia.basescan.org/address/0x6b30775dd78d0492077666708a7e2e6f8582e527) | [Read Contract](https://sepolia.basescan.org/address/0x6b30775dd78d0492077666708a7e2e6f8582e527#readContract) |
+| GroupFactory | [`0xffd6df1076a30891d662068a61aa0baae63fb1bf`](https://sepolia.basescan.org/address/0xffd6df1076a30891d662068a61aa0baae63fb1bf) | [Read Contract](https://sepolia.basescan.org/address/0xffd6df1076a30891d662068a61aa0baae63fb1bf#readContract) |
 
 All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
+
+### ✨ Latest Features (v2.0)
+- **Group Names**: Groups now have custom names instead of generated ones
+- **Address Book Suggestions**: Frontend suggests addresses from groups
+- **Enhanced Bill Splitting**: Custom amounts per participant
+- **Gamble Feature**: All-or-nothing settlement alternative
+- **Settlement Tracking**: Complete history of settlements
+- **Auto-deployment**: `deployments.json` automatically updated on deploy
 
 ### Universal Verification Script
 

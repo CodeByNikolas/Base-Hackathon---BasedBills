@@ -72,11 +72,13 @@ See [hardhat/README.md](./hardhat/README.md) for detailed contract documentation
 
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| GroupFactory | `0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629` | [View](https://sepolia.basescan.org/address/0x0a5d10ac91b4aaaa762b8cf25d84994d7d93a629) |
-| Registry | `0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64` | [View](https://sepolia.basescan.org/address/0x2e72fca70cb001e3f3d6cce6d7340657b47b1d64) |
-| Group Logic | `0x8e36374afe7e093f721b88baad72aaf4536c9834` | [View](https://sepolia.basescan.org/address/0x8e36374afe7e093f721b88baad72aaf4536c9834) |
+| GroupFactory | [`0xffd6df1076a30891d662068a61aa0baae63fb1bf`](https://sepolia.basescan.org/address/0xffd6df1076a30891d662068a61aa0baae63fb1bf) | [Read Contract](https://sepolia.basescan.org/address/0xffd6df1076a30891d662068a61aa0baae63fb1bf#readContract) |
+| Registry | [`0x6b30775dd78d0492077666708a7e2e6f8582e527`](https://sepolia.basescan.org/address/0x6b30775dd78d0492077666708a7e2e6f8582e527) | [Read Contract](https://sepolia.basescan.org/address/0x6b30775dd78d0492077666708a7e2e6f8582e527#readContract) |
+| Group Logic | [`0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c`](https://sepolia.basescan.org/address/0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c) | [Read Contract](https://sepolia.basescan.org/address/0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c#readContract) |
 
 All contracts are **verified** and open source on BaseScan.
+
+> 📚 **For detailed smart contract documentation, API reference, and deployment guides, see [`hardhat/README.md`](./hardhat/README.md)**
 
 ## 🛠️ Development
 
