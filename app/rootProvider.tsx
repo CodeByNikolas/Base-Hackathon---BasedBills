@@ -6,6 +6,7 @@ import { coinbaseWallet } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import "@coinbase/onchainkit/styles.css";
+import { DEFAULT_CHAIN } from "./config/contracts";
 
 const wagmiConfig = createConfig({
   chains: [base, baseSepolia],
@@ -30,7 +31,7 @@ export function RootProvider({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
-          chain={base}
+          chain={DEFAULT_CHAIN}
           config={{
             appearance: {
               mode: "auto",
