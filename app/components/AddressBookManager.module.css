@@ -1,0 +1,497 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.message {
+  margin: 0 24px 16px 24px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.actionButton {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.addForm,
+.importExport {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0 24px 20px 24px;
+}
+
+.addForm h3,
+.importExport h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.saveButton {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover {
+  background: #047857;
+}
+
+.cancelButton {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #e5e7eb;
+}
+
+.exportSection,
+.importSection {
+  margin-bottom: 16px;
+}
+
+.exportSection:last-child,
+.importSection:last-child {
+  margin-bottom: 0;
+}
+
+.exportButton {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.exportButton:hover {
+  background: #0284c7;
+}
+
+.helpText {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.searchSection {
+  padding: 0 24px;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 100%;
+}
+
+.entriesList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 24px 24px;
+  max-height: 400px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.entry:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.entryInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.ensName {
+  font-size: 12px;
+  color: #059669;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.entryMeta {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.removeButton:hover {
+  opacity: 1;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .modal {
+    background: #1f2937;
+  }
+  
+  .header {
+    border-color: #374151;
+  }
+  
+  .title {
+    color: #f9fafb;
+  }
+  
+  .closeButton {
+    color: #9ca3af;
+  }
+  
+  .closeButton:hover {
+    background: #374151;
+    color: #d1d5db;
+  }
+  
+  .statValue {
+    color: #10b981;
+  }
+  
+  .statLabel {
+    color: #9ca3af;
+  }
+  
+  .actionButton {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+  
+  .actionButton:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+  }
+  
+  .addForm,
+  .importExport {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .addForm h3,
+  .importExport h3 {
+    color: #f9fafb;
+  }
+  
+  .formGroup label {
+    color: #d1d5db;
+  }
+  
+  .input,
+  .textarea {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #f9fafb;
+  }
+  
+  .input:focus,
+  .textarea:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+  
+  .cancelButton {
+    background: #4b5563;
+    color: #d1d5db;
+    border-color: #6b7280;
+  }
+  
+  .cancelButton:hover {
+    background: #6b7280;
+  }
+  
+  .exportButton {
+    background: #0ea5e9;
+  }
+  
+  .exportButton:hover {
+    background: #0284c7;
+  }
+  
+  .helpText {
+    color: #9ca3af;
+  }
+  
+  .emptyState {
+    color: #9ca3af;
+  }
+  
+  .entry {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  
+  .entry:hover {
+    border-color: #6b7280;
+  }
+  
+  .ensName {
+    color: #10b981;
+  }
+  
+  .entryMeta {
+    color: #9ca3af;
+  }
+  
+  .removeButton:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .overlay {
+    padding: 10px;
+  }
+  
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .header {
+    padding: 16px 16px 0 16px;
+  }
+  
+  .title {
+    font-size: 1.25rem;
+  }
+  
+  .stats {
+    padding: 0 16px;
+    gap: 16px;
+  }
+  
+  .actions {
+    padding: 0 16px;
+    flex-direction: column;
+  }
+  
+  .addForm,
+  .importExport {
+    margin: 0 16px 16px 16px;
+    padding: 16px;
+  }
+  
+  .searchSection {
+    padding: 0 16px;
+  }
+  
+  .entriesList {
+    padding: 0 16px 16px 16px;
+  }
+  
+  .entry {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .removeButton {
+    align-self: flex-end;
+  }
+}
