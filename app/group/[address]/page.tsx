@@ -10,32 +10,8 @@ import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
 import { formatUnits } from 'viem';
 import { hasCustomName } from '../../utils/addressBook';
+import { GroupData, GroupMember, Bill } from '../../utils/groupUtils';
 import styles from './GroupPage.module.css';
-
-interface GroupMember {
-  address: `0x${string}`;
-  balance: bigint;
-}
-
-interface GroupBill {
-  id: string;
-  amount: bigint;
-  description: string;
-  payer: `0x${string}`;
-  participants: `0x${string}`[];
-  settled: boolean;
-  createdAt: Date;
-}
-
-interface GroupData {
-  address: `0x${string}`;
-  name: string;
-  members: GroupMember[];
-  bills: GroupBill[];
-  totalOwed: bigint;
-  totalOwes: bigint;
-  isActive: boolean;
-}
 
 export default function GroupPage() {
   const params = useParams();
@@ -243,7 +219,7 @@ export default function GroupPage() {
 }
 
 // Overview Tab Component
-function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { groupData: GroupData, memberDisplayNames: Record<string, string> }) {
+function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { groupData: GroupData, memberDisplayNames: { displayNames: Record<string, string>; isLoading: boolean; isInitialized: boolean; getDisplayNameForAddress: (address: `0x${string}`) => string } }) {
   return (
     <div className={styles.overviewTab}>
       <div className={styles.summaryCards}>
@@ -270,12 +246,12 @@ function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { g
       <div className={styles.recentActivity}>
         <h4>Recent Activity</h4>
         <div className={styles.activityList}>
-          {groupData.bills.slice(0, 3).map((bill: GroupBill) => (
+          {groupData.bills.slice(0, 3).map((bill: Bill) => (
             <div key={bill.id} className={styles.activityItem}>
               <div className={styles.activityInfo}>
                 <span className={styles.activityDescription}>{bill.description}</span>
                 <span className={styles.activityDate}>
-                  {new Date(Number(bill.timestamp) * 1000).toLocaleDateString()}
+                  {new Date(Number(bill.timestamp)).toLocaleDateString()}
                 </span>
               </div>
               <div className={styles.activityAmount}>
@@ -290,11 +266,11 @@ function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { g
 }
 
 // Bills Tab Component
-function BillsTab({ bills }: { bills: GroupBill[] }) {
+function BillsTab({ bills }: { bills: Bill[] }) {
   return (
     <div className={styles.billsTab}>
       <div className={styles.billsList}>
-        {bills.map((bill: GroupBill) => (
+        {bills.map((bill: Bill) => (
           <div key={bill.id} className={styles.billCard}>
             <div className={styles.billHeader}>
               <h4>{bill.description}</h4>
@@ -327,7 +303,7 @@ function MembersTab({
   addAddress
 }: {
   members: GroupMember[],
-  memberDisplayNames: Record<string, string>,
+  memberDisplayNames: { displayNames: Record<string, string>; isLoading: boolean; isInitialized: boolean; getDisplayNameForAddress: (address: `0x${string}`) => string },
   userAddress?: `0x${string}`,
   onNameAdded?: () => void,
   editingAddress: `0x${string}` | null,
@@ -362,14 +338,14 @@ function MembersTab({
   return (
     <div className={styles.membersTab}>
       <div className={styles.membersList}>
-        {members.map((member: { address: `0x${string}`; balance: bigint }) => {
+        {members.map((member: GroupMember) => {
           const balance = formatUnits(member.balance, 6);
           const isPositive = member.balance > 0n;
           const isCurrentUser = member.address.toLowerCase() === userAddress?.toLowerCase();
           const hasName = hasCustomName(member.address);
           const displayName = isCurrentUser
             ? 'You'
-            : (memberDisplayNames.displayNames?.[member.address.toLowerCase()] || `${member.address.slice(0, 6)}...${member.address.slice(-4)}`);
+            : (memberDisplayNames.displayNames[member.address.toLowerCase()] || `${member.address.slice(0, 6)}...${member.address.slice(-4)}`);
 
           return (
             <div key={member.address} className={styles.memberCard}>

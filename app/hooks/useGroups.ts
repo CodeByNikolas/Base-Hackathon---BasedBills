@@ -208,7 +208,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       : false;
 
     const gambleActive = gambleStatusResult.status === 'success'
-      ? (gambleStatusResult.result as [boolean])[0]
+      ? (gambleStatusResult.result as unknown as { status: boolean })?.status ?? false
       : false;
 
     // Calculate total owed from unsettled bills
