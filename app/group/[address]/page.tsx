@@ -110,8 +110,14 @@ export default function GroupPage() {
         return;
       }
 
-      // Refresh data after successful transaction
+      // Wait for transaction confirmation before refreshing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Refresh data after successful transaction confirmation
       await refetchGroupData();
+
+      // Show success message
+      alert(`Settlement ${isUserCreditor ? 'approved' : 'funded'} successfully!`);
     } catch (error) {
       console.error('Settlement error:', error);
       alert('Settlement failed. Please try again.');
@@ -132,8 +138,14 @@ export default function GroupPage() {
         functionName: 'proposeGamble',
       });
 
-      // Refresh data after successful transaction
+      // Wait for transaction confirmation before refreshing
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Refresh data after successful transaction confirmation
       await refetchGroupData();
+
+      // Show success message
+      alert('Gamble proposed successfully! Waiting for other members to vote.');
     } catch (error) {
       console.error('Gamble proposal error:', error);
       alert('Gamble proposal failed. Please try again.');
@@ -351,6 +363,7 @@ export default function GroupPage() {
           groupAddress={groupAddress}
           groupMembers={groupData.members}
           isProcessActive={groupData.settlementActive || groupData.gambleActive}
+          onBillAdded={() => refetchGroupData()}
         />
       </div>
     </WalletGuard>

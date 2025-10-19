@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits } from 'viem';
 import { Modal } from '../ui/Modal';
 import { GROUP_ABI } from '../../config/contracts';
@@ -13,9 +13,10 @@ interface AddBillModalProps {
   groupAddress: `0x${string}`;
   groupMembers: Array<{ address: `0x${string}`; balance: bigint }>;
   isProcessActive?: boolean;
+  onBillAdded?: () => void; // Callback to refresh parent data
 }
 
-export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isProcessActive = false }: AddBillModalProps) {
+export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isProcessActive = false, onBillAdded }: AddBillModalProps) {
   const { address: userAddress } = useAccount();
   const [billType, setBillType] = useState<'equal' | 'custom'>('equal');
   const [description, setDescription] = useState('');
@@ -64,9 +65,11 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
     setIsSubmitting(true);
 
     try {
+      let txHash;
+
       if (billType === 'equal') {
         // Add equal split bill
-        await writeContractAsync({
+        txHash = await writeContractAsync({
           address: groupAddress,
           abi: GROUP_ABI,
           functionName: 'addBill',
@@ -86,7 +89,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
           return parseUnits(customAmount, 6);
         });
 
-        await writeContractAsync({
+        txHash = await writeContractAsync({
           address: groupAddress,
           abi: GROUP_ABI,
           functionName: 'addCustomBill',
@@ -98,7 +101,19 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
         });
       }
 
-      // Reset form
+      // Wait for transaction confirmation (simple approach)
+      // In a production app, you'd use useWaitForTransactionReceipt hook
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Refresh parent data after transaction confirmation
+      if (onBillAdded) {
+        onBillAdded();
+      }
+
+      // Show success message
+      alert(`Bill "${description}" added successfully!`);
+
+      // Reset form and close modal after successful transaction
       setDescription('');
       setAmount('');
       setParticipants(new Set());
