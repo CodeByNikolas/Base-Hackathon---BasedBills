@@ -304,17 +304,19 @@ export default function GroupPage() {
             <button
               className={`${styles.actionButton} ${styles.secondary}`}
               onClick={handleSettleUp}
-              disabled={groupData.settlementActive || groupData.gambleActive || isProcessingSettlement || userBalance === 0n}
+              disabled={
+                (groupData.settlementActive && userBalance === 0n) ||
+                groupData.gambleActive ||
+                isProcessingSettlement
+              }
               title={
-                userBalance === 0n
-                  ? 'Your balance is settled. No action required.'
-                  : groupData.settlementActive || groupData.gambleActive
-                    ? 'Cannot settle while other processes are active'
+                groupData.gambleActive
+                  ? 'Cannot settle while gamble is active'
+                  : userBalance === 0n
+                    ? 'Your balance is settled. No action required.'
                     : isUserCreditor
-                      ? 'Start settlement and approve (you will receive money)'
-                      : isUserDebtor
-                        ? 'Start settlement and fund (you will pay money)'
-                        : 'Your balance is settled'
+                      ? 'Approve settlement (you will receive money)'
+                      : 'Fund settlement (you will pay money)'
               }
             >
               {isProcessingSettlement ? '⏳ Processing' : '⚖️ Settle Up'}
@@ -325,10 +327,10 @@ export default function GroupPage() {
           <button
             className={`${styles.actionButton} ${styles.accent}`}
             onClick={handleGamble}
-            disabled={groupData.settlementActive || groupData.gambleActive || isProcessingGamble}
+            disabled={groupData.settlementActive || isProcessingGamble}
             title={
-              groupData.settlementActive || groupData.gambleActive
-                ? 'Cannot gamble while other processes are active'
+              groupData.settlementActive
+                ? 'Cannot gamble while settlement is active'
                 : 'Propose a gamble to randomly settle debts'
             }
           >
@@ -375,16 +377,14 @@ function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { g
         </div>
 
         <div className={styles.summaryCard}>
-          <h4>Settlement Status</h4>
+          <h4>Group State</h4>
           <div className={styles.status}>
-            {groupData.settlementActive ? '🔄 Active' : '✅ Settled'}
-          </div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <h4>Gamble Status</h4>
-          <div className={styles.status}>
-            {groupData.gambleActive ? '🎲 Active' : '⏸️ Inactive'}
+            {groupData.settlementActive
+              ? '🔄 Settlement in Progress'
+              : groupData.gambleActive
+                ? '🎲 Gamble in Progress'
+                : '✅ Ready for Bills'
+            }
           </div>
         </div>
       </div>
