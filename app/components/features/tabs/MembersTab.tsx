@@ -1,8 +1,8 @@
 'use client';
 
 import { formatUnits } from 'viem';
-import { hasCustomName } from '../../utils/addressBook';
-import { GroupMember } from '../../utils/groupUtils';
+import { hasCustomName } from '../../../utils/addressBook';
+import { GroupMember } from '../../../utils/groupUtils';
 import styles from './MembersTab.module.css';
 
 interface MembersTabProps {

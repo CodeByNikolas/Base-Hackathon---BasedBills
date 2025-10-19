@@ -8,7 +8,7 @@ import { HeaderBar } from '../components/ui/HeaderBar';
 import { Modal } from '../components/ui/Modal';
 import { useAddressBook } from '../hooks/useAddressBook';
 import { useUserGroups } from '../hooks/useGroups';
-import { GROUP_FACTORY_ABI, getContractAddresses, getTargetChainId } from '../config/contracts';
+import { GROUP_FACTORY_ABI, getContractAddresses } from '../config/contracts';
 import { isValidAddress } from '../utils/addressBook';
 import styles from './CreateGroup.module.css';
 

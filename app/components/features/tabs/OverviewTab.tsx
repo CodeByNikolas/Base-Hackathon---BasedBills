@@ -1,7 +1,7 @@
 'use client';
 
 import { formatUnits } from 'viem';
-import { GroupData, Bill } from '../../utils/groupUtils';
+import { GroupData, Bill } from '../../../utils/groupUtils';
 import styles from './OverviewTab.module.css';
 
 interface OverviewTabProps {
@@ -14,7 +14,7 @@ interface OverviewTabProps {
   };
 }
 
-export function OverviewTab({ groupData, memberDisplayNames }: OverviewTabProps) {
+export function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: OverviewTabProps) {
   return (
     <div className={styles.overviewTab}>
       <div className={styles.summaryCards}>

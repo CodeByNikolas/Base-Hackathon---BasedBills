@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { WelcomePage } from "./components/features/WelcomePage";
 import { HeaderBar } from "./components/ui/HeaderBar";
-import { GroupCard } from "./components/features/GroupCard";
+import { GroupCard } from "./components/features/cards/GroupCard";
 import { useUserGroups, useMultipleGroupsData } from "./hooks/useGroups";
 import { hasUserSeenWelcome, markWelcomeAsSeen } from "./utils/welcomeUtils";
 import {

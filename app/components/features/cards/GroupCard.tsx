@@ -2,13 +2,13 @@
 import { useAccount } from 'wagmi';
 import Link from 'next/link';
 import styles from './GroupCard.module.css';
-import { GroupData } from '../../utils/groupUtils';
+import { GroupData } from '../../../utils/groupUtils';
 import {
   getUserGroupStatus,
   formatUSDCWithSymbol,
   getGroupActivitySummary,
   getRelativeTime,
-} from '../../utils/groupUtils';
+} from '../../../utils/groupUtils';
 
 interface GroupCardProps {
   group: GroupData;

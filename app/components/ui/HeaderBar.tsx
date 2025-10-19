@@ -18,7 +18,7 @@ import {
   Identity,
   EthBalance,
 } from "@coinbase/onchainkit/identity";
-import { AddressBookManager } from '../features/AddressBookManager';
+import { AddressBookManager } from '../features/address-book/AddressBookManager';
 import styles from "./HeaderBar.module.css";
 
 export function HeaderBar() {

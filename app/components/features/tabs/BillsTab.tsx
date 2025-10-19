@@ -1,7 +1,7 @@
 'use client';
 
 import { formatUnits } from 'viem';
-import { Bill } from '../../utils/groupUtils';
+import { Bill } from '../../../utils/groupUtils';
 import styles from './BillsTab.module.css';
 
 interface BillsTabProps {

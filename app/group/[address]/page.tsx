@@ -4,23 +4,21 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
-import { AddBillModal } from '../../components/features/AddBillModal';
-import { OverviewTab } from '../../components/features/OverviewTab';
-import { BillsTab } from '../../components/features/BillsTab';
-import { MembersTab } from '../../components/features/MembersTab';
+import { AddBillModal } from '../../components/features/modals/AddBillModal';
+import { OverviewTab } from '../../components/features/tabs/OverviewTab';
+import { BillsTab } from '../../components/features/tabs/BillsTab';
+import { MembersTab } from '../../components/features/tabs/MembersTab';
 import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
 import { formatUnits, parseUnits } from 'viem';
-import { hasCustomName } from '../../utils/addressBook';
-import { GroupData, GroupMember, Bill } from '../../utils/groupUtils';
-import { GROUP_ABI, USDC_ABI, getContractAddresses, getTargetChainId, isTestnet } from '../../config/contracts';
+import { GROUP_ABI, USDC_ABI, getContractAddresses, isTestnet } from '../../config/contracts';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
   const params = useParams();
   const router = useRouter();
-  const { address: userAddress, chain } = useAccount();
+  const { address: userAddress } = useAccount();
   const groupAddress = params.address as `0x${string}`;
 
   const { groupData, isLoading, error, refetch: refetchGroupData } = useGroupData(groupAddress);

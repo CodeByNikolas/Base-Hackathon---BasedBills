@@ -1,10 +1,10 @@
 "use client";
 import { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
-import { useAddressBook, useAddressBookStats } from '../../hooks/useAddressBook';
-import { useUserGroups, useMultipleGroupsData } from '../../hooks/useGroups';
+import { useAddressBook, useAddressBookStats } from '../../../hooks/useAddressBook';
+import { useUserGroups, useMultipleGroupsData } from '../../../hooks/useGroups';
 import { AddressDisplay, AddressInput } from './AddressDisplay';
-import { isValidAddress, exportAddressBook, importAddressBook, hasCustomName } from '../../utils/addressBook';
+import { isValidAddress, exportAddressBook, importAddressBook, hasCustomName } from '../../../utils/addressBook';
 import styles from './AddressBookManager.module.css';
 
 interface AddressBookManagerProps {

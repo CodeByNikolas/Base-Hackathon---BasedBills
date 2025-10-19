@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
-import { Modal } from '../ui/Modal';
-import { GROUP_ABI } from '../../config/contracts';
+import { Modal } from '../../ui/Modal';
+import { GROUP_ABI } from '../../../config/contracts';
 import styles from './AddBillModal.module.css';
 
 interface AddBillModalProps {
@@ -65,11 +65,11 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
     setIsSubmitting(true);
 
     try {
-      let txHash;
+      let _txHash;
 
       if (billType === 'equal') {
         // Add equal split bill
-        txHash = await writeContractAsync({
+        _txHash = await writeContractAsync({
           address: groupAddress,
           abi: GROUP_ABI,
           functionName: 'addBill',
@@ -89,7 +89,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
           return parseUnits(customAmount, 6);
         });
 
-        txHash = await writeContractAsync({
+        _txHash = await writeContractAsync({
           address: groupAddress,
           abi: GROUP_ABI,
           functionName: 'addCustomBill',
