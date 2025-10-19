@@ -53,6 +53,29 @@ export default function GroupPage() {
     args: userAddress && groupAddress ? [userAddress, groupAddress] : undefined,
     query: {
       enabled: !!userAddress && !!groupAddress,
+      refetchInterval: 5000, // Refetch every 5 seconds
+    },
+  });
+
+  // Check if user has already approved settlement (for creditors)
+  const { data: hasUserApproved } = useReadContract({
+    address: groupAddress,
+    abi: GROUP_ABI,
+    functionName: 'hasApproved',
+    args: userAddress ? [userAddress] : undefined,
+    query: {
+      enabled: !!userAddress && groupData?.settlementActive,
+    },
+  });
+
+  // Check if user has already funded settlement (for debtors)
+  const { data: hasUserFunded } = useReadContract({
+    address: groupAddress,
+    abi: GROUP_ABI,
+    functionName: 'hasFunded',
+    args: userAddress ? [userAddress] : undefined,
+    query: {
+      enabled: !!userAddress && groupData?.settlementActive,
     },
   });
 
@@ -87,6 +110,15 @@ export default function GroupPage() {
     setIsProcessingSettlement(true);
     try {
       if (userBalance > 0n) {
+        // User is a creditor - check if already approved
+        const userAlreadyApproved = hasUserApproved ?? false;
+
+        if (userAlreadyApproved) {
+          alert('You have already approved this settlement. No further action needed.');
+          setIsProcessingSettlement(false);
+          return;
+        }
+
         // User is a creditor - start settlement and approve in one transaction
         await writeContractAsync({
           address: groupAddress,
@@ -94,7 +126,16 @@ export default function GroupPage() {
           functionName: 'approveSettlement',
         });
       } else if (userBalance < 0n) {
-        // User is a debtor - check balance and approval first
+        // User is a debtor - check if already funded
+        const userAlreadyFunded = hasUserFunded ?? false;
+
+        if (userAlreadyFunded) {
+          alert('You have already funded this settlement. No further action needed.');
+          setIsProcessingSettlement(false);
+          return;
+        }
+
+        // Check balance and approval first
         const amountOwed = BigInt(-userBalance);
         const currentBalance = usdcBalance ?? 0n; // Use nullish coalescing for better undefined handling
         const currentAllowance = usdcAllowance ?? 0n;
@@ -115,13 +156,16 @@ export default function GroupPage() {
           return;
         }
 
+        // Use unlimited approval for better UX (approve once)
+        const unlimitedAmount = BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'); // MaxUint256
+
         if (currentAllowance < amountOwed) {
-          // Need to approve USDC spending first
+          // Need to approve USDC spending first (unlimited approval)
           await writeContractAsync({
             address: getContractAddresses().usdc as `0x${string}`,
             abi: USDC_ABI,
             functionName: 'approve',
-            args: [groupAddress, amountOwed],
+            args: [groupAddress, unlimitedAmount], // Unlimited approval
           });
 
           // Wait a moment for approval to be confirmed
@@ -376,16 +420,22 @@ export default function GroupPage() {
               disabled={
                 (groupData.settlementActive && userBalance === 0n) ||
                 groupData.gambleActive ||
-                isProcessingSettlement
+                isProcessingSettlement ||
+                (groupData.settlementActive && isUserCreditor && (hasUserApproved ?? false)) ||
+                (groupData.settlementActive && isUserDebtor && (hasUserFunded ?? false))
               }
               title={
                 groupData.gambleActive
                   ? 'Cannot settle while gamble is active'
-                  : userBalance === 0n
-                    ? 'Your balance is settled. No action required.'
-                    : isUserCreditor
-                      ? 'Approve settlement (you will receive money)'
-                      : 'Fund settlement (you will pay money)'
+                  : (groupData.settlementActive && isUserCreditor && (hasUserApproved ?? false))
+                    ? 'You have already approved this settlement'
+                    : (groupData.settlementActive && isUserDebtor && (hasUserFunded ?? false))
+                      ? 'You have already funded this settlement'
+                      : userBalance === 0n
+                        ? 'Your balance is settled. No action required.'
+                        : isUserCreditor
+                          ? 'Approve settlement (you will receive money)'
+                          : 'Fund settlement (you will pay money)'
               }
             >
               {isProcessingSettlement ? '⏳ Processing' : '⚖️ Settle Up'}
