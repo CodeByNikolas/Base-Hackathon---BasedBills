@@ -496,7 +496,20 @@ export default function GroupPage() {
           {groupData.settlementActive && groupData.gambleActive ? (
             <p>⚠️ Settlement and Gamble processes are both active. Adding new bills is temporarily disabled.</p>
           ) : groupData.settlementActive ? (
-            <p>⚠️ Settlement process is active. Adding new bills is temporarily disabled.</p>
+            <>
+              {/* Show positive message if user has completed their part */}
+              {(isUserCreditor && (hasUserApproved ?? false)) ? (
+                <div className={styles.successMessage}>
+                  ✅ You&apos;re all set! You&apos;ve approved the settlement. Just waiting for debtors to fund their payments.
+                </div>
+              ) : (isUserDebtor && (hasUserFunded ?? false)) ? (
+                <div className={styles.successMessage}>
+                  ✅ You&apos;re all set! You&apos;ve funded your settlement. Just waiting for creditors to approve.
+                </div>
+              ) : (
+                <p>⚠️ Settlement process is active. Adding new bills is temporarily disabled.</p>
+              )}
+            </>
           ) : (
             <p>⚠️ Gamble process is active. Adding new bills is temporarily disabled.</p>
           )}

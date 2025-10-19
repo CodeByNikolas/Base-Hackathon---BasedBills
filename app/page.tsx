@@ -20,7 +20,7 @@ import {
  * or the groups dashboard (for connected users)
  */
 export default function Home() {
-  const { isConnected } = useAccount();
+  const { address: userAddress, isConnected } = useAccount();
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled' | 'pending-settlement'>('all');
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -59,8 +59,8 @@ export default function Home() {
   const error = addressesError || groupsDataError;
 
   // Calculate user's overall balance across all groups
-  const outstandingBalance = groupsData.length > 0 
-    ? calculateOutstandingBalance(groupsData)
+  const outstandingBalance = groupsData.length > 0
+    ? calculateOutstandingBalance(groupsData, userAddress)
     : { totalOwed: 0n, totalOwes: 0n, netBalance: 0n };
 
   // Filter and sort groups

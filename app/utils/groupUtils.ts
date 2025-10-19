@@ -65,7 +65,7 @@ export function formatUSDCWithSymbol(amount: bigint): string {
 /**
  * Calculate total outstanding balance for a user across all their groups
  */
-export function calculateOutstandingBalance(groups: GroupData[]): {
+export function calculateOutstandingBalance(groups: GroupData[], userAddress?: `0x${string}`): {
   totalOwed: bigint; // Money owed to user
   totalOwes: bigint; // Money user owes
   netBalance: bigint; // Net position (positive = net creditor, negative = net debtor)
@@ -74,7 +74,7 @@ export function calculateOutstandingBalance(groups: GroupData[]): {
   let totalOwes = 0n;
 
   for (const group of groups) {
-    const userMember = group.members.find(m => m.address);
+    const userMember = group.members.find(m => m.address.toLowerCase() === userAddress?.toLowerCase());
     if (userMember) {
       if (userMember.balance > 0n) {
         totalOwed += userMember.balance;

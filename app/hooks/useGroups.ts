@@ -185,7 +185,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
           amounts: bill.amounts,
           timestamp: bill.timestamp,
           settlementId: bill.settlementId,
-        } as Bill))
+        } as Bill)).sort((a, b) => Number(b.timestamp - a.timestamp)) // Sort by timestamp descending (newest first)
       : [];
 
     const unsettledBills = unsettledBillsResult.status === 'success'
@@ -207,7 +207,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
           amounts: bill.amounts,
           timestamp: bill.timestamp,
           settlementId: bill.settlementId,
-        } as Bill))
+        } as Bill)).sort((a, b) => Number(b.timestamp - a.timestamp)) // Sort by timestamp descending (newest first)
       : [];
 
     const settlementActive = settlementActiveResult.status === 'success' 
