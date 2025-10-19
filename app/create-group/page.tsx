@@ -8,7 +8,7 @@ import { HeaderBar } from '../components/ui/HeaderBar';
 import { Modal } from '../components/ui/Modal';
 import { useAddressBook } from '../hooks/useAddressBook';
 import { useUserGroups } from '../hooks/useGroups';
-import { GROUP_FACTORY_ABI } from '../config/contracts';
+import { GROUP_FACTORY_ABI, getContractAddresses, getTargetChainId } from '../config/contracts';
 import { isValidAddress } from '../utils/addressBook';
 import styles from './CreateGroup.module.css';
 
@@ -96,7 +96,7 @@ export default function CreateGroupPage() {
       const allMembers = getAllMembers();
 
       const _txHash = await writeContractAsync({
-        address: '0xa1d596bdf23f27e65cbd913117df62689012462c', // GroupFactory address
+        address: getContractAddresses().groupFactory as `0x${string}`, // GroupFactory address
         abi: GROUP_FACTORY_ABI,
         functionName: 'createGroup',
         args: [allMembers as `0x${string}`[], groupName.trim()],

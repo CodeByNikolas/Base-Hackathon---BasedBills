@@ -1,7 +1,10 @@
 import { network } from "hardhat";
 import { formatEther } from "viem";
+import * as fs from "fs";
+import * as path from "path";
 
-console.log("🚀 Starting deployment to Base Sepolia...");
+async function main() {
+  console.log("🚀 Starting deployment to Base Sepolia...");
 
 const { viem } = await network.connect({
   network: "baseSepolia",
@@ -50,7 +53,23 @@ console.log("GroupFactory deployed to:", groupFactory.address);
 console.log("⏳ Waiting 5 seconds for transaction to be processed...");
 await new Promise(resolve => setTimeout(resolve, 5000));
 
-// Step 4: Update the Registry with the actual factory address
+// Step 4: Deploy MockUSDC for testing
+console.log("\n💰 Deploying MockUSDC contract...");
+const mockUSDC = await viem.deployContract("MockUSDC");
+console.log("MockUSDC deployed to:", mockUSDC.address);
+
+// Wait for transaction to be mined and nonce to update
+console.log("⏳ Waiting 5 seconds for transaction to be processed...");
+await new Promise(resolve => setTimeout(resolve, 5000));
+
+// Step 5: Mint test USDC to deployer for testing
+console.log("\n💸 Minting test USDC to deployer...");
+const mintAmount = 1000000n * 1000000n; // 1M USDC (6 decimals as BigInt)
+const mintHash = await mockUSDC.write.mint([walletClient.account.address, mintAmount]);
+await publicClient.waitForTransactionReceipt({ hash: mintHash });
+console.log("✅ Minted 1M test USDC to deployer");
+
+// Step 6: Update the Registry with the actual factory address
 console.log("\n🔄 Updating Registry with factory address...");
 const hash = await registry.write.updateFactory([groupFactory.address]);
 await publicClient.waitForTransactionReceipt({ hash });
@@ -61,6 +80,7 @@ console.log("\n📋 Contract Addresses:");
 console.log("Group Logic:", groupLogic.address);
 console.log("Registry:", registry.address);
 console.log("GroupFactory:", groupFactory.address);
+console.log("MockUSDC:", mockUSDC.address);
 
 // Save addresses to deployments.json for verification script
 console.log("\n💾 Updating deployments.json...");
@@ -70,6 +90,7 @@ const addresses = {
   groupLogic: groupLogic.address,
   registry: registry.address,
   groupFactory: groupFactory.address,
+  mockUSDC: mockUSDC.address,
   deployer: walletClient.account.address,
   deployedAt: new Date().toISOString(),
   verified: {
@@ -78,25 +99,32 @@ const addresses = {
   },
   features: [
     "Group Names",
-    "Address Book Suggestions", 
+    "Address Book Suggestions",
     "Enhanced Bill Splitting",
     "Gamble Feature",
-    "Settlement Tracking"
+    "Settlement Tracking",
+    "MockUSDC for Testing"
   ]
 };
 
 // Write to deployments.json
-const fs = require('fs');
-const path = require('path');
-fs.writeFileSync(
-  path.join(process.cwd(), 'deployments.json'), 
-  JSON.stringify(addresses, null, 2)
-);
+async function updateDeploymentsFile() {
+  const deploymentsPath = path.join(process.cwd(), 'deployments.json');
+  fs.writeFileSync(deploymentsPath, JSON.stringify(addresses, null, 2));
+  console.log("✅ deployments.json updated successfully!");
+  console.log(JSON.stringify(addresses, null, 2));
+}
 
-console.log("✅ deployments.json updated successfully!");
-console.log(JSON.stringify(addresses, null, 2));
+// Update deployments file
+await updateDeploymentsFile();
 
 console.log("\n🎉 Ready for testing! You can now:");
 console.log("1. Create groups using GroupFactory");
 console.log("2. Add bills to groups");
 console.log("3. Test settlement flows");
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

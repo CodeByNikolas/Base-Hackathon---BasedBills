@@ -1,14 +1,15 @@
 {
   "network": "baseSepolia",
   "chainId": 84532,
-  "groupLogic": "0xc18b68f0b572ff657931ac5094e68ef61f7780e1",
-  "registry": "0x53c8a58c8ca9df19ea7217ecb6d7464a54598041",
-  "groupFactory": "0xa1d596bdf23f27e65cbd913117df62689012462c",
+  "groupLogic": "0xfe9f9e4dc2408eb226ff90febb7f871f4e8e8f79",
+  "registry": "0xc1c32631f9aa52e8d51bbf4aa1726370529a1a74",
+  "groupFactory": "0x55edcbc218b7b6490685818f5621f441e1144ee4",
+  "mockUSDC": "0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca",
   "deployer": "0x21750fc30922badd61c2f1e48b94683071dfbcaa",
-  "deployedAt": "2024-10-19T12:00:00Z",
+  "deployedAt": "2025-10-19T10:16:41.488Z",
   "verified": {
-    "blockscout": true,
-    "basescan": true
+    "blockscout": false,
+    "basescan": false
   },
   "features": [
     "Group Names",
@@ -16,6 +17,6 @@
     "Enhanced Bill Splitting",
     "Gamble Feature",
     "Settlement Tracking",
-    "Single Transaction Settlement"
+    "MockUSDC for Testing"
   ]
 }

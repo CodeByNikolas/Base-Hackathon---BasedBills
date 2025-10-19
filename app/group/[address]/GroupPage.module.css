@@ -566,6 +566,17 @@
   box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
 }
 
+.testButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.testButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
 /* Disabled button state */
 .actionButton:disabled,
 .actionButton.disabled {

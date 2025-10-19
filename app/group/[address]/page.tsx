@@ -11,7 +11,7 @@ import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook
 import { formatUnits, parseUnits } from 'viem';
 import { hasCustomName } from '../../utils/addressBook';
 import { GroupData, GroupMember, Bill } from '../../utils/groupUtils';
-import { GROUP_ABI, USDC_ABI, getContractAddresses } from '../../config/contracts';
+import { GROUP_ABI, USDC_ABI, getContractAddresses, getTargetChainId } from '../../config/contracts';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
@@ -28,18 +28,30 @@ export default function GroupPage() {
   const [nameInput, setNameInput] = useState('');
   const [isProcessingSettlement, setIsProcessingSettlement] = useState(false);
   const [isProcessingGamble, setIsProcessingGamble] = useState(false);
+  const [isMintingUSDC, setIsMintingUSDC] = useState(false);
 
   // Contract interaction hooks
   const { writeContractAsync } = useWriteContract();
 
+  // USDC balance check
+  const { data: usdcBalance } = useReadContract({
+    address: getContractAddresses().usdc as `0x${string}`,
+    abi: USDC_ABI,
+    functionName: 'balanceOf',
+    args: userAddress ? [userAddress] : undefined,
+    query: {
+      enabled: !!userAddress,
+    },
+  });
+
   // USDC approval check
   const { data: usdcAllowance } = useReadContract({
-    address: getContractAddresses(chain?.id || 84532).usdc as `0x${string}`,
+    address: getContractAddresses().usdc as `0x${string}`,
     abi: USDC_ABI,
     functionName: 'allowance',
     args: userAddress && groupAddress ? [userAddress, groupAddress] : undefined,
     query: {
-      enabled: !!userAddress && !!groupAddress && !!chain?.id,
+      enabled: !!userAddress && !!groupAddress,
     },
   });
 
@@ -81,14 +93,22 @@ export default function GroupPage() {
           functionName: 'approveSettlement',
         });
       } else if (userBalance < 0n) {
-        // User is a debtor - check approval first
+        // User is a debtor - check balance and approval first
         const amountOwed = BigInt(-userBalance);
+        const currentBalance = usdcBalance || 0n;
         const currentAllowance = usdcAllowance || 0n;
+
+        // Check if user has enough USDC balance
+        if (currentBalance < amountOwed) {
+          alert(`Insufficient USDC balance. You need ${formatUnits(amountOwed, 6)} USDC but only have ${formatUnits(currentBalance, 6)} USDC. Please get more test USDC first.`);
+          setIsProcessingSettlement(false);
+          return;
+        }
 
         if (currentAllowance < amountOwed) {
           // Need to approve USDC spending first
           await writeContractAsync({
-            address: getContractAddresses(chain?.id || 84532).usdc as `0x${string}`,
+            address: getContractAddresses().usdc as `0x${string}`,
             abi: USDC_ABI,
             functionName: 'approve',
             args: [groupAddress, amountOwed],
@@ -145,6 +165,45 @@ export default function GroupPage() {
       alert('Gamble proposal failed. Please try again.');
     } finally {
       setIsProcessingGamble(false);
+    }
+  };
+
+  // Handle minting test USDC
+  const handleMintTestUSDC = async () => {
+    if (!userAddress) return;
+
+    setIsMintingUSDC(true);
+    try {
+      // Mint 1000 USDC for testing
+      await writeContractAsync({
+        address: getContractAddresses().usdc as `0x${string}`,
+        abi: [
+          {
+            "inputs": [
+              { "internalType": "address", "name": "to", "type": "address" },
+              { "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "name": "mint",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }
+        ],
+        functionName: 'mint',
+        args: [userAddress, parseUnits('1000', 6)], // 1000 USDC
+      });
+
+      // Wait for transaction confirmation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Refresh balance data
+      // Note: In a real app, you'd refetch the balance query here
+      alert('Successfully minted 1000 test USDC to your wallet!');
+    } catch (error) {
+      console.error('Mint error:', error);
+      alert('Failed to mint test USDC. Please try again.');
+    } finally {
+      setIsMintingUSDC(false);
     }
   };
 
@@ -337,6 +396,16 @@ export default function GroupPage() {
             {isProcessingGamble ? '⏳ Processing' : '🎲 Gamble'}
           </button>
         )}
+
+        {/* Mint Test USDC Button */}
+        <button
+          className={`${styles.actionButton} ${styles.testButton}`}
+          onClick={handleMintTestUSDC}
+          disabled={isMintingUSDC}
+          title="Mint 1000 test USDC for testing settlement"
+        >
+          {isMintingUSDC ? '⏳ Minting...' : '💰 Get Test USDC'}
+        </button>
       </div>
 
       {/* Process Active Warning */}
