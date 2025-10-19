@@ -11,7 +11,7 @@ import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook
 import { formatUnits, parseUnits } from 'viem';
 import { hasCustomName } from '../../utils/addressBook';
 import { GroupData, GroupMember, Bill } from '../../utils/groupUtils';
-import { GROUP_ABI, USDC_ABI, getContractAddresses, getTargetChainId } from '../../config/contracts';
+import { GROUP_ABI, USDC_ABI, getContractAddresses, getTargetChainId, NETWORK_CONFIG } from '../../config/contracts';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
@@ -397,15 +397,17 @@ export default function GroupPage() {
           </button>
         )}
 
-        {/* Mint Test USDC Button */}
-        <button
-          className={`${styles.actionButton} ${styles.testButton}`}
-          onClick={handleMintTestUSDC}
-          disabled={isMintingUSDC}
-          title="Mint 1000 test USDC for testing settlement"
-        >
-          {isMintingUSDC ? '⏳ Minting...' : '💰 Get Test USDC'}
-        </button>
+        {/* Mint Test USDC Button - Only on Testnet */}
+        {NETWORK_CONFIG.TARGET_CHAIN_ID === 84532 && ( // Base Sepolia testnet
+          <button
+            className={`${styles.actionButton} ${styles.testButton}`}
+            onClick={handleMintTestUSDC}
+            disabled={isMintingUSDC}
+            title="Mint 1000 test USDC for testing settlement"
+          >
+            {isMintingUSDC ? '⏳ Minting...' : '💰 Get Test USDC'}
+          </button>
+        )}
       </div>
 
       {/* Process Active Warning */}
