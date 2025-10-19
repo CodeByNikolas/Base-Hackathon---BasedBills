@@ -115,9 +115,6 @@ export default function GroupPage() {
 
       // Refresh data after successful transaction confirmation
       await refetchGroupData();
-
-      // Show success message
-      alert(`Settlement ${isUserCreditor ? 'approved' : 'funded'} successfully!`);
     } catch (error) {
       console.error('Settlement error:', error);
       alert('Settlement failed. Please try again.');
@@ -143,9 +140,6 @@ export default function GroupPage() {
 
       // Refresh data after successful transaction confirmation
       await refetchGroupData();
-
-      // Show success message
-      alert('Gamble proposed successfully! Waiting for other members to vote.');
     } catch (error) {
       console.error('Gamble proposal error:', error);
       alert('Gamble proposal failed. Please try again.');

@@ -110,9 +110,6 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
         onBillAdded();
       }
 
-      // Show success message
-      alert(`Bill "${description}" added successfully!`);
-
       // Reset form and close modal after successful transaction
       setDescription('');
       setAmount('');
