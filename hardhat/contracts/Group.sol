@@ -88,14 +88,15 @@ contract Group {
 
     // --- Initialization ---
 
-    function initialize(address[] calldata _members, string calldata _groupName) external {
+    function initialize(address[] calldata _members, string calldata _groupName, address _usdcAddress) external {
         require(!initialized, "Group: Already initialized");
         require(_members.length > 0, "Group: No members provided");
         require(bytes(_groupName).length > 0, "Group: Group name cannot be empty");
         require(bytes(_groupName).length <= 100, "Group: Group name too long");
-        
+        require(_usdcAddress != address(0), "Group: Invalid USDC address");
+
         groupName = _groupName;
-        usdcAddress = 0x036CbD53842c5426634e7929541eC2318f3dCF7e; // Base Sepolia USDC
+        usdcAddress = _usdcAddress; // Use provided USDC address
         
         for (uint256 i = 0; i < _members.length; i++) {
             require(_members[i] != address(0), "Group: Invalid member address");

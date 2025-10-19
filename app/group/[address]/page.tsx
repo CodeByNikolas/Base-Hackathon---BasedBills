@@ -34,26 +34,29 @@ export default function GroupPage() {
   // Contract interaction hooks
   const { writeContractAsync } = useWriteContract();
 
-  // USDC balance check
+  // Use correct USDC address from group contract
+  const usdcAddress = groupData?.usdcAddress || getContractAddresses().usdc;
+
+  // USDC balance check - use correct USDC address from group
   const { data: usdcBalance } = useReadContract({
-    address: getContractAddresses().usdc as `0x${string}`,
+    address: usdcAddress as `0x${string}`,
     abi: USDC_ABI,
     functionName: 'balanceOf',
     args: userAddress ? [userAddress] : undefined,
     query: {
-      enabled: !!userAddress && !!getContractAddresses().usdc,
+      enabled: !!userAddress && !!usdcAddress,
       refetchInterval: 5000, // Refetch every 5 seconds to ensure fresh balance
     },
   });
 
-  // USDC approval check
+  // USDC approval check - use correct USDC address from group
   const { data: usdcAllowance } = useReadContract({
-    address: getContractAddresses().usdc as `0x${string}`,
+    address: usdcAddress as `0x${string}`,
     abi: USDC_ABI,
     functionName: 'allowance',
     args: userAddress && groupAddress ? [userAddress, groupAddress] : undefined,
     query: {
-      enabled: !!userAddress && !!groupAddress,
+      enabled: !!userAddress && !!groupAddress && !!usdcAddress,
       refetchInterval: 5000, // Refetch every 5 seconds
     },
   });
@@ -169,8 +172,11 @@ export default function GroupPage() {
 
           if (!isAlreadyUnlimited) {
             // Need to approve USDC spending first (unlimited approval)
+            // Use the USDC address from the group contract instead of hardcoded address
+            const usdcAddress = groupData.usdcAddress || getContractAddresses().usdc;
+
             await writeContractAsync({
-              address: getContractAddresses().usdc as `0x${string}`,
+              address: usdcAddress as `0x${string}`,
               abi: USDC_ABI,
               functionName: 'approve',
               args: [groupAddress, unlimitedAmount], // Unlimited approval
@@ -238,8 +244,9 @@ export default function GroupPage() {
     setIsMintingUSDC(true);
     try {
       // Mint 1000 USDC for testing (only works on MockUSDC)
+      // Use the correct USDC address from the group contract
       await writeContractAsync({
-        address: getContractAddresses().usdc as `0x${string}`,
+        address: usdcAddress as `0x${string}`,
         abi: [
           {
             "inputs": [

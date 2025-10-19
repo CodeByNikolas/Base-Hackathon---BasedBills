@@ -28,6 +28,7 @@ export interface GroupData {
   gambleActive: boolean;
   totalOwed: bigint;
   memberCount: number;
+  usdcAddress?: `0x${string}`; // USDC address from the group contract
 }
 
 export interface SettlementBreakdown {

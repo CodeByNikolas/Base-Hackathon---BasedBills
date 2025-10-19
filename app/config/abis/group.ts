@@ -1,4 +1,28 @@
 export const GROUP_ABI = [
+  // Initialization (called by factory)
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_members",
+        "type": "address[]"
+      },
+      {
+        "internalType": "string",
+        "name": "_groupName",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_usdcAddress",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
   // Member management
   {
     "inputs": [],
@@ -403,6 +427,20 @@ export const GROUP_ABI = [
         "internalType": "bool",
         "name": "hasVoted",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  // USDC address getter (public variable creates automatic getter)
+  {
+    "inputs": [],
+    "name": "usdcAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

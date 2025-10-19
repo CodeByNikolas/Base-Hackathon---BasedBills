@@ -1,4 +1,18 @@
 export const GROUP_FACTORY_ABI = [
+  // USDC address getter (public variable creates automatic getter)
+  {
+    "inputs": [],
+    "name": "usdcAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
   {
     "inputs": [
       {

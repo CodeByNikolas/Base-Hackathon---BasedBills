@@ -13,10 +13,13 @@ import "./Group.sol";
 contract GroupFactory {
     /// @dev Address of the Group logic contract template
     address public immutable logicContract;
-    
+
     /// @dev Registry contract instance for tracking user groups
     Registry public immutable registry;
-    
+
+    /// @dev USDC contract address for group settlements
+    address public immutable usdcAddress;
+
     /// @dev Counter for total groups created
     uint256 public totalGroups;
     
@@ -33,16 +36,19 @@ contract GroupFactory {
     );
     
     /**
-     * @dev Constructor sets the logic contract and registry addresses
+     * @dev Constructor sets the logic contract, registry, and USDC addresses
      * @param _logicContract Address of the deployed Group logic contract
      * @param _registryAddress Address of the Registry contract
+     * @param _usdcAddress Address of the USDC contract for settlements
      */
-    constructor(address _logicContract, address _registryAddress) {
+    constructor(address _logicContract, address _registryAddress, address _usdcAddress) {
         require(_logicContract != address(0), "GroupFactory: Logic contract address cannot be zero");
         require(_registryAddress != address(0), "GroupFactory: Registry address cannot be zero");
-        
+        require(_usdcAddress != address(0), "GroupFactory: USDC address cannot be zero");
+
         logicContract = _logicContract;
         registry = Registry(_registryAddress);
+        usdcAddress = _usdcAddress;
     }
     
     /**
@@ -77,9 +83,9 @@ contract GroupFactory {
         
         // Create a new lightweight proxy contract using OpenZeppelin's Clones
         groupAddress = Clones.clone(logicContract);
-        
-        // Initialize the new group's state
-        Group(groupAddress).initialize(_members, _groupName);
+
+        // Initialize the new group's state with the correct USDC address
+        Group(groupAddress).initialize(_members, _groupName, usdcAddress);
         
         // Register the group and its members in the registry
         registry.registerGroup(_members, groupAddress);
@@ -156,9 +162,9 @@ contract GroupFactory {
         
         // Create deterministic proxy
         groupAddress = Clones.cloneDeterministic(logicContract, _salt);
-        
-        // Initialize the new group's state
-        Group(groupAddress).initialize(_members, _groupName);
+
+        // Initialize the new group's state with the correct USDC address
+        Group(groupAddress).initialize(_members, _groupName, usdcAddress);
         
         // Register the group and its members in the registry
         registry.registerGroup(_members, groupAddress);

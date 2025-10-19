@@ -1,9 +1,10 @@
-import { useAccount, useReadContract, useReadContracts } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts, useWriteContract } from 'wagmi';
 import { useCallback, useMemo } from 'react';
-import { 
-  getContractAddresses, 
-  REGISTRY_ABI, 
-  GROUP_ABI 
+import {
+  getContractAddresses,
+  REGISTRY_ABI,
+  GROUP_ABI,
+  USDC_ABI
 } from '../config/contracts';
 import { GroupData, GroupMember, Bill } from '../utils/groupUtils';
 
@@ -74,7 +75,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
   // Prepare contract calls for group data
   const contracts = useMemo(() => {
     if (!groupAddress) return [];
-    
+
     return [
       {
         address: groupAddress,
@@ -112,6 +113,11 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
         functionName: 'getGambleStatus',
         args: userAddress ? [userAddress] : [groupAddress], // Fallback to group address
       },
+      {
+        address: groupAddress,
+        abi: GROUP_ABI,
+        functionName: 'usdcAddress',
+      },
     ];
   }, [groupAddress, userAddress]);
 
@@ -139,6 +145,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       unsettledBillsResult,
       settlementActiveResult,
       gambleStatusResult,
+      usdcAddressResult,
     ] = contractResults;
 
     // Handle potential errors in individual contract calls
@@ -211,6 +218,10 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       ? (gambleStatusResult.result as unknown as { status: boolean })?.status ?? false
       : false;
 
+    const usdcAddress = usdcAddressResult.status === 'success'
+      ? usdcAddressResult.result as `0x${string}`
+      : undefined;
+
     // Calculate total owed from unsettled bills
     const totalOwed = unsettledBills.reduce((sum, bill) => sum + bill.totalAmount, 0n);
 
@@ -224,6 +235,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       gambleActive,
       totalOwed,
       memberCount: members.length,
+      usdcAddress,
     };
   }, [contractResults, groupAddress]);
 
@@ -371,6 +383,64 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
 
   return {
     groupsData,
+    isLoading,
+    error,
+    refetch,
+  };
+}
+
+/**
+ * Hook to handle USDC approval for group settlements
+ */
+export function useGroupSettlementApproval() {
+  const { address: userAddress } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+
+  const approveUSDCForGroup = useCallback(async (
+    usdcAddress: `0x${string}`,
+    groupAddress: `0x${string}`,
+    amount: bigint
+  ) => {
+    if (!userAddress) {
+      throw new Error('User address not available');
+    }
+
+    try {
+      // Approve the group contract to spend USDC on behalf of the user
+      const txHash = await writeContractAsync({
+        address: usdcAddress,
+        abi: USDC_ABI,
+        functionName: 'approve',
+        args: [groupAddress, amount],
+      });
+
+      return txHash;
+    } catch (error) {
+      console.error('Error approving USDC:', error);
+      throw error;
+    }
+  }, [userAddress, writeContractAsync]);
+
+  return {
+    approveUSDCForGroup,
+  };
+}
+
+/**
+ * Hook to get USDC address from a specific group contract
+ */
+export function useGroupUSDCAddress(groupAddress: `0x${string}` | undefined) {
+  const { data: usdcAddress, isLoading, error, refetch } = useReadContract({
+    address: groupAddress,
+    abi: GROUP_ABI,
+    functionName: 'usdcAddress',
+    query: {
+      enabled: !!groupAddress,
+    },
+  });
+
+  return {
+    usdcAddress: usdcAddress as `0x${string}` | undefined,
     isLoading,
     error,
     refetch,

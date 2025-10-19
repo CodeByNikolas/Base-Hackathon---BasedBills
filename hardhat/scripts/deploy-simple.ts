@@ -41,22 +41,23 @@ console.log("Registry deployed to:", registry.address);
 console.log("⏳ Waiting 8 seconds for transaction to be processed...");
 await new Promise(resolve => setTimeout(resolve, 8000));
 
-// Step 3: Deploy the GroupFactory with the logic contract and registry addresses
-console.log("\n🏭 Deploying GroupFactory contract...");
-const groupFactory = await viem.deployContract("GroupFactory", [
-  groupLogic.address,
-  registry.address
-]);
-console.log("GroupFactory deployed to:", groupFactory.address);
+// Step 3: Deploy MockUSDC for testing (needed for GroupFactory)
+console.log("\n💰 Deploying MockUSDC contract...");
+const mockUSDC = await viem.deployContract("MockUSDC");
+console.log("MockUSDC deployed to:", mockUSDC.address);
 
 // Wait for transaction to be mined and nonce to update
 console.log("⏳ Waiting 5 seconds for transaction to be processed...");
 await new Promise(resolve => setTimeout(resolve, 5000));
 
-// Step 4: Deploy MockUSDC for testing
-console.log("\n💰 Deploying MockUSDC contract...");
-const mockUSDC = await viem.deployContract("MockUSDC");
-console.log("MockUSDC deployed to:", mockUSDC.address);
+// Step 4: Deploy the GroupFactory with the logic contract, registry, and USDC addresses
+console.log("\n🏭 Deploying GroupFactory contract...");
+const groupFactory = await viem.deployContract("GroupFactory", [
+  groupLogic.address,
+  registry.address,
+  mockUSDC.address // Pass the MockUSDC address for groups to use
+]);
+console.log("GroupFactory deployed to:", groupFactory.address);
 
 // Wait for transaction to be mined and nonce to update
 console.log("⏳ Waiting 5 seconds for transaction to be processed...");
