@@ -22,40 +22,37 @@ export function GroupCard({ group }: GroupCardProps) {
   const userStatus = getUserGroupStatus(userAddress, group.members);
   const activitySummary = getGroupActivitySummary(group);
 
-  // Determine status badge
-  let statusBadge = null;
-  let statusClass = '';
-  
-  if (group.settlementActive) {
-    statusBadge = 'Settlement Active';
-    statusClass = styles.statusSettlement;
-  } else if (group.gambleActive) {
-    statusBadge = 'Gamble Active';
-    statusClass = styles.statusGamble;
-  } else if (activitySummary.unsettledBills > 0) {
-    statusBadge = 'Has Unsettled Bills';
-    statusClass = styles.statusUnsettled;
-  } else if (activitySummary.totalBills > 0) {
-    statusBadge = 'All Settled';
-    statusClass = styles.statusSettled;
-  } else {
-    statusBadge = 'No Activity';
-    statusClass = styles.statusEmpty;
-  }
+  // Status badge logic (removed from display but keeping for potential future use)
+  // let statusBadge = null;
+  // let statusClass = '';
+
+  // if (group.settlementActive) {
+  //   statusBadge = 'Settlement Active';
+  //   statusClass = styles.statusSettlement;
+  // } else if (group.gambleActive) {
+  //   statusBadge = 'Gamble Active';
+  //   statusClass = styles.statusGamble;
+  // } else if (activitySummary.unsettledBills > 0) {
+  //   statusBadge = 'Has Unsettled Bills';
+  //   statusClass = styles.statusUnsettled;
+  // } else if (activitySummary.totalBills > 0) {
+  //   statusBadge = 'All Settled';
+  //   statusClass = styles.statusSettled;
+  // } else {
+  //   statusBadge = 'No Activity';
+  //   statusClass = styles.statusEmpty;
+  // }
 
   return (
     <Link href={`/group/${group.address}`} className={styles.cardLink}>
       <div className={styles.card}>
         {/* Header */}
         <div className={styles.header}>
-          <div className={styles.groupInfo}>
+          <div className={styles.headerItem}>
             <h3 className={styles.groupName}>{group.name}</h3>
-            <p className={styles.memberCount}>
+            <span className={styles.memberCount}>
               {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <div className={`${styles.statusBadge} ${statusClass}`}>
-            {statusBadge}
+            </span>
           </div>
         </div>
 

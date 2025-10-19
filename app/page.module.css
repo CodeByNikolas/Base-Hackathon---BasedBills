@@ -317,23 +317,60 @@
 }
 
 .refreshButton {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  transition: background-color 0.2s;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: #6b7280;
 }
 
-.refreshButton:hover {
-  background: #f3f4f6;
+.refreshButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refreshButton.refreshing {
+  animation: spin 1s linear infinite;
+}
+
+.refreshIcon {
+  width: 20px;
+  height: 20px;
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .refreshButton:hover {
-    background: #374151;
+  .refreshButton {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #9ca3af;
+  }
+
+  .refreshButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -482,10 +519,20 @@
   .groupsSection {
     padding: 20px;
   }
-  
+
   .groupsHeader {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .refreshButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .refreshIcon {
+    width: 18px;
+    height: 18px;
   }
   
   .groupsTitle {

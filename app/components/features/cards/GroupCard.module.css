@@ -37,26 +37,34 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+  width: 100%;
+  min-height: 20px;
 }
 
 .groupInfo {
   flex: 1;
+  min-width: 0; /* Allow shrinking */
+  margin-right: 12px;
 }
 
 .groupName {
   font-size: 18px;
   font-weight: 600;
   color: #111827;
-  margin: 0 0 4px 0;
+  margin: 0;
   line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .memberCount {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Dark mode support */
@@ -144,18 +152,26 @@
   padding: 12px 16px;
   background: #f9fafb;
   border-radius: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  width: 100%;
+  min-height: 24px;
 }
 
 .balanceLabel {
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;
+  flex: 1;
+  margin-right: 8px;
+  min-width: 0; /* Allow shrinking */
 }
 
 .balanceAmount {
   font-size: 16px;
   font-weight: 600;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .positive {
@@ -193,24 +209,33 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .activityItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  min-height: 20px;
 }
 
 .activityLabel {
   font-size: 14px;
   color: #6b7280;
+  flex: 1;
+  margin-right: 8px;
+  min-width: 0; /* Allow shrinking */
 }
 
 .activityValue {
   font-size: 14px;
   color: #111827;
   font-weight: 500;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Dark mode support */
@@ -265,7 +290,15 @@
     gap: 8px;
     align-items: stretch;
   }
-  
+
+  .groupInfo {
+    margin-right: 0;
+  }
+
+  .memberCount {
+    text-align: left;
+  }
+
   .statusBadge {
     margin-left: 0;
     align-self: flex-start;
@@ -276,23 +309,42 @@
   }
   
   .userBalance {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
+    width: 100%;
   }
-  
+
+  .balanceLabel {
+    margin-right: 0;
+  }
+
   .balanceAmount {
     text-align: right;
   }
-  
+
   .activityItem {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
+    width: 100%;
   }
-  
+
+  .activityLabel {
+    margin-right: 0;
+  }
+
   .activityValue {
     text-align: right;
+  }
+
+  .headerItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .groupName {
+    margin-right: 0;
+  }
+
+  .memberCount {
+    text-align: left;
   }
 }
 

@@ -23,6 +23,7 @@ export default function Home() {
   const { address: userAddress, isConnected } = useAccount();
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled' | 'pending-settlement'>('all');
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Check if user should see welcome page
   useEffect(() => {
@@ -67,9 +68,16 @@ export default function Home() {
   const filteredGroups = filterGroupsByStatus(groupsData, statusFilter);
   const sortedGroups = sortGroupsByActivity(filteredGroups);
 
-  const handleRefresh = () => {
-    refetchAddresses();
-    refetchGroupsData();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchAddresses(),
+        refetchGroupsData()
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
@@ -161,8 +169,26 @@ export default function Home() {
                   <div className={styles.groupsHeader}>
                     <div className={styles.groupsTitle}>
                       <h2>Your Groups ({groupCount})</h2>
-                      <button className={styles.refreshButton} onClick={handleRefresh}>
-                        🔄
+                      <button
+                        className={`${styles.refreshButton} ${isRefreshing ? styles.refreshing : ''}`}
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        title="Refresh groups data"
+                      >
+                        <svg
+                          className={styles.refreshIcon}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
                       </button>
                     </div>
 
