@@ -265,13 +265,6 @@ export const GROUP_ABI = [
   // Settlement functions
   {
     "inputs": [],
-    "name": "triggerSettlement",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "approveSettlement",
     "outputs": [],
     "stateMutability": "nonpayable",

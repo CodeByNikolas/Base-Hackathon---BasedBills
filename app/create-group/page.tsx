@@ -96,7 +96,7 @@ export default function CreateGroupPage() {
       const allMembers = getAllMembers();
 
       const _txHash = await writeContractAsync({
-        address: '0xffd6df1076a30891d662068a61aa0baae63fb1bf', // GroupFactory address
+        address: '0xa1d596bdf23f27e65cbd913117df62689012462c', // GroupFactory address
         abi: GROUP_FACTORY_ABI,
         functionName: 'createGroup',
         args: [allMembers as `0x${string}`[], groupName.trim()],

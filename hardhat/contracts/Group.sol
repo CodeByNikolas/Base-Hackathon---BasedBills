@@ -195,41 +195,55 @@ contract Group {
 
     // --- Settlement Logic ---
 
-    function triggerSettlement() external onlyMember noActiveProcess {
+    // NEW FUNCTION: Internal function to activate the settlement state.
+    function _activateSettlement() internal {
         uint256 _totalOwed = _calculateTotalOwed();
         require(_totalOwed > 0, "Group: No debts to settle");
-        
+
+        // This check is important to ensure a gamble isn't active
+        require(!gambleActive, "Group: Gamble is active");
+
         totalOwed = _totalOwed;
         fundedAmount = 0;
         settlementActive = true;
-        settlementStartTime = block.timestamp; // MODIFIED: Set the start time
-        
+        settlementStartTime = block.timestamp;
+
         emit SettlementTriggered(settlementCounter, _totalOwed);
     }
 
-    function approveSettlement() external onlyMember settlementIsActive {
+    // MODIFIED: Now triggers a settlement if one is not active.
+    function approveSettlement() external onlyMember {
+        if (!settlementActive) {
+            _activateSettlement();
+        }
+
         require(balances[msg.sender] > 0, "Group: Only creditors can approve");
         require(!hasApproved[msg.sender], "Group: Already approved");
-        
+
         hasApproved[msg.sender] = true;
         emit SettlementApproved(msg.sender);
-        
+
         _checkAndDistribute();
     }
 
-    function fundSettlement() external onlyMember settlementIsActive {
+    // MODIFIED: Now triggers a settlement if one is not active.
+    function fundSettlement() external onlyMember {
+        if (!settlementActive) {
+            _activateSettlement();
+        }
+
         require(balances[msg.sender] < 0, "Group: Only debtors can fund");
         require(!hasFunded[msg.sender], "Group: Already funded");
-        
+
         uint256 amountOwed = uint256(-balances[msg.sender]);
-        
+
         require(IUSDC(usdcAddress).transferFrom(msg.sender, address(this), amountOwed), "Group: USDC transfer failed");
-        
+
         hasFunded[msg.sender] = true;
         fundedAmount += amountOwed;
-        
+
         emit SettlementFunded(msg.sender, amountOwed);
-        
+
         _checkAndDistribute();
     }
 

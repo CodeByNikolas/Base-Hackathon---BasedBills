@@ -2,29 +2,46 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
 import { AddBillModal } from '../../components/features/AddBillModal';
 import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
-import { formatUnits } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 import { hasCustomName } from '../../utils/addressBook';
 import { GroupData, GroupMember, Bill } from '../../utils/groupUtils';
+import { GROUP_ABI, USDC_ABI, getContractAddresses } from '../../config/contracts';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
   const params = useParams();
   const router = useRouter();
-  const { address: userAddress } = useAccount();
+  const { address: userAddress, chain } = useAccount();
   const groupAddress = params.address as `0x${string}`;
 
-  const { groupData, isLoading, error } = useGroupData(groupAddress);
+  const { groupData, isLoading, error, refetch: refetchGroupData } = useGroupData(groupAddress);
   const [activeTab, setActiveTab] = useState<'overview' | 'bills' | 'members'>('overview');
   const [showAddBillModal, setShowAddBillModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
   const [nameInput, setNameInput] = useState('');
+  const [isProcessingSettlement, setIsProcessingSettlement] = useState(false);
+  const [isProcessingGamble, setIsProcessingGamble] = useState(false);
+
+  // Contract interaction hooks
+  const { writeContractAsync } = useWriteContract();
+
+  // USDC approval check
+  const { data: usdcAllowance } = useReadContract({
+    address: getContractAddresses(chain?.id || 84532).usdc as `0x${string}`,
+    abi: USDC_ABI,
+    functionName: 'allowance',
+    args: userAddress && groupAddress ? [userAddress, groupAddress] : undefined,
+    query: {
+      enabled: !!userAddress && !!groupAddress && !!chain?.id,
+    },
+  });
 
   // Get display names for all members - ensure consistent hook call
   const membersAddresses = useMemo(() =>
@@ -49,6 +66,81 @@ export default function GroupPage() {
   const userBalance = groupData?.members?.find(m => m.address.toLowerCase() === userAddress?.toLowerCase())?.balance || 0n;
   const isUserCreditor = userBalance > 0n;
   const isUserDebtor = userBalance < 0n;
+
+  // Handle settlement based on user role
+  const handleSettleUp = async () => {
+    if (!userAddress || !groupData) return;
+
+    setIsProcessingSettlement(true);
+    try {
+      if (userBalance > 0n) {
+        // User is a creditor - start settlement and approve in one transaction
+        await writeContractAsync({
+          address: groupAddress,
+          abi: GROUP_ABI,
+          functionName: 'approveSettlement',
+        });
+      } else if (userBalance < 0n) {
+        // User is a debtor - check approval first
+        const amountOwed = BigInt(-userBalance);
+        const currentAllowance = usdcAllowance || 0n;
+
+        if (currentAllowance < amountOwed) {
+          // Need to approve USDC spending first
+          await writeContractAsync({
+            address: getContractAddresses(chain?.id || 84532).usdc as `0x${string}`,
+            abi: USDC_ABI,
+            functionName: 'approve',
+            args: [groupAddress, amountOwed],
+          });
+
+          // Wait a moment for approval to be confirmed
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        // Start settlement and fund in one transaction
+        await writeContractAsync({
+          address: groupAddress,
+          abi: GROUP_ABI,
+          functionName: 'fundSettlement',
+        });
+      } else {
+        // Balance is 0 - no action needed
+        alert('Your balance is settled. No action required.');
+        return;
+      }
+
+      // Refresh data after successful transaction
+      await refetchGroupData();
+    } catch (error) {
+      console.error('Settlement error:', error);
+      alert('Settlement failed. Please try again.');
+    } finally {
+      setIsProcessingSettlement(false);
+    }
+  };
+
+  // Handle gamble proposal
+  const handleGamble = async () => {
+    if (!groupData) return;
+
+    setIsProcessingGamble(true);
+    try {
+      await writeContractAsync({
+        address: groupAddress,
+        abi: GROUP_ABI,
+        functionName: 'proposeGamble',
+      });
+
+      // Refresh data after successful transaction
+      await refetchGroupData();
+    } catch (error) {
+      console.error('Gamble proposal error:', error);
+      alert('Gamble proposal failed. Please try again.');
+    } finally {
+      setIsProcessingGamble(false);
+    }
+  };
 
   // Show loading state while display names are initializing
   if (!memberDisplayNames.isInitialized) {
@@ -202,15 +294,40 @@ export default function GroupPage() {
           ➕ Add Bill
         </button>
 
+        {groupData.totalOwed > 0n && userBalance !== 0n && (
+            <button
+              className={`${styles.actionButton} ${styles.secondary}`}
+              onClick={handleSettleUp}
+              disabled={groupData.settlementActive || groupData.gambleActive || isProcessingSettlement || userBalance === 0n}
+              title={
+                userBalance === 0n
+                  ? 'Your balance is settled. No action required.'
+                  : groupData.settlementActive || groupData.gambleActive
+                    ? 'Cannot settle while other processes are active'
+                    : isUserCreditor
+                      ? 'Start settlement and approve (you will receive money)'
+                      : isUserDebtor
+                        ? 'Start settlement and fund (you will pay money)'
+                        : 'Your balance is settled'
+              }
+            >
+              {isProcessingSettlement ? '⏳ Processing' : '⚖️ Settle Up'}
+            </button>
+        )}
+
         {groupData.totalOwed > 0n && (
-          <>
-            <button className={`${styles.actionButton} ${styles.secondary}`}>
-              ⚖️ Settle Up
-            </button>
-            <button className={`${styles.actionButton} ${styles.accent}`}>
-              🎲 Gamble
-            </button>
-          </>
+          <button
+            className={`${styles.actionButton} ${styles.accent}`}
+            onClick={handleGamble}
+            disabled={groupData.settlementActive || groupData.gambleActive || isProcessingGamble}
+            title={
+              groupData.settlementActive || groupData.gambleActive
+                ? 'Cannot gamble while other processes are active'
+                : 'Propose a gamble to randomly settle debts'
+            }
+          >
+            {isProcessingGamble ? '⏳ Processing' : '🎲 Gamble'}
+          </button>
         )}
       </div>
 

@@ -41,9 +41,9 @@ The BasedBills smart contract system consists of four main contracts:
 
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| Group Logic | [`0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c`](https://sepolia.basescan.org/address/0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c) | [Read Contract](https://sepolia.basescan.org/address/0xe9dc0cb521cc4c45d9f0e8c881be2a2f5041ed6c#readContract) |
-| Registry | [`0x6b30775dd78d0492077666708a7e2e6f8582e527`](https://sepolia.basescan.org/address/0x6b30775dd78d0492077666708a7e2e6f8582e527) | [Read Contract](https://sepolia.basescan.org/address/0x6b30775dd78d0492077666708a7e2e6f8582e527#readContract) |
-| GroupFactory | [`0xffd6df1076a30891d662068a61aa0baae63fb1bf`](https://sepolia.basescan.org/address/0xffd6df1076a30891d662068a61aa0baae63fb1bf) | [Read Contract](https://sepolia.basescan.org/address/0xffd6df1076a30891d662068a61aa0baae63fb1bf#readContract) |
+| Group Logic | [`0xc18b68f0b572ff657931ac5094e68ef61f7780e1`](https://sepolia.basescan.org/address/0xc18b68f0b572ff657931ac5094e68ef61f7780e1) | [Read Contract](https://sepolia.basescan.org/address/0xc18b68f0b572ff657931ac5094e68ef61f7780e1#readContract) |
+| Registry | [`0x53c8a58c8ca9df19ea7217ecb6d7464a54598041`](https://sepolia.basescan.org/address/0x53c8a58c8ca9df19ea7217ecb6d7464a54598041) | [Read Contract](https://sepolia.basescan.org/address/0x53c8a58c8ca9df19ea7217ecb6d7464a54598041#readContract) |
+| GroupFactory | [`0xa1d596bdf23f27e65cbd913117df62689012462c`](https://sepolia.basescan.org/address/0xa1d596bdf23f27e65cbd913117df62689012462c) | [Read Contract](https://sepolia.basescan.org/address/0xa1d596bdf23f27e65cbd913117df62689012462c#readContract) |
 
 All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
 
