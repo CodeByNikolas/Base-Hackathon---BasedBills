@@ -11,7 +11,7 @@ import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook
 import { formatUnits, parseUnits } from 'viem';
 import { hasCustomName } from '../../utils/addressBook';
 import { GroupData, GroupMember, Bill } from '../../utils/groupUtils';
-import { GROUP_ABI, USDC_ABI, getContractAddresses, getTargetChainId, NETWORK_CONFIG } from '../../config/contracts';
+import { GROUP_ABI, USDC_ABI, getContractAddresses, getTargetChainId, isTestnet } from '../../config/contracts';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
@@ -40,7 +40,8 @@ export default function GroupPage() {
     functionName: 'balanceOf',
     args: userAddress ? [userAddress] : undefined,
     query: {
-      enabled: !!userAddress,
+      enabled: !!userAddress && !!getContractAddresses().usdc,
+      refetchInterval: 5000, // Refetch every 5 seconds to ensure fresh balance
     },
   });
 
@@ -95,12 +96,21 @@ export default function GroupPage() {
       } else if (userBalance < 0n) {
         // User is a debtor - check balance and approval first
         const amountOwed = BigInt(-userBalance);
-        const currentBalance = usdcBalance || 0n;
-        const currentAllowance = usdcAllowance || 0n;
+        const currentBalance = usdcBalance ?? 0n; // Use nullish coalescing for better undefined handling
+        const currentAllowance = usdcAllowance ?? 0n;
+
+        // Check if balance data is available
+        if (usdcBalance === undefined) {
+          alert('Unable to check USDC balance. Please wait a moment and try again.');
+          setIsProcessingSettlement(false);
+          return;
+        }
 
         // Check if user has enough USDC balance
         if (currentBalance < amountOwed) {
-          alert(`Insufficient USDC balance. You need ${formatUnits(amountOwed, 6)} USDC but only have ${formatUnits(currentBalance, 6)} USDC. Please get more test USDC first.`);
+          const neededAmount = formatUnits(amountOwed, 6);
+          const currentAmount = formatUnits(currentBalance, 6);
+          alert(`Insufficient USDC balance. You need ${neededAmount} USDC but only have ${currentAmount} USDC.\n\n💡 Use the "Get Test USDC" button to mint test tokens for settlement.`);
           setIsProcessingSettlement(false);
           return;
         }
@@ -174,7 +184,7 @@ export default function GroupPage() {
 
     setIsMintingUSDC(true);
     try {
-      // Mint 1000 USDC for testing
+      // Mint 1000 USDC for testing (only works on MockUSDC)
       await writeContractAsync({
         address: getContractAddresses().usdc as `0x${string}`,
         abi: [
@@ -398,7 +408,7 @@ export default function GroupPage() {
         )}
 
         {/* Mint Test USDC Button - Only on Testnet */}
-        {NETWORK_CONFIG.TARGET_CHAIN_ID === 84532 && ( // Base Sepolia testnet
+        {isTestnet() && ( // Only show on testnet
           <button
             className={`${styles.actionButton} ${styles.testButton}`}
             onClick={handleMintTestUSDC}

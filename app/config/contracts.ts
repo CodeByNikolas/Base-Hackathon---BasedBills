@@ -1,6 +1,4 @@
 import { base, baseSepolia } from 'wagmi/chains';
-import * as fs from 'fs';
-import * as path from 'path';
 
 // Network configuration - easily switch between networks
 export const NETWORK_CONFIG = {
@@ -15,37 +13,30 @@ export const NETWORK_CONFIG = {
     },
     [baseSepolia.id]: {
       name: 'Base Sepolia',
-      usdc: '', // Will be read from deployments.json
+      usdc: '0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca', // MockUSDC for testing
+    },
+  },
+
+  // Contract addresses for current deployment
+  CONTRACTS: {
+    [baseSepolia.id]: {
+      groupFactory: '0x55edcbc218b7b6490685818f5621f441e1144ee4',
+      registry: '0xc1c32631f9aa52e8d51bbf4aa1726370529a1a74',
+      groupLogic: '0xfe9f9e4dc2408eb226ff90febb7f871f4e8e8f79',
+      usdc: '0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca',
     },
   },
 } as const;
 
-// Read deployment addresses from deployments.json
-function getDeploymentAddresses() {
-  try {
-    const deploymentsPath = path.join(process.cwd(), 'hardhat', 'deployments.json');
-    const deploymentsContent = fs.readFileSync(deploymentsPath, 'utf-8');
-    const deployments = JSON.parse(deploymentsContent);
+// Get contract addresses for the target network
+function getContractAddressesForNetwork() {
+  const contracts = NETWORK_CONFIG.CONTRACTS[NETWORK_CONFIG.TARGET_CHAIN_ID as keyof typeof NETWORK_CONFIG.CONTRACTS];
 
-    if (deployments.network === 'baseSepolia') {
-      return {
-        groupFactory: deployments.groupFactory,
-        registry: deployments.registry,
-        groupLogic: deployments.groupLogic,
-        usdc: deployments.mockUSDC || deployments.usdc,
-      };
-    }
-  } catch (error) {
-    console.warn('Could not read deployments.json, using fallback addresses');
+  if (!contracts) {
+    throw new Error(`No contract addresses configured for chain ID: ${NETWORK_CONFIG.TARGET_CHAIN_ID}`);
   }
 
-  // Fallback addresses (should be replaced with actual deployments)
-  return {
-    groupFactory: '0x55edcbc218b7b6490685818f5621f441e1144ee4',
-    registry: '0xc1c32631f9aa52e8d51bbf4aa1726370529a1a74',
-    groupLogic: '0xfe9f9e4dc2408eb226ff90febb7f871f4e8e8f79',
-    usdc: '0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca',
-  };
+  return contracts;
 }
 
 // Contract addresses for different networks
@@ -57,7 +48,7 @@ export const CONTRACT_ADDRESSES = {
     groupLogic: '',
     usdc: NETWORK_CONFIG.CHAINS[base.id].usdc,
   },
-  [baseSepolia.id]: getDeploymentAddresses(),
+  [baseSepolia.id]: getContractAddressesForNetwork(),
 } as const;
 
 // Get contract addresses for current chain or target chain
@@ -79,6 +70,11 @@ export function getTargetChainId() {
 // Get the target chain configuration
 export function getTargetChain() {
   return NETWORK_CONFIG.CHAINS[NETWORK_CONFIG.TARGET_CHAIN_ID];
+}
+
+// Check if we're on testnet
+export function isTestnet() {
+  return NETWORK_CONFIG.TARGET_CHAIN_ID === baseSepolia.id;
 }
 
 // Import contract ABIs from separate files for better organization
