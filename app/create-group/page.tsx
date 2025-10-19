@@ -309,7 +309,10 @@ export default function CreateGroupPage() {
           <div className={styles.successContent}>
             <div className={styles.successIcon}>🎉</div>
             <h3>Group Created Successfully!</h3>
-            <p>Your new group has been created and you&apos;re ready to start splitting expenses.</p>
+            <p>
+              &quot;{groupName}&quot; has been created with {getAllMembers().length} members.
+              You can now start adding bills and splitting expenses with your group.
+            </p>
             <button onClick={handleGoToGroup} className={styles.successButton}>
               Go to Groups
             </button>

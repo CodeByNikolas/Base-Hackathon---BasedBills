@@ -1,18 +1,19 @@
 "use client";
 import Link from "next/link";
 import { useAccount } from "wagmi";
+import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { WelcomePage } from "./components/features/WelcomePage";
 import { HeaderBar } from "./components/ui/HeaderBar";
 import { GroupCard } from "./components/features/GroupCard";
 import { useUserGroups, useMultipleGroupsData } from "./hooks/useGroups";
+import { hasUserSeenWelcome, markWelcomeAsSeen } from "./utils/welcomeUtils";
 import {
   calculateOutstandingBalance,
   formatUSDCWithSymbol,
   sortGroupsByActivity,
   filterGroupsByStatus
 } from "./utils/groupUtils";
-import { useState } from "react";
 
 /**
  * Main page component that shows either the welcome page (for non-connected users)
@@ -21,8 +22,15 @@ import { useState } from "react";
 export default function Home() {
   const { isConnected } = useAccount();
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled' | 'pending-settlement'>('all');
+  const [showWelcome, setShowWelcome] = useState(false);
 
-  // Get user's groups (only if connected)
+  // Check if user should see welcome page
+  useEffect(() => {
+    const shouldShowWelcome = isConnected && !hasUserSeenWelcome();
+    setShowWelcome(shouldShowWelcome);
+  }, [isConnected]);
+
+  // Get user's groups (only if connected and not showing welcome)
   const {
     groupAddresses,
     groupCount,
@@ -39,9 +47,12 @@ export default function Home() {
     refetch: refetchGroupsData
   } = useMultipleGroupsData(groupAddresses);
 
-  // Show welcome page if wallet is not connected
-  if (!isConnected) {
-    return <WelcomePage />;
+  // Show welcome page if wallet is not connected or if connected user hasn't seen welcome
+  if (!isConnected || showWelcome) {
+    return <WelcomePage onContinue={() => {
+      markWelcomeAsSeen();
+      setShowWelcome(false);
+    }} />;
   }
 
   const isLoading = isLoadingAddresses || isLoadingGroupsData;

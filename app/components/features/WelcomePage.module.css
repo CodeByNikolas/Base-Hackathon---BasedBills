@@ -144,6 +144,26 @@
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2) !important;
 }
 
+.welcomeContinueButton {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.welcomeContinueButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
 /* Mobile Responsive Design */
 @media (max-width: 768px) {
   .welcomeContainer {
@@ -195,6 +215,11 @@
     padding: 1.1rem 2.5rem !important;
     font-size: 1.1rem !important;
   }
+
+  .welcomeContinueButton {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -218,5 +243,10 @@
   .welcomeConnectButton {
     padding: 1rem 2rem !important;
     font-size: 1rem !important;
+  }
+
+  .welcomeContinueButton {
+    padding: 0.8rem 1.8rem;
+    font-size: 0.9rem;
   }
 }

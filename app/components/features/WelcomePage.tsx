@@ -1,11 +1,18 @@
 import Image from "next/image";
+import { useAccount } from "wagmi";
 import {
   ConnectWallet,
   Wallet,
 } from "@coinbase/onchainkit/wallet";
 import styles from "./WelcomePage.module.css";
 
-export function WelcomePage() {
+interface WelcomePageProps {
+  onContinue?: () => void;
+}
+
+export function WelcomePage({ onContinue }: WelcomePageProps) {
+  const { isConnected } = useAccount();
+
   return (
     <div className={styles.welcomeContainer}>
       <div className={styles.welcomeContent}>
@@ -19,21 +26,41 @@ export function WelcomePage() {
             priority
           />
         </div>
-        
+
         <div className={styles.welcomeMain}>
-          <h2 className={styles.welcomeTitle}>Hello! Welcome to BasedBills</h2>
-          <p className={styles.welcomeDescription}>
-            The easiest way to split expenses on Base. <br />
-            To get started, connect your wallet.
-          </p>
-          
-          <div className={styles.welcomeCta}>
-            <Wallet>
-              <ConnectWallet className={styles.welcomeConnectButton}>
-                <span>Connect Wallet</span>
-              </ConnectWallet>
-            </Wallet>
-          </div>
+          {!isConnected ? (
+            <>
+              <h2 className={styles.welcomeTitle}>Hello! Welcome to BasedBills</h2>
+              <p className={styles.welcomeDescription}>
+                The easiest way to split expenses on Base. <br />
+                To get started, connect your wallet.
+              </p>
+
+              <div className={styles.welcomeCta}>
+                <Wallet>
+                  <ConnectWallet className={styles.welcomeConnectButton}>
+                    <span>Connect Wallet</span>
+                  </ConnectWallet>
+                </Wallet>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className={styles.welcomeTitle}>Welcome to BasedBills!</h2>
+              <p className={styles.welcomeDescription}>
+                You&apos;re all set up and ready to start splitting expenses with your friends on Base.
+              </p>
+
+              <div className={styles.welcomeCta}>
+                <button
+                  onClick={onContinue}
+                  className={styles.welcomeContinueButton}
+                >
+                  Continue to Dashboard
+                </button>
+              </div>
+            </>
+          )}
 
           <div className={styles.welcomeFeatures}>
             <div className={styles.welcomeFeature}>

@@ -39,6 +39,8 @@ contract Group {
     mapping(address => bool) public hasFunded;
     mapping(address => bool) public hasApproved;
     uint256 public settlementCounter; // Counter for completed settlements
+    uint256 public settlementStartTime; // ADDED: Timestamp for settlement timeout
+    uint256 public constant SETTLEMENT_TIMEOUT = 7 days; // ADDED: Timeout duration
 
     // Gamble state
     bool public gambleActive;
@@ -58,6 +60,7 @@ contract Group {
     event SettlementApproved(address indexed creditor);
     event SettlementFunded(address indexed debtor, uint256 amount);
     event SettlementCompleted(uint256 indexed settlementId, uint256 totalDistributed);
+    event SettlementCancelled(uint256 indexed settlementId); // ADDED: Event for cancellation
 
     // Gamble Events
     event GambleProposed(address indexed proposer);
@@ -199,11 +202,7 @@ contract Group {
         totalOwed = _totalOwed;
         fundedAmount = 0;
         settlementActive = true;
-        
-        for (uint256 i = 0; i < members.length; i++) {
-            hasFunded[members[i]] = false;
-            hasApproved[members[i]] = false;
-        }
+        settlementStartTime = block.timestamp; // MODIFIED: Set the start time
         
         emit SettlementTriggered(settlementCounter, _totalOwed);
     }
@@ -232,6 +231,28 @@ contract Group {
         emit SettlementFunded(msg.sender, amountOwed);
         
         _checkAndDistribute();
+    }
+
+    // ADDED: New function to cancel a stalled settlement
+    function cancelSettlement() external settlementIsActive {
+        require(block.timestamp >= settlementStartTime + SETTLEMENT_TIMEOUT, "Group: Settlement timeout not reached");
+
+        // Refund any debtors who have already paid
+        for (uint256 i = 0; i < members.length; i++) {
+            address member = members[i];
+            // Check if they are a debtor AND they have funded
+            if (balances[member] < 0 && hasFunded[member]) {
+                uint256 amountToRefund = uint256(-balances[member]);
+                if (amountToRefund > 0) {
+                    require(IUSDC(usdcAddress).transfer(member, amountToRefund), "Group: USDC refund failed");
+                }
+            }
+        }
+
+        emit SettlementCancelled(settlementCounter);
+        
+        // Reset the state back to non-settlement mode
+        _resetSettlementState();
     }
 
     function _checkAndDistribute() internal {
@@ -270,10 +291,18 @@ contract Group {
         settlementCounter++;
     }
 
+    // MODIFIED: Now resets all settlement-related state
     function _resetSettlementState() internal {
         settlementActive = false;
         totalOwed = 0;
         fundedAmount = 0;
+        settlementStartTime = 0; // MODIFIED: Reset start time
+
+        // MODIFIED: Centralized reset for member-specific flags
+        for (uint256 i = 0; i < members.length; i++) {
+            hasFunded[members[i]] = false;
+            hasApproved[members[i]] = false;
+        }
     }
 
     // --- Gamble Logic ---

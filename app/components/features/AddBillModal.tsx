@@ -12,9 +12,10 @@ interface AddBillModalProps {
   onClose: () => void;
   groupAddress: `0x${string}`;
   groupMembers: Array<{ address: `0x${string}`; balance: bigint }>;
+  isProcessActive?: boolean;
 }
 
-export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers }: AddBillModalProps) {
+export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isProcessActive = false }: AddBillModalProps) {
   const { address: userAddress } = useAccount();
   const [billType, setBillType] = useState<'equal' | 'custom'>('equal');
   const [description, setDescription] = useState('');
@@ -130,6 +131,16 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers }: Ad
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Add New Bill" size="large">
+      {isProcessActive && (
+        <div className={styles.processWarning}>
+          <div className={styles.warningIcon}>⚠️</div>
+          <div className={styles.warningContent}>
+            <h4>Process Active</h4>
+            <p>Settlement or gamble processes are currently active. You cannot add new bills until these processes are completed.</p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Bill Type Selection */}
         <div className={styles.formGroup}>

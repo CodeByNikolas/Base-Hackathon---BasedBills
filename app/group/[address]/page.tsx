@@ -188,8 +188,16 @@ export default function GroupPage() {
       {/* Action Buttons */}
       <div className={styles.actions}>
         <button
-          className={`${styles.actionButton} ${styles.primary}`}
+          className={`${styles.actionButton} ${styles.primary} ${
+            (groupData.settlementActive || groupData.gambleActive) ? styles.disabled : ''
+          }`}
           onClick={() => setShowAddBillModal(true)}
+          disabled={groupData.settlementActive || groupData.gambleActive}
+          title={
+            (groupData.settlementActive || groupData.gambleActive)
+              ? 'Cannot add bills while settlement or gamble process is active'
+              : 'Add a new bill to the group'
+          }
         >
           ➕ Add Bill
         </button>
@@ -206,12 +214,26 @@ export default function GroupPage() {
         )}
       </div>
 
+      {/* Process Active Warning */}
+      {(groupData.settlementActive || groupData.gambleActive) && (
+        <div className={styles.processWarning}>
+          {groupData.settlementActive && groupData.gambleActive ? (
+            <p>⚠️ Settlement and Gamble processes are both active. Adding new bills is temporarily disabled.</p>
+          ) : groupData.settlementActive ? (
+            <p>⚠️ Settlement process is active. Adding new bills is temporarily disabled.</p>
+          ) : (
+            <p>⚠️ Gamble process is active. Adding new bills is temporarily disabled.</p>
+          )}
+        </div>
+      )}
+
         {/* Add Bill Modal */}
         <AddBillModal
-          isOpen={showAddBillModal}
+          isOpen={showAddBillModal && !(groupData.settlementActive || groupData.gambleActive)}
           onClose={() => setShowAddBillModal(false)}
           groupAddress={groupAddress}
           groupMembers={groupData.members}
+          isProcessActive={groupData.settlementActive || groupData.gambleActive}
         />
       </div>
     </WalletGuard>

@@ -566,6 +566,33 @@
   box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
 }
 
+/* Disabled button state */
+.actionButton:disabled,
+.actionButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.actionButton:disabled:hover,
+.actionButton.disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Process Active Warning */
+.processWarning {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  margin: 0 2rem;
+  color: #fbbf24;
+  text-align: center;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .backButtonContainer {
@@ -598,6 +625,11 @@
   .actionButton {
     flex: 1;
     min-width: 120px;
+  }
+
+  .processWarning {
+    margin: 0 1rem;
+    padding: 0.75rem 1rem;
   }
 }
 

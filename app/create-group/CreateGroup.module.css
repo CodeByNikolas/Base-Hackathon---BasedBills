@@ -314,38 +314,94 @@
 
 .successContent {
   text-align: center;
-  padding: 20px 0;
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
 }
 
 .successIcon {
-  font-size: 3rem;
-  margin-bottom: 16px;
+  font-size: 4rem;
+  margin-bottom: 24px;
+  display: block;
 }
 
 .successContent h3 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   color: #059669;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
+  font-weight: 700;
 }
 
 .successContent p {
   color: #6b7280;
-  margin: 0 0 24px 0;
+  margin: 0 0 32px 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 .successButton {
-  background: #059669;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 14px 32px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  font-size: 16px;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .successButton:hover {
-  background: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Dark mode support for success modal */
+@media (prefers-color-scheme: dark) {
+  .successContent {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: #374151;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .successContent h3 {
+    color: #10b981;
+  }
+
+  .successContent p {
+    color: #9ca3af;
+  }
+}
+
+/* Responsive design for success modal */
+@media (max-width: 768px) {
+  .successContent {
+    padding: 24px;
+    margin: 16px;
+  }
+
+  .successIcon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  .successContent h3 {
+    font-size: 1.5rem;
+  }
+
+  .successContent p {
+    font-size: 1rem;
+  }
+
+  .successButton {
+    padding: 12px 24px;
+    font-size: 14px;
+    min-width: 140px;
+  }
 }
 
 /* Dark mode support */
