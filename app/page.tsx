@@ -118,11 +118,10 @@ export default function Home() {
                       outstandingBalance.netBalance < 0n ? styles.negative :
                       styles.neutral
                     }`}>
+                      {outstandingBalance.netBalance > 0n ? '+' : outstandingBalance.netBalance < 0n ? '-' : ''}
                       {formatUSDCWithSymbol(outstandingBalance.netBalance < 0n
                         ? -outstandingBalance.netBalance
                         : outstandingBalance.netBalance)}
-                      {outstandingBalance.netBalance < 0n && ' owed'}
-                      {outstandingBalance.netBalance > 0n && ' owed to you'}
                     </span>
                   </div>
                 </div>
@@ -212,7 +211,7 @@ export default function Home() {
                   <div className={styles.createGroupSection}>
                     <Link href="/create-group" className={styles.createGroupButton}>
                       <span className={styles.createIcon}>+</span>
-                      Create New Group
+                      New Group
                     </Link>
                   </div>
 
