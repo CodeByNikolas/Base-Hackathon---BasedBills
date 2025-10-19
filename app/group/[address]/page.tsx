@@ -5,6 +5,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
 import { AddBillModal } from '../../components/features/AddBillModal';
+import { OverviewTab } from '../../components/features/OverviewTab';
+import { BillsTab } from '../../components/features/BillsTab';
+import { MembersTab } from '../../components/features/MembersTab';
 import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
@@ -159,17 +162,25 @@ export default function GroupPage() {
         // Use unlimited approval for better UX (approve once)
         const unlimitedAmount = BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'); // MaxUint256
 
-        if (currentAllowance < amountOwed) {
-          // Need to approve USDC spending first (unlimited approval)
-          await writeContractAsync({
-            address: getContractAddresses().usdc as `0x${string}`,
-            abi: USDC_ABI,
-            functionName: 'approve',
-            args: [groupAddress, unlimitedAmount], // Unlimited approval
-          });
+        // Check if we need to approve (allowance is less than what we need)
+        const needsApproval = currentAllowance < amountOwed;
 
-          // Wait a moment for approval to be confirmed
-          await new Promise(resolve => setTimeout(resolve, 2000));
+        if (needsApproval) {
+          // Check if current allowance is already unlimited (no need to re-approve)
+          const isAlreadyUnlimited = currentAllowance >= unlimitedAmount;
+
+          if (!isAlreadyUnlimited) {
+            // Need to approve USDC spending first (unlimited approval)
+            await writeContractAsync({
+              address: getContractAddresses().usdc as `0x${string}`,
+              abi: USDC_ABI,
+              functionName: 'approve',
+              args: [groupAddress, unlimitedAmount], // Unlimited approval
+            });
+
+            // Wait a moment for approval to be confirmed
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
         }
 
         // Start settlement and fund in one transaction
@@ -381,19 +392,23 @@ export default function GroupPage() {
 
       {/* Tab Content */}
       <div className={styles.tabContent}>
-        {activeTab === 'overview' && <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />}
+        {activeTab === 'overview' && (
+          <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />
+        )}
         {activeTab === 'bills' && <BillsTab bills={groupData.bills} />}
-        {activeTab === 'members' && <MembersTab
-          members={groupData.members}
-          memberDisplayNames={memberDisplayNames}
-          userAddress={userAddress}
-          onNameAdded={handleNameAdded}
-          editingAddress={editingAddress}
-          setEditingAddress={setEditingAddress}
-          nameInput={nameInput}
-          setNameInput={setNameInput}
-          addAddress={addAddress}
-        />}
+        {activeTab === 'members' && (
+          <MembersTab
+            members={groupData.members}
+            memberDisplayNames={memberDisplayNames}
+            userAddress={userAddress}
+            onNameAdded={handleNameAdded}
+            editingAddress={editingAddress}
+            setEditingAddress={setEditingAddress}
+            nameInput={nameInput}
+            setNameInput={setNameInput}
+            addAddress={addAddress}
+          />
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -497,193 +512,3 @@ export default function GroupPage() {
   );
 }
 
-// Overview Tab Component
-function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames }: { groupData: GroupData, memberDisplayNames: { displayNames: Record<string, string>; isLoading: boolean; isInitialized: boolean; getDisplayNameForAddress: (address: `0x${string}`) => string } }) {
-  return (
-    <div className={styles.overviewTab}>
-      <div className={styles.summaryCards}>
-        <div className={styles.summaryCard}>
-          <h4>Total Owed</h4>
-          <div className={styles.amount}>{formatUnits(groupData.totalOwed, 6)} USDC</div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <h4>Group State</h4>
-          <div className={styles.status}>
-            {groupData.settlementActive
-              ? '🔄 Settlement in Progress'
-              : groupData.gambleActive
-                ? '🎲 Gamble in Progress'
-                : '✅ Ready for Bills'
-            }
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.recentActivity}>
-        <h4>Recent Activity</h4>
-        <div className={styles.activityList}>
-          {groupData.bills.slice(0, 3).map((bill: Bill) => (
-            <div key={bill.id} className={styles.activityItem}>
-              <div className={styles.activityInfo}>
-                <span className={styles.activityDescription}>{bill.description}</span>
-                <span className={styles.activityDate}>
-                  {new Date(Number(bill.timestamp)).toLocaleDateString()}
-                </span>
-              </div>
-              <div className={styles.activityAmount}>
-                {formatUnits(bill.totalAmount, 6)} USDC
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Bills Tab Component
-function BillsTab({ bills }: { bills: Bill[] }) {
-  return (
-    <div className={styles.billsTab}>
-      <div className={styles.billsList}>
-        {bills.map((bill: Bill) => (
-          <div key={bill.id} className={styles.billCard}>
-            <div className={styles.billHeader}>
-              <h4>{bill.description}</h4>
-              <span className={styles.billAmount}>{formatUnits(bill.totalAmount, 6)} USDC</span>
-            </div>
-            <div className={styles.billDetails}>
-              <span>Payer: {bill.payer.slice(0, 6)}...{bill.payer.slice(-4)}</span>
-              <span>{new Date(Number(bill.timestamp) * 1000).toLocaleDateString()}</span>
-            </div>
-            <div className={styles.billParticipants}>
-              <span>Split between {bill.participants.length} people</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Members Tab Component
-function MembersTab({
-  members,
-  memberDisplayNames,
-  userAddress,
-  onNameAdded,
-  editingAddress,
-  setEditingAddress,
-  nameInput,
-  setNameInput,
-  addAddress
-}: {
-  members: GroupMember[],
-  memberDisplayNames: { displayNames: Record<string, string>; isLoading: boolean; isInitialized: boolean; getDisplayNameForAddress: (address: `0x${string}`) => string },
-  userAddress?: `0x${string}`,
-  onNameAdded?: () => void,
-  editingAddress: `0x${string}` | null,
-  setEditingAddress: (address: `0x${string}` | null) => void,
-  nameInput: string,
-  setNameInput: (name: string) => void,
-  addAddress: (address: `0x${string}`, name: string) => void
-}) {
-
-  const handleAddName = (address: `0x${string}`) => {
-    setEditingAddress(address);
-    setNameInput('');
-  };
-
-  const handleSaveName = () => {
-    if (editingAddress && nameInput.trim()) {
-      addAddress(editingAddress, nameInput.trim());
-      setEditingAddress(null);
-      setNameInput('');
-      // Trigger parent component re-render
-      if (onNameAdded) {
-        onNameAdded();
-      }
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingAddress(null);
-    setNameInput('');
-  };
-
-  return (
-    <div className={styles.membersTab}>
-      <div className={styles.membersList}>
-        {members.map((member: GroupMember) => {
-          const balance = formatUnits(member.balance, 6);
-          const isPositive = member.balance > 0n;
-          const isCurrentUser = member.address.toLowerCase() === userAddress?.toLowerCase();
-          const hasName = hasCustomName(member.address);
-          const displayName = isCurrentUser
-            ? 'You'
-            : (memberDisplayNames.displayNames[member.address.toLowerCase()] || `${member.address.slice(0, 6)}...${member.address.slice(-4)}`);
-
-          return (
-            <div key={member.address} className={styles.memberCard}>
-              <div className={styles.memberInfo}>
-                <div className={styles.memberName}>{displayName}</div>
-                {!isCurrentUser && (
-                  <div className={styles.memberAddressSection}>
-                    {editingAddress === member.address ? (
-                      <div className={styles.nameInputContainer}>
-                        <input
-                          type="text"
-                          value={nameInput}
-                          onChange={(e) => setNameInput(e.target.value)}
-                          placeholder="Enter name..."
-                          className={styles.nameInput}
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveName();
-                            if (e.key === 'Escape') handleCancelEdit();
-                          }}
-                        />
-                        <div className={styles.nameInputActions}>
-                          <button
-                            onClick={handleSaveName}
-                            className={styles.saveNameButton}
-                            disabled={!nameInput.trim()}
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className={styles.cancelNameButton}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className={styles.memberAddressWithAction}>
-                        <span className={styles.memberAddress}>{member.address.slice(0, 6)}...{member.address.slice(-4)}</span>
-                        {!hasName && (
-                          <button
-                            onClick={() => handleAddName(member.address)}
-                            className={styles.addNameButton}
-                            title="Add name for this address"
-                          >
-                            + Name
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className={`${styles.memberBalance} ${isPositive ? styles.positive : styles.negative}`}>
-                {isPositive ? '+' : ''}{balance} USDC
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}

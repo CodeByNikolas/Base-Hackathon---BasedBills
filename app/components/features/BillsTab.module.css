@@ -1,0 +1,51 @@
+/* Bills Tab Styles */
+.billsTab {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: white;
+}
+
+.billsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.billCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.billHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.billHeader h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.billAmount {
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.billDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.billParticipants {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
