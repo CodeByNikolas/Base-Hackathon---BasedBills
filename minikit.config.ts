@@ -10,22 +10,19 @@ const ROOT_URL =
 export const minikitConfig = {
   "accountAssociation": {
     header: "eyJmaWQiOjEzOTQ1NTksInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgyZUYwMjdjZjg0RDc1MjM1NTY2YjEwNzYzMWE2QkY3OEM4ODAxQTQ1In0",
-    payload: "eyJkb21haW4iOiJuZXctbWluaS1hcHAtcXVpY2tzdGFydC1jaGktdGhyZWUudmVyY2VsLmFwcCJ9",
-    signature: "cdUQ2byphGOwnJEWMhIAcGfoIdn/0iucuAGeOq4BMHlgdXgeSFmQtLrqz35C4qhT9syL3GqGnVMRUwxM6iyuVhw="
+    payload: "eyJkb21haW4iOiJiYXNlLWhhY2thdGhvbi1iYXNlZC1iaWxscy52ZXJjZWwuYXBwIn0",
+    signature: "2p0gPbn0t2/J+Iuyz3KRcEmzapxoA+cCMLi0HV+et5c/BrzTMt4ixNvFnKjbLKva8L5882PDqZXO0rrAHRIV6xw="
   },
-  frame: {
+  "frame": {
     version: "1",
     name: "Example Frame",
-    iconUrl: "https://new-mini-app-quickstart-chi-three.vercel.app/icon.png",
-    homeUrl: "https://new-mini-app-quickstart-chi-three.vercel.app",
-    imageUrl: "https://new-mini-app-quickstart-chi-three.vercel.app/image.png",
+    iconUrl: "https://base-hackathon-based-bills.vercel.app/icon.png",
+    homeUrl: "https://base-hackathon-based-bills.vercel.app",
+    imageUrl: "https://base-hackathon-based-bills.vercel.app/image.png",
     buttonTitle: "Check this out",
-    splashImageUrl: "https://new-mini-app-quickstart-chi-three.vercel.app/splash.png",
+    splashImageUrl: "https://base-hackathon-based-bills.vercel.app/splash.png",
     splashBackgroundColor: "#eeccff",
-    webhookUrl: "https://new-mini-app-quickstart-chi-three.vercel.app/api/webhook"
-  },
-  baseBuilder: {
-    ownerAddress: "0x23F5d0A18DafB06247F47a9C41FF39F483CFe060"
+    webhookUrl: "https://base-hackathon-based-bills.vercel.app/api/webhook"
   }
 } as const;
 
