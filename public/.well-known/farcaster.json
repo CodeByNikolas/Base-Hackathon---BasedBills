@@ -1,0 +1,34 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "baseBuilder": {
+    "ownerAddress": "0x79819c5D25669B974CBE2286d0CDBB07C498b10a"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "BasedBills",
+    "homeUrl": "https://base-hackathon-based-bills.vercel.app",
+    "iconUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+    "splashImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+    "splashBackgroundColor": "#1a1b23",
+    "webhookUrl": "https://base-hackathon-based-bills.vercel.app/api/webhook",
+    "subtitle": "Split bills onchain",
+    "description": "The easiest way to split expenses on Base. Connect your wallet and start managing group expenses with USDC settlements.",
+    "screenshotUrls": [
+      "https://base-hackathon-based-bills.vercel.app/screenshot1.png",
+      "https://base-hackathon-based-bills.vercel.app/screenshot2.png",
+      "https://base-hackathon-based-bills.vercel.app/screenshot3.png"
+    ],
+    "primaryCategory": "finance",
+    "tags": ["bills", "split", "base", "crypto", "finance"],
+    "heroImageUrl": "https://base-hackathon-based-bills.vercel.app/og-image.png",
+    "tagline": "Split expenses onchain",
+    "ogTitle": "BasedBills - Split Bills on Base",
+    "ogDescription": "The easiest way to split expenses on Base. Connect your wallet and start managing group expenses with USDC settlements.",
+    "ogImageUrl": "https://base-hackathon-based-bills.vercel.app/og-image.png",
+    "noindex": false
+  }
+}

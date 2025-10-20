@@ -1,10 +1,11 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { base, baseSepolia } from "wagmi/chains";
 import { coinbaseWallet } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
+import { sdk } from "@farcaster/miniapp-sdk";
 import "@coinbase/onchainkit/styles.css";
 import { DEFAULT_CHAIN } from "./config/contracts";
 
@@ -26,6 +27,19 @@ const wagmiConfig = createConfig({
 const queryClient = new QueryClient();
 
 export function RootProvider({ children }: { children: ReactNode }) {
+  // Initialize MiniApp SDK
+  useEffect(() => {
+    const initializeMiniApp = async () => {
+      try {
+        // Wait for the app to be ready, then hide the loading splash screen
+        await sdk.actions.ready();
+      } catch (error) {
+        console.error("Failed to initialize MiniApp SDK:", error);
+      }
+    };
+
+    initializeMiniApp();
+  }, []);
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

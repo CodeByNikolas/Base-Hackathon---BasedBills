@@ -3,6 +3,27 @@ import { Inter, Source_Code_Pro } from "next/font/google";
 import { RootProvider } from "./rootProvider";
 import "./globals.css";
 
+// Component to add custom meta tags for mini-app
+function MiniAppMeta() {
+  return (
+    <meta
+      name="fc:miniapp"
+      content={JSON.stringify({
+        "version": "next",
+        "imageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+        "button": {
+          "title": "Open BasedBills",
+          "action": {
+            "type": "launch_miniapp",
+            "name": "BasedBills",
+            "url": "https://base-hackathon-based-bills.vercel.app"
+          }
+        }
+      })}
+    />
+  );
+}
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -26,6 +47,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <MiniAppMeta />
+      </head>
       <body className={`${inter.variable} ${sourceCodePro.variable}`}>
         <RootProvider>
           {children}
