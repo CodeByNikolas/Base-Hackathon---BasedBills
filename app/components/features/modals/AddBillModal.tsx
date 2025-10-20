@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { Modal } from '../../ui/Modal';
@@ -24,6 +24,13 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
   const [participants, setParticipants] = useState<Set<string>>(new Set());
   const [customAmounts, setCustomAmounts] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Initialize participants with all group members when modal opens or members change
+  useEffect(() => {
+    if (isOpen && groupMembers.length > 0) {
+      setParticipants(new Set(groupMembers.map(member => member.address)));
+    }
+  }, [isOpen, groupMembers]);
 
   const { writeContractAsync } = useWriteContract();
 
@@ -113,7 +120,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
       // Reset form and close modal after successful transaction
       setDescription('');
       setAmount('');
-      setParticipants(new Set());
+      // Keep all participants selected (don't reset to empty set)
       setCustomAmounts({});
       setBillType('equal');
       onClose();
@@ -129,7 +136,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
   const resetForm = () => {
     setDescription('');
     setAmount('');
-    setParticipants(new Set());
+    // Keep all participants selected (don't reset to empty set)
     setCustomAmounts({});
     setBillType('equal');
   };
