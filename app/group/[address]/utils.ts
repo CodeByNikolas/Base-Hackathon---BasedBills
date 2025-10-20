@@ -14,7 +14,7 @@ export class GroupError extends Error {
 
 export const ErrorHandler = {
   showError: (message: string) => {
-    console.error('Group Error:', message);
+    // console.error('Group Error:', message);
     // For now, we'll use alert, but this could be replaced with a toast system
     alert(message);
   },
@@ -193,15 +193,16 @@ export const GroupUtils = {
         return buttons;
       }
 
-      // Show reject button for all users (but it will show an error message when clicked)
-      if (isUserCreditor || isUserDebtor) {
+      // Show reject button only for users who haven't acted yet
+      const canUserReject = (isUserCreditor && !hasUserApproved) || (isUserDebtor && !hasUserFunded);
+      if (canUserReject) {
         buttons.push({
           key: 'reject-settlement',
           type: 'danger',
           label: '❌ Reject',
           action: 'reject-settlement',
           disabled: false,
-          title: 'Reject this settlement'
+          title: 'Cancel this settlement (bills remain unsettled)'
         });
       }
     }

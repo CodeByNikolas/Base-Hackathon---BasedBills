@@ -203,7 +203,17 @@ export function ActionButtons({
     setProcessing('reject-settlement', true);
 
     try {
-      ErrorHandler.showError(UI_MESSAGES.GAMBLE.REJECT_COMING_SOON);
+      await writeContractAsync({
+        address: groupData.address,
+        abi: GROUP_ABI,
+        functionName: 'rejectSettlement',
+        args: [],
+      });
+
+      // Refresh group data after successful rejection
+      onActionSuccess();
+
+      ErrorHandler.showSuccess('Settlement cancelled - bills remain unsettled');
     } catch (error) {
       ErrorHandler.handleTransactionError(error, 'Settlement rejection');
     } finally {

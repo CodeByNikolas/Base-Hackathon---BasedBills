@@ -1,15 +1,15 @@
 {
   "network": "baseSepolia",
   "chainId": 84532,
-  "groupLogic": "0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8",
-  "registry": "0xc269e9d996c89f22a3719a80d37f780c439cb4d2",
-  "groupFactory": "0x38904476fe6586e5735a3cff701f2bb1031b6ec4",
-  "mockUSDC": "0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735",
+  "groupLogic": "0x9ebb981e56c90db163bc06ceac0fbb1558956e7f",
+  "registry": "0x97d4e2631aa14c141ebe703efbc00f789329822a",
+  "groupFactory": "0x42238a47f2ab7508296c009a0b672770474debe0",
+  "mockUSDC": "0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37",
   "deployer": "0x21750fc30922badd61c2f1e48b94683071dfbcaa",
-  "deployedAt": "2025-10-20T10:13:28.538Z",
+  "deployedAt": "2025-10-20T11:14:58.794Z",
   "verified": {
-    "blockscout": true,
-    "basescan": true
+    "blockscout": false,
+    "basescan": false
   },
   "features": [
     "Group Names",

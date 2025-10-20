@@ -206,6 +206,25 @@ export const GROUP_ABI = [
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "rejector",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "SettlementRejected",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "settlementId",
         "type": "uint256"
@@ -694,6 +713,13 @@ export const GROUP_ABI = [
   {
     "inputs": [],
     "name": "cancelSettlement",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rejectSettlement",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

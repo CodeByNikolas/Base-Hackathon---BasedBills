@@ -9,7 +9,7 @@ export const UI_MESSAGES = {
   SETTLEMENT: {
     ALREADY_APPROVED: 'You have already approved this settlement. No further action needed.',
     ALREADY_FUNDED: 'You have already funded this settlement. No further action needed.',
-    INSUFFICIENT_BALANCE: 'Insufficient USDC balance. You need {neededAmount} USDC but only have {currentAmount} USDC.\n\n💡 Use the "Get Test USDC" button to mint test tokens for settlement.',
+    INSUFFICIENT_BALANCE: 'Insufficient USDC balance. You need {neededAmount} USDC but only have {currentAmount} USDC.',
     BALANCE_CHECK_FAILED: 'Unable to check USDC balance. Please wait a moment and try again.',
     SETTLED_BALANCE: 'Your balance is settled. No action required.',
     PROCESSING: '⏳ Processing',

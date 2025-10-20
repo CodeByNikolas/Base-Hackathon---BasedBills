@@ -13,6 +13,7 @@ A decentralized bill splitting application built on Base network with on-chain U
 
 ### Advanced Features
 - **🎲 Gamble Mode**: All-or-nothing settlement where one random member pays all debts
+- **❌ Settlement Rejection**: Cancel settlements before approval/deposit (bills remain unsettled)
 - **📊 Enhanced Balance Views**: Real-time creditor/debtor breakdown
 - **📋 Complete Bill History**: Track all expenses with timestamps and settlement IDs
 - **🔍 Settlement Tracking**: Audit trail for every completed settlement
@@ -72,10 +73,10 @@ See [hardhat/README.md](./hardhat/README.md) for detailed contract documentation
 
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| GroupFactory | [`0x38904476fe6586e5735a3cff701f2bb1031b6ec4`](https://sepolia.basescan.org/address/0x38904476fe6586e5735a3cff701f2bb1031b6ec4) | [Read Contract](https://sepolia.basescan.org/address/0x38904476fe6586e5735a3cff701f2bb1031b6ec4#readContract) |
-| Registry | [`0xc269e9d996c89f22a3719a80d37f780c439cb4d2`](https://sepolia.basescan.org/address/0xc269e9d996c89f22a3719a80d37f780c439cb4d2) | [Read Contract](https://sepolia.basescan.org/address/0xc269e9d996c89f22a3719a80d37f780c439cb4d2#readContract) |
-| Group Logic | [`0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8`](https://sepolia.basescan.org/address/0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8) | [Read Contract](https://sepolia.basescan.org/address/0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8#readContract) |
-| MockUSDC | [`0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735`](https://sepolia.basescan.org/address/0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735) | [Read Contract](https://sepolia.basescan.org/address/0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735#readContract) |
+| GroupFactory | [`0x42238a47f2ab7508296c009a0b672770474debe0`](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0) | [Read Contract](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0#readContract) |
+| Registry | [`0x97d4e2631aa14c141ebe703efbc00f789329822a`](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a) | [Read Contract](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a#readContract) |
+| Group Logic | [`0x9ebb981e56c90db163bc06ceac0fbb1558956e7f`](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f) | [Read Contract](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f#readContract) |
+| MockUSDC | [`0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37`](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37) | [Read Contract](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37#readContract) |
 
 All contracts are **verified** and open source on BaseScan.
 

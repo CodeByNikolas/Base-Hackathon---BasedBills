@@ -61,6 +61,7 @@ contract Group {
     event SettlementFunded(address indexed debtor, uint256 amount);
     event SettlementCompleted(uint256 indexed settlementId, uint256 totalDistributed);
     event SettlementCancelled(uint256 indexed settlementId); // ADDED: Event for cancellation
+    event SettlementRejected(address indexed rejector, string reason); // ADDED: Event for rejection
 
     // Gamble Events
     event GambleProposed(address indexed proposer);
@@ -265,9 +266,46 @@ contract Group {
         }
 
         emit SettlementCancelled(settlementCounter);
-        
-        // Reset the state back to non-settlement mode
-        _resetSettlementState();
+
+        // Exit settlement phase but keep bills unsettled
+        _exitSettlementPhase();
+    }
+
+    // ADDED: New function to reject settlement before approval/deposit
+    function rejectSettlement() external onlyMember settlementIsActive {
+        bool canReject = false;
+        string memory reason;
+
+        // Check if user is a creditor who hasn't approved yet
+        if (balances[msg.sender] > 0 && !hasApproved[msg.sender]) {
+            canReject = true;
+            reason = "Creditor rejection";
+        }
+        // Check if user is a debtor who hasn't funded yet
+        else if (balances[msg.sender] < 0 && !hasFunded[msg.sender]) {
+            canReject = true;
+            reason = "Debtor rejection";
+        }
+
+        require(canReject, string(abi.encodePacked("Group: Cannot reject - ", reason)));
+
+        emit SettlementRejected(msg.sender, reason);
+
+        // Refund any debtors who have already paid
+        for (uint256 i = 0; i < members.length; i++) {
+            address member = members[i];
+            if (balances[member] < 0 && hasFunded[member]) {
+                uint256 amountToRefund = uint256(-balances[member]);
+                if (amountToRefund > 0) {
+                    require(IUSDC(usdcAddress).transfer(member, amountToRefund), "Group: USDC refund failed");
+                }
+            }
+        }
+
+        emit SettlementCancelled(settlementCounter);
+
+        // Exit settlement phase but keep bills unsettled
+        _exitSettlementPhase();
     }
 
     function _checkAndDistribute() internal {
@@ -318,6 +356,23 @@ contract Group {
             hasFunded[members[i]] = false;
             hasApproved[members[i]] = false;
         }
+    }
+
+    // ADDED: Exit settlement phase without marking bills as settled
+    function _exitSettlementPhase() internal {
+        settlementActive = false;
+        totalOwed = 0;
+        fundedAmount = 0;
+        settlementStartTime = 0;
+
+        // Reset member-specific flags
+        for (uint256 i = 0; i < members.length; i++) {
+            hasFunded[members[i]] = false;
+            hasApproved[members[i]] = false;
+        }
+
+        // Note: We don't increment settlementCounter or mark bills as settled
+        // Bills remain with settlementId = 0 (unsettled)
     }
 
     // --- Gamble Logic ---

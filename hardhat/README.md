@@ -41,10 +41,10 @@ The BasedBills smart contract system consists of four main contracts:
 
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| Group Logic | [`0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8`](https://sepolia.basescan.org/address/0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8) | [Read Contract](https://sepolia.basescan.org/address/0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8#readContract) |
-| Registry | [`0xc269e9d996c89f22a3719a80d37f780c439cb4d2`](https://sepolia.basescan.org/address/0xc269e9d996c89f22a3719a80d37f780c439cb4d2) | [Read Contract](https://sepolia.basescan.org/address/0xc269e9d996c89f22a3719a80d37f780c439cb4d2#readContract) |
-| GroupFactory | [`0x38904476fe6586e5735a3cff701f2bb1031b6ec4`](https://sepolia.basescan.org/address/0x38904476fe6586e5735a3cff701f2bb1031b6ec4) | [Read Contract](https://sepolia.basescan.org/address/0x38904476fe6586e5735a3cff701f2bb1031b6ec4#readContract) |
-| MockUSDC | [`0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735`](https://sepolia.basescan.org/address/0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735) | [Read Contract](https://sepolia.basescan.org/address/0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735#readContract) |
+| Group Logic | [`0x9ebb981e56c90db163bc06ceac0fbb1558956e7f`](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f) | [Read Contract](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f#readContract) |
+| Registry | [`0x97d4e2631aa14c141ebe703efbc00f789329822a`](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a) | [Read Contract](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a#readContract) |
+| GroupFactory | [`0x42238a47f2ab7508296c009a0b672770474debe0`](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0) | [Read Contract](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0#readContract) |
+| MockUSDC | [`0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37`](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37) | [Read Contract](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37#readContract) |
 
 All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
 
@@ -53,6 +53,7 @@ All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
 - **Address Book Suggestions**: Frontend suggests addresses from groups
 - **Enhanced Bill Splitting**: Custom amounts per participant
 - **Gamble Feature**: All-or-nothing settlement alternative
+- **Settlement Rejection**: Cancel settlements before approval/deposit (bills remain unsettled)
 - **Settlement Tracking**: Complete history of settlements
 - **Auto-deployment**: `deployments.json` automatically updated on deploy
 
@@ -258,6 +259,9 @@ function approveSettlement() external
 
 // Fund settlement with USDC (debtors only)
 function fundSettlement() external
+
+// Reject/cancel settlement before approval/deposit (creditors/debtors)
+function rejectSettlement() external
 ```
 
 #### Enhanced View Functions
