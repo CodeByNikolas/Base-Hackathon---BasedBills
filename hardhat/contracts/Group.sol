@@ -326,11 +326,15 @@ contract Group {
         require(_calculateTotalOwed() > 0, "Group: No debts to gamble");
         gambleActive = true;
         gambleProposer = msg.sender;
-        
+
         gambleVoteCount = 0;
         for(uint i = 0; i < members.length; i++) {
             hasVotedOnGamble[members[i]] = false;
         }
+
+        // Proposer automatically votes positive
+        hasVotedOnGamble[msg.sender] = true;
+        gambleVoteCount = 1;
 
         emit GambleProposed(msg.sender);
     }
@@ -633,6 +637,22 @@ contract Group {
             gambleVoteCount,
             members.length,
             hasVotedOnGamble[msg.sender]
+        );
+    }
+
+    function getGambleStatusForUser(address _user) external view returns (
+        bool active,
+        address proposer,
+        uint256 voteCount,
+        uint256 totalMembers,
+        bool hasVoted
+    ) {
+        return (
+            gambleActive,
+            gambleProposer,
+            gambleVoteCount,
+            members.length,
+            hasVotedOnGamble[_user]
         );
     }
 }
