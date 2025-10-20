@@ -265,7 +265,7 @@ export default function GroupPage() {
         userBalance={userBalance}
         hasUserApproved={hasUserApproved}
         hasUserFunded={hasUserFunded}
-        hasUserVoted={false}
+        hasUserVoted={groupData.hasUserVoted}
       />
 
       {/* Transaction Pending Indicator */}
@@ -284,7 +284,7 @@ export default function GroupPage() {
         usdcAllowance={usdcAllowance}
         hasUserApproved={hasUserApproved}
         hasUserFunded={hasUserFunded}
-        hasUserVoted={false}
+        hasUserVoted={groupData.hasUserVoted}
         onActionSuccess={() => refreshAllData()}
         onTransactionStarted={handleTransactionStarted}
         onShowAddBillModal={() => setShowAddBillModal(true)}
@@ -296,7 +296,7 @@ export default function GroupPage() {
         userBalance={userBalance}
         hasUserApproved={hasUserApproved}
         hasUserFunded={hasUserFunded}
-        hasUserVoted={false}
+        hasUserVoted={groupData.hasUserVoted}
       />
 
 

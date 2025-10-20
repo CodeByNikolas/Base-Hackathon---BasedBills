@@ -110,8 +110,8 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       {
         address: groupAddress,
         abi: GROUP_ABI,
-        functionName: 'getGambleStatus',
-        args: userAddress ? [userAddress] : [groupAddress], // Fallback to group address
+        functionName: 'getGambleStatusForUser',
+        args: userAddress ? [userAddress] : undefined,
       },
       {
         address: groupAddress,
@@ -215,15 +215,16 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       : false;
 
     const gambleActive = gambleStatusResult.status === 'success'
-      ? (gambleStatusResult.result as unknown as { status: boolean })?.status ?? false
+      ? (gambleStatusResult.result as [boolean, `0x${string}`, bigint, bigint, boolean])?.[0] ?? false
+      : false;
+
+    const hasUserVoted = gambleStatusResult.status === 'success'
+      ? (gambleStatusResult.result as [boolean, `0x${string}`, bigint, bigint, boolean])?.[4] ?? false
       : false;
 
     const usdcAddress = usdcAddressResult.status === 'success'
       ? usdcAddressResult.result as `0x${string}`
       : undefined;
-
-    // For now, default hasUserVoted to false since it's not in the old contract
-    const hasUserVoted = false;
 
     // Calculate total owed from unsettled bills
     const totalOwed = unsettledBills.reduce((sum, bill) => sum + bill.totalAmount, 0n);
@@ -236,6 +237,7 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       unsettledBills,
       settlementActive,
       gambleActive,
+      hasUserVoted,
       totalOwed,
       memberCount: members.length,
       usdcAddress,
@@ -288,7 +290,8 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
           address: groupAddress,
           abi: GROUP_ABI,
           functionName: 'settlementActive',
-        }
+        },
+        // Note: Skipping gamble status for multiple groups view since it requires user context
       );
     }
     
@@ -362,8 +365,8 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
           } as Bill))
         : [];
 
-      const settlementActive = settlementActiveResult?.status === 'success' 
-        ? settlementActiveResult.result as boolean 
+      const settlementActive = settlementActiveResult?.status === 'success'
+        ? settlementActiveResult.result as boolean
         : false;
 
       const totalOwed = unsettledBills.reduce((sum, bill) => sum + bill.totalAmount, 0n);
@@ -375,7 +378,7 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
         bills: [], // We don't load all bills for the list view for performance
         unsettledBills,
         settlementActive,
-        gambleActive: false, // We don't check gamble status in list view
+        gambleActive: false, // We don't check gamble status in list view since it requires user context
         totalOwed,
         memberCount: members.length,
       });

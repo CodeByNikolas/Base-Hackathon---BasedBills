@@ -26,6 +26,7 @@ export interface GroupData {
   unsettledBills: Bill[];
   settlementActive: boolean;
   gambleActive: boolean;
+  hasUserVoted?: boolean; // Whether the current user has voted on the active gamble
   totalOwed: bigint;
   memberCount: number;
   usdcAddress?: `0x${string}`; // USDC address from the group contract
