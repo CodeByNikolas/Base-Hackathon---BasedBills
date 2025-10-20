@@ -41,10 +41,10 @@ The BasedBills smart contract system consists of four main contracts:
 
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| Group Logic | [`0xfe9f9e4dc2408eb226ff90febb7f871f4e8e8f79`](https://sepolia.basescan.org/address/0xfe9f9e4dc2408eb226ff90febb7f871f4e8e8f79) | [Read Contract](https://sepolia.basescan.org/address/0xfe9f9e4dc2408eb226ff90febb7f871f4e8e8f79#readContract) |
-| Registry | [`0xc1c32631f9aa52e8d51bbf4aa1726370529a1a74`](https://sepolia.basescan.org/address/0xc1c32631f9aa52e8d51bbf4aa1726370529a1a74) | [Read Contract](https://sepolia.basescan.org/address/0xc1c32631f9aa52e8d51bbf4aa1726370529a1a74#readContract) |
-| GroupFactory | [`0x55edcbc218b7b6490685818f5621f441e1144ee4`](https://sepolia.basescan.org/address/0x55edcbc218b7b6490685818f5621f441e1144ee4) | [Read Contract](https://sepolia.basescan.org/address/0x55edcbc218b7b6490685818f5621f441e1144ee4#readContract) |
-| MockUSDC | [`0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca`](https://sepolia.basescan.org/address/0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca) | [Read Contract](https://sepolia.basescan.org/address/0x9524c95e71b59a235e1efe8bd78149d1ac68f4ca#readContract) |
+| Group Logic | [`0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8`](https://sepolia.basescan.org/address/0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8) | [Read Contract](https://sepolia.basescan.org/address/0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8#readContract) |
+| Registry | [`0xc269e9d996c89f22a3719a80d37f780c439cb4d2`](https://sepolia.basescan.org/address/0xc269e9d996c89f22a3719a80d37f780c439cb4d2) | [Read Contract](https://sepolia.basescan.org/address/0xc269e9d996c89f22a3719a80d37f780c439cb4d2#readContract) |
+| GroupFactory | [`0x38904476fe6586e5735a3cff701f2bb1031b6ec4`](https://sepolia.basescan.org/address/0x38904476fe6586e5735a3cff701f2bb1031b6ec4) | [Read Contract](https://sepolia.basescan.org/address/0x38904476fe6586e5735a3cff701f2bb1031b6ec4#readContract) |
+| MockUSDC | [`0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735`](https://sepolia.basescan.org/address/0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735) | [Read Contract](https://sepolia.basescan.org/address/0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735#readContract) |
 
 All contracts are verified on [BaseScan](https://sepolia.basescan.org/).
 

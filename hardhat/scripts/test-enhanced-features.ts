@@ -1,5 +1,6 @@
 import { network } from "hardhat";
 import { formatUnits, parseUnits } from "viem";
+import { readFileSync } from 'fs';
 
 console.log("🧪 Testing Enhanced BasedBills Features...");
 
@@ -18,11 +19,14 @@ if (walletClients.length < 2) {
   console.log("⚠️ Only one wallet available, using Alice for all operations");
 }
 
+// Load deployment data
+const deployments = JSON.parse(readFileSync('../hardhat/deployments.json', 'utf8'));
+
 // Use newly deployed enhanced contracts
 const contractAddresses = {
-  groupFactory: "0x06043efb63514bcc98f142bc4936ec66732a0729",
-  registry: "0x01856ca0017a4f6f708b7f8df57a20d9ddf8dc74",
-  groupLogic: "0x56bfa92a6e788f8a157e3f479dd326d93a9458ea"
+  groupFactory: deployments.groupFactory,
+  registry: deployments.registry,
+  groupLogic: deployments.groupLogic
 };
 
 console.log("\n📋 Using deployed contracts:");
@@ -40,7 +44,7 @@ try {
   const bobAddress = walletClients.length > 1 ? walletClients[1].account.address : "0x742d35Cc6634C0532925a3b8D0C3E5E3C8B1c2D3"; // Dummy address for demo
   const members = [alice.account.address, bobAddress];
   
-  const createGroupHash = await groupFactory.write.createGroup([members]);
+  const createGroupHash = await groupFactory.write.createGroup([members, "Test Group"]);
   const receipt = await publicClient.waitForTransactionReceipt({ hash: createGroupHash });
   console.log("✅ Group created!");
   

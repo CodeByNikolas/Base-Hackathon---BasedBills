@@ -13,17 +13,17 @@ export const NETWORK_CONFIG = {
     },
     [baseSepolia.id]: {
       name: 'Base Sepolia',
-      usdc: '0x5ea16169b5eeb96e3d0a53f10f0f8b4f175ade1a', // MockUSDC for testing
+      usdc: '0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735', // MockUSDC for testing
     },
   },
 
   // Contract addresses for current deployment
   CONTRACTS: {
     [baseSepolia.id]: {
-      groupFactory: '0x3d834d6f5bacd5dab98a80f9b7aa3314b06f8bca',
-      registry: '0x48184262b294b6952ed044c8ef6bb2a78ce93488',
-      groupLogic: '0x1dc10e9f6ba65b21b14583eca8f529cc168a2dc2',
-      usdc: '0x5ea16169b5eeb96e3d0a53f10f0f8b4f175ade1a',
+      groupFactory: '0x38904476fe6586e5735a3cff701f2bb1031b6ec4',
+      registry: '0xc269e9d996c89f22a3719a80d37f780c439cb4d2',
+      groupLogic: '0x9cf7c53d5702da0c5d79d5fa5bcfe9a9a3dbe1f8',
+      usdc: '0xf5eee5b1fcfc4601db9bcbfd2753bd062c918735',
     },
   },
 } as const;

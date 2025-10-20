@@ -8,24 +8,27 @@ const ETHERSCAN_V2_API_URL = "https://api.etherscan.io/v2/api?chainid=84532";
 
 console.log("🔍 Verifying BasedBills Contracts on BaseScan...");
 
-// Contract addresses and details - UPDATE THESE AFTER DEPLOYMENT
+// Load deployment data
+const deployments = JSON.parse(readFileSync('../hardhat/deployments.json', 'utf8'));
+
+// Contract addresses and details from deployments.json
 const contracts = [
   {
     name: "Group",
-    address: "0x56bfa92a6e788f8a157e3f479dd326d93a9458ea",
+    address: deployments.groupLogic,
     constructorArgs: "", // No constructor arguments for Group
     contractPath: "contracts/Group.sol:Group"
   },
   {
-    name: "Registry", 
-    address: "0x01856ca0017a4f6f708b7f8df57a20d9ddf8dc74",
-    constructorArgs: "00000000000000000000000021750fc30922badd61c2f1e48b94683071dfbcaa", // ABI encoded deployer address
+    name: "Registry",
+    address: deployments.registry,
+    constructorArgs: "000000000000000000000000" + deployments.deployer.slice(2), // ABI encoded deployer address
     contractPath: "contracts/Registry.sol:Registry"
   },
   {
     name: "GroupFactory",
-    address: "0x06043efb63514bcc98f142bc4936ec66732a0729", 
-    constructorArgs: "00000000000000000000000056bfa92a6e788f8a157e3f479dd326d93a9458ea00000000000000000000000001856ca0017a4f6f708b7f8df57a20d9ddf8dc74", // ABI encoded constructor args
+    address: deployments.groupFactory,
+    constructorArgs: "000000000000000000000000" + deployments.groupLogic.slice(2) + "000000000000000000000000" + deployments.registry.slice(2), // ABI encoded constructor args
     contractPath: "contracts/GroupFactory.sol:GroupFactory"
   }
 ];
