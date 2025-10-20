@@ -4,9 +4,6 @@
       "payload": "",
       "signature": ""
     },
-    "baseBuilder": {
-      "allowedAddresses": ["0x23F5d0A18DafB06247F47a9C41FF39F483CFe060"]
-    },
     "miniapp": {
       "version": "1",
       "name": "Example Mini App",
@@ -30,5 +27,8 @@
       "ogDescription": "Challenge friends in real time.",
       "ogImageUrl": "https://ex.co/og.png",
       "noindex": true
+    },
+    "baseBuilder": {
+      "ownerAddress": "0x23F5d0A18DafB06247F47a9C41FF39F483CFe060"
     }
-  }
+}
