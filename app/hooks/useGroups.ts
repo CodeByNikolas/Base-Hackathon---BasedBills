@@ -222,6 +222,9 @@ export function useGroupData(groupAddress: `0x${string}` | undefined) {
       ? usdcAddressResult.result as `0x${string}`
       : undefined;
 
+    // For now, default hasUserVoted to false since it's not in the old contract
+    const hasUserVoted = false;
+
     // Calculate total owed from unsettled bills
     const totalOwed = unsettledBills.reduce((sum, bill) => sum + bill.totalAmount, 0n);
 

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
-import { useAccount, useWriteContract, useReadContract } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
 import { AddBillModal } from '../../components/features/modals/AddBillModal';
 import { OverviewTab } from '../../components/features/tabs/OverviewTab';
@@ -11,8 +11,10 @@ import { MembersTab } from '../../components/features/tabs/MembersTab';
 import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
-import { formatUnits, parseUnits } from 'viem';
+import { formatUnits } from 'viem';
 import { GROUP_ABI, USDC_ABI, getContractAddresses, isTestnet } from '../../config/contracts';
+import { ActionButtons } from './components/ActionButtons';
+import { SuccessMessage, WarningMessage } from './components/ProcessWarning';
 import styles from './GroupPage.module.css';
 
 export default function GroupPage() {
@@ -27,12 +29,8 @@ export default function GroupPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
   const [nameInput, setNameInput] = useState('');
-  const [isProcessingSettlement, setIsProcessingSettlement] = useState(false);
-  const [isProcessingGamble, setIsProcessingGamble] = useState(false);
-  const [isMintingUSDC, setIsMintingUSDC] = useState(false);
-
-  // Contract interaction hooks
-  const { writeContractAsync } = useWriteContract();
+  const [isTxPending, setIsTxPending] = useState(false);
+  const [latestTxHash, setLatestTxHash] = useState<`0x${string}` | null>(null);
 
   // Use correct USDC address from group contract
   const usdcAddress = groupData?.usdcAddress || getContractAddresses().usdc;
@@ -95,6 +93,21 @@ export default function GroupPage() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const refreshAllData = () => {
+    refetchGroupData();
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleTransactionStarted = (txHash: `0x${string}`) => {
+    setLatestTxHash(txHash);
+    setIsTxPending(true);
+    // Clear pending state after a delay (in a real app, you'd wait for confirmation)
+    setTimeout(() => {
+      setIsTxPending(false);
+      setLatestTxHash(null);
+    }, 5000);
+  };
+
   // Error logging effect - must be before any conditional returns
   useEffect(() => {
     if (error) {
@@ -106,176 +119,6 @@ export default function GroupPage() {
   const userBalance = groupData?.members?.find(m => m.address.toLowerCase() === userAddress?.toLowerCase())?.balance || 0n;
   const isUserCreditor = userBalance > 0n;
   const isUserDebtor = userBalance < 0n;
-
-  // Handle settlement based on user role
-  const handleSettleUp = async () => {
-    if (!userAddress || !groupData) return;
-
-    setIsProcessingSettlement(true);
-    try {
-      if (userBalance > 0n) {
-        // User is a creditor - check if already approved
-        const userAlreadyApproved = hasUserApproved ?? false;
-
-        if (userAlreadyApproved) {
-          alert('You have already approved this settlement. No further action needed.');
-          setIsProcessingSettlement(false);
-          return;
-        }
-
-        // User is a creditor - start settlement and approve in one transaction
-        await writeContractAsync({
-          address: groupAddress,
-          abi: GROUP_ABI,
-          functionName: 'approveSettlement',
-        });
-      } else if (userBalance < 0n) {
-        // User is a debtor - check if already funded
-        const userAlreadyFunded = hasUserFunded ?? false;
-
-        if (userAlreadyFunded) {
-          alert('You have already funded this settlement. No further action needed.');
-          setIsProcessingSettlement(false);
-          return;
-        }
-
-        // Check balance and approval first
-        const amountOwed = BigInt(-userBalance);
-        const currentBalance = usdcBalance ?? 0n; // Use nullish coalescing for better undefined handling
-        const currentAllowance = usdcAllowance ?? 0n;
-
-        // Check if balance data is available
-        if (usdcBalance === undefined) {
-          alert('Unable to check USDC balance. Please wait a moment and try again.');
-          setIsProcessingSettlement(false);
-          return;
-        }
-
-        // Check if user has enough USDC balance
-        if (currentBalance < amountOwed) {
-          const neededAmount = formatUnits(amountOwed, 6);
-          const currentAmount = formatUnits(currentBalance, 6);
-          alert(`Insufficient USDC balance. You need ${neededAmount} USDC but only have ${currentAmount} USDC.\n\n💡 Use the "Get Test USDC" button to mint test tokens for settlement.`);
-          setIsProcessingSettlement(false);
-          return;
-        }
-
-        // Use unlimited approval for better UX (approve once)
-        const unlimitedAmount = BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'); // MaxUint256
-
-        // Check if we need to approve (allowance is less than what we need)
-        const needsApproval = currentAllowance < amountOwed;
-
-        if (needsApproval) {
-          // Check if current allowance is already unlimited (no need to re-approve)
-          const isAlreadyUnlimited = currentAllowance >= unlimitedAmount;
-
-          if (!isAlreadyUnlimited) {
-            // Need to approve USDC spending first (unlimited approval)
-            // Use the USDC address from the group contract instead of hardcoded address
-            const usdcAddress = groupData.usdcAddress || getContractAddresses().usdc;
-
-            await writeContractAsync({
-              address: usdcAddress as `0x${string}`,
-              abi: USDC_ABI,
-              functionName: 'approve',
-              args: [groupAddress, unlimitedAmount], // Unlimited approval
-            });
-
-            // Wait a moment for approval to be confirmed
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
-        }
-
-        // Start settlement and fund in one transaction
-        await writeContractAsync({
-          address: groupAddress,
-          abi: GROUP_ABI,
-          functionName: 'fundSettlement',
-        });
-      } else {
-        // Balance is 0 - no action needed
-        alert('Your balance is settled. No action required.');
-        return;
-      }
-
-      // Wait for transaction confirmation before refreshing
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Refresh data after successful transaction confirmation
-      await refetchGroupData();
-    } catch (error) {
-      console.error('Settlement error:', error);
-      alert('Settlement failed. Please try again.');
-    } finally {
-      setIsProcessingSettlement(false);
-    }
-  };
-
-  // Handle gamble proposal
-  const handleGamble = async () => {
-    if (!groupData) return;
-
-    setIsProcessingGamble(true);
-    try {
-      await writeContractAsync({
-        address: groupAddress,
-        abi: GROUP_ABI,
-        functionName: 'proposeGamble',
-      });
-
-      // Wait for transaction confirmation before refreshing
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Refresh data after successful transaction confirmation
-      await refetchGroupData();
-    } catch (error) {
-      console.error('Gamble proposal error:', error);
-      alert('Gamble proposal failed. Please try again.');
-    } finally {
-      setIsProcessingGamble(false);
-    }
-  };
-
-  // Handle minting test USDC
-  const handleMintTestUSDC = async () => {
-    if (!userAddress) return;
-
-    setIsMintingUSDC(true);
-    try {
-      // Mint 1000 USDC for testing (only works on MockUSDC)
-      // Use the correct USDC address from the group contract
-      await writeContractAsync({
-        address: usdcAddress as `0x${string}`,
-        abi: [
-          {
-            "inputs": [
-              { "internalType": "address", "name": "to", "type": "address" },
-              { "internalType": "uint256", "name": "amount", "type": "uint256" }
-            ],
-            "name": "mint",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-          }
-        ],
-        functionName: 'mint',
-        args: [userAddress, parseUnits('1000', 6)], // 1000 USDC
-      });
-
-      // Wait for transaction confirmation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Refresh balance data
-      // Note: In a real app, you'd refetch the balance query here
-      alert('Successfully minted 1000 test USDC to your wallet!');
-    } catch (error) {
-      console.error('Mint error:', error);
-      alert('Failed to mint test USDC. Please try again.');
-    } finally {
-      setIsMintingUSDC(false);
-    }
-  };
 
   // Show loading state while display names are initializing
   if (!memberDisplayNames.isInitialized) {
@@ -416,105 +259,46 @@ export default function GroupPage() {
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className={styles.actions}>
-        <button
-          className={`${styles.actionButton} ${styles.primary} ${
-            (groupData.settlementActive || groupData.gambleActive) ? styles.disabled : ''
-          }`}
-          onClick={() => setShowAddBillModal(true)}
-          disabled={groupData.settlementActive || groupData.gambleActive}
-          title={
-            (groupData.settlementActive || groupData.gambleActive)
-              ? 'Cannot add bills while settlement or gamble process is active'
-              : 'Add a new bill to the group'
-          }
-        >
-          ➕ Add Bill
-        </button>
+      {/* Success Messages - Show above action buttons */}
+      <SuccessMessage
+        groupData={groupData}
+        userBalance={userBalance}
+        hasUserApproved={hasUserApproved}
+        hasUserFunded={hasUserFunded}
+        hasUserVoted={false}
+      />
 
-        {groupData.totalOwed > 0n && userBalance !== 0n && (
-            <button
-              className={`${styles.actionButton} ${styles.secondary}`}
-              onClick={handleSettleUp}
-              disabled={
-                (groupData.settlementActive && userBalance === 0n) ||
-                groupData.gambleActive ||
-                isProcessingSettlement ||
-                (groupData.settlementActive && isUserCreditor && (hasUserApproved ?? false)) ||
-                (groupData.settlementActive && isUserDebtor && (hasUserFunded ?? false))
-              }
-              title={
-                groupData.gambleActive
-                  ? 'Cannot settle while gamble is active'
-                  : (groupData.settlementActive && isUserCreditor && (hasUserApproved ?? false))
-                    ? 'You have already approved this settlement'
-                    : (groupData.settlementActive && isUserDebtor && (hasUserFunded ?? false))
-                      ? 'You have already funded this settlement'
-                      : userBalance === 0n
-                        ? 'Your balance is settled. No action required.'
-                        : isUserCreditor
-                          ? 'Approve settlement (you will receive money)'
-                          : 'Fund settlement (you will pay money)'
-              }
-            >
-              {isProcessingSettlement ? '⏳ Processing' : '⚖️ Settle Up'}
-            </button>
-        )}
-
-        {groupData.totalOwed > 0n && (
-          <button
-            className={`${styles.actionButton} ${styles.accent}`}
-            onClick={handleGamble}
-            disabled={groupData.settlementActive || isProcessingGamble}
-            title={
-              groupData.settlementActive
-                ? 'Cannot gamble while settlement is active'
-                : 'Propose a gamble to randomly settle debts'
-            }
-          >
-            {isProcessingGamble ? '⏳ Processing' : '🎲 Gamble'}
-          </button>
-        )}
-
-        {/* Mint Test USDC Button - Only on Testnet */}
-        {isTestnet() && ( // Only show on testnet
-          <button
-            className={`${styles.actionButton} ${styles.testButton}`}
-            onClick={handleMintTestUSDC}
-            disabled={isMintingUSDC}
-            title="Mint 1000 test USDC for testing settlement"
-          >
-            {isMintingUSDC ? '⏳ Minting...' : '💰 Get Test USDC'}
-          </button>
-        )}
-      </div>
-
-      {/* Process Active Warning */}
-      {(groupData.settlementActive || groupData.gambleActive) && (
-        <div className={styles.processWarning}>
-          {groupData.settlementActive && groupData.gambleActive ? (
-            <p>⚠️ Settlement and Gamble processes are both active. Adding new bills is temporarily disabled.</p>
-          ) : groupData.settlementActive ? (
-            <>
-              {/* Show positive message if user has completed their part */}
-              {(isUserCreditor && (hasUserApproved ?? false)) ? (
-                <div className={styles.successMessage}>
-                  ✅ You&apos;re all set! You&apos;ve approved the settlement. Just waiting for debtors to fund their payments.
-                </div>
-              ) : (isUserDebtor && (hasUserFunded ?? false)) ? (
-                <div className={styles.successMessage}>
-                  ✅ You&apos;re all set! You&apos;ve funded your settlement. Just waiting for creditors to approve.
-                </div>
-              ) : (
-                <p>⚠️ Settlement process is active. Adding new bills is temporarily disabled.</p>
-              )}
-            </>
-          ) : (
-            <p>⚠️ Gamble process is active. Adding new bills is temporarily disabled.</p>
-          )}
+      {/* Transaction Pending Indicator */}
+      {isTxPending && latestTxHash && (
+        <div className={styles.transactionPending}>
+          ⏳ Transaction pending confirmation...
         </div>
       )}
+
+      {/* Action Buttons - Now handled by reusable component */}
+      <ActionButtons
+        groupData={groupData}
+        groupAddress={groupAddress}
+        userAddress={userAddress}
+        usdcBalance={usdcBalance}
+        usdcAllowance={usdcAllowance}
+        hasUserApproved={hasUserApproved}
+        hasUserFunded={hasUserFunded}
+        hasUserVoted={false}
+        onActionSuccess={() => refreshAllData()}
+        onTransactionStarted={handleTransactionStarted}
+        onShowAddBillModal={() => setShowAddBillModal(true)}
+      />
+
+      {/* Warning Messages - Show below action buttons */}
+      <WarningMessage
+        groupData={groupData}
+        userBalance={userBalance}
+        hasUserApproved={hasUserApproved}
+        hasUserFunded={hasUserFunded}
+        hasUserVoted={false}
+      />
+
 
         {/* Add Bill Modal */}
         <AddBillModal
