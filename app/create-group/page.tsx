@@ -2,10 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { WalletGuard } from '../components/features/WalletGuard';
 import { HeaderBar } from '../components/ui/HeaderBar';
 import { Modal } from '../components/ui/Modal';
+import {
+  Transaction,
+  TransactionButton,
+  TransactionSponsor,
+  TransactionStatus,
+  TransactionStatusLabel,
+  TransactionStatusAction
+} from '@coinbase/onchainkit/transaction';
+import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
 import { useAddressBook } from '../hooks/useAddressBook';
 import { useUserGroups } from '../hooks/useGroups';
 import { GROUP_FACTORY_ABI, getContractAddresses } from '../config/contracts';
@@ -15,7 +24,6 @@ import styles from './CreateGroup.module.css';
 export default function CreateGroupPage() {
   const router = useRouter();
   const { address: userAddress } = useAccount();
-  const { writeContractAsync } = useWriteContract();
   const addressBookData = useAddressBook();
   const { addressBook, isInitialized } = addressBookData;
   const { refetch: refetchGroups } = useUserGroups();
@@ -27,6 +35,8 @@ export default function CreateGroupPage() {
   const [selectedAddressBookMembers, setSelectedAddressBookMembers] = useState<Set<string>>(new Set());
   const [isCreating, setIsCreating] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [transactionStatus, setTransactionStatus] = useState<LifecycleStatus | null>(null);
+  const [useGasSponsorship, setUseGasSponsorship] = useState(true);
   const [, setCreatedGroupAddress] = useState('');
 
   // Initialize with current user as first member
@@ -35,6 +45,42 @@ export default function CreateGroupPage() {
       setMembers([userAddress]);
     }
   }, [userAddress, members]);
+
+  // Transaction calls for group creation
+  const getTransactionCalls = async () => {
+    const allMembers = getAllMembers();
+    return [{
+      address: getContractAddresses().groupFactory as `0x${string}`,
+      abi: GROUP_FACTORY_ABI,
+      functionName: 'createGroup',
+      args: [allMembers as `0x${string}`[], groupName.trim()],
+    }];
+  };
+
+  // Handle transaction status updates
+  const handleTransactionStatus = (status: LifecycleStatus) => {
+    setTransactionStatus(status);
+
+    if (status.statusName === 'success') {
+      setIsCreating(false);
+      setShowSuccessModal(true);
+      refetchGroups();
+    } else if (status.statusName === 'error') {
+      setIsCreating(false);
+      console.error('Transaction failed:', status.statusData);
+
+      // Check if it's a gas sponsorship issue
+      if (status.statusData?.message?.includes('paymaster') ||
+          status.statusData?.message?.includes('gas') ||
+          status.statusData?.code === '-32000') {
+        alert('Gas sponsorship failed. You can try again with gas sponsorship or proceed with regular transaction (you\'ll need ETH for gas).');
+        // Reset to allow retry without sponsorship
+        setUseGasSponsorship(false);
+      } else {
+        alert('Failed to create group. Please try again.');
+      }
+    }
+  };
 
   const handleAddMember = () => {
     if (newMemberAddress && isValidAddress(newMemberAddress) && !members.includes(newMemberAddress)) {
@@ -84,39 +130,14 @@ export default function CreateGroupPage() {
     return addressBookEntry?.name || `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const handleCreateGroup = async () => {
+  const handleCreateGroup = () => {
     if (!groupName.trim() || getAllMembers().length < 2) {
       alert('Please enter a group name and select at least 2 members');
       return;
     }
 
     setIsCreating(true);
-
-    try {
-      const allMembers = getAllMembers();
-
-      const _txHash = await writeContractAsync({
-        address: getContractAddresses().groupFactory as `0x${string}`, // GroupFactory address
-        abi: GROUP_FACTORY_ABI,
-        functionName: 'createGroup',
-        args: [allMembers as `0x${string}`[], groupName.trim()],
-      });
-
-      // Wait for transaction confirmation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Refresh groups list
-      await refetchGroups();
-
-      setCreatedGroupAddress('0x...'); // In a real app, you'd get this from the transaction
-      setShowSuccessModal(true);
-
-    } catch (error) {
-      console.error('Error creating group:', error);
-      alert('Failed to create group. Please try again.');
-    } finally {
-      setIsCreating(false);
-    }
+    setTransactionStatus(null);
   };
 
   const handleGoToGroup = () => {
@@ -281,24 +302,54 @@ export default function CreateGroupPage() {
                   </div>
                 )}
 
-                {/* Submit Button */}
-                <div className={styles.formActions}>
-                  <button
-                    type="button"
-                    onClick={() => router.push('/')}
-                    className={styles.cancelButton}
-                    disabled={isCreating}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={styles.createButton}
-                    disabled={isCreating || !groupName.trim() || getAllMembers().length < 2}
-                  >
-                    {isCreating ? 'Creating...' : `Create Group (${getAllMembers().length} members)`}
-                  </button>
-                </div>
+                {/* Submit Button or Transaction Component */}
+                {!isCreating ? (
+                  <div className={styles.formActions}>
+                    <button
+                      type="button"
+                      onClick={() => router.push('/')}
+                      className={styles.cancelButton}
+                      disabled={isCreating}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.createButton}
+                      disabled={isCreating || !groupName.trim() || getAllMembers().length < 2}
+                    >
+                      {`Create Group (${getAllMembers().length} members)`}
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.formActions}>
+                    <button
+                      type="button"
+                      onClick={() => router.push('/')}
+                      className={styles.cancelButton}
+                    >
+                      Cancel
+                    </button>
+                    <div className={styles.transactionWrapper}>
+                      <Transaction
+                        calls={getTransactionCalls()}
+                        onStatus={handleTransactionStatus}
+                        isSponsored={useGasSponsorship}
+                      >
+                        <TransactionButton
+                          className={styles.createButton}
+                          disabled={!groupName.trim() || getAllMembers().length < 2}
+                          text={`Create Group (${getAllMembers().length} members)${useGasSponsorship ? ' - Gas Free!' : ''}`}
+                        />
+                        <TransactionSponsor />
+                        <TransactionStatus>
+                          <TransactionStatusLabel />
+                          <TransactionStatusAction />
+                        </TransactionStatus>
+                      </Transaction>
+                    </div>
+                  </div>
+                )}
               </form>
             </div>
           </div>

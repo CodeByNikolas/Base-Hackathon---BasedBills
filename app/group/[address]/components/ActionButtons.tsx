@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useWriteContract } from 'wagmi';
 import { GroupData } from '../../../utils/groupUtils';
 import { GROUP_ABI, USDC_ABI, getContractAddresses } from '../../../config/contracts';
+import { useSponsoredTransactions } from '../../../hooks/useSponsoredTransactions';
+import { SPONSORED_FUNCTIONS } from '../../../utils/sponsoredTransactions';
 
 // Cast ABIs to any to avoid deep type instantiation issues
 const GROUP_ABI_CAST = GROUP_ABI as any;
@@ -59,6 +61,7 @@ export function ActionButtons({
 }: ActionButtonsProps) {
   const [processingActions, setProcessingActions] = useState<Set<ActionType>>(new Set());
   const { writeContractAsync } = useWriteContract();
+  const { sendTransaction, isLoading: isSponsoredLoading, isSponsored } = useSponsoredTransactions();
 
   const userBalance = groupData.members.find(m =>
     m.address.toLowerCase() === userAddress?.toLowerCase()
@@ -100,13 +103,20 @@ export function ActionButtons({
           return;
         }
 
-        const txHash = await writeContractAsync({
+        const result = await sendTransaction({
           address: groupAddress,
           abi: GROUP_ABI_CAST,
-          functionName: 'approveSettlement',
+          functionName: SPONSORED_FUNCTIONS.GROUP.approveSettlement,
           args: [],
         });
-        onTransactionStarted?.(txHash);
+        
+        if (result.hash) {
+          onTransactionStarted?.(result.hash);
+        }
+        
+        if (result.isSponsored) {
+          ErrorHandler.showSuccess('Settlement approved with sponsored transaction! No gas fees required.');
+        }
       } else if (userBalance < 0n) {
         // User is a debtor
         if (userAlreadyFunded) {
@@ -142,24 +152,36 @@ export function ActionButtons({
           const isAlreadyUnlimited = currentAllowance >= UNLIMITED_APPROVAL_AMOUNT;
 
           if (!isAlreadyUnlimited) {
-            await writeContractAsync({
+            // Use sponsored transaction for USDC approval
+            const approvalResult = await sendTransaction({
               address: usdcAddress as `0x${string}`,
               abi: USDC_ABI_CAST,
-              functionName: 'approve',
+              functionName: SPONSORED_FUNCTIONS.USDC.approve,
               args: [groupAddress, UNLIMITED_APPROVAL_AMOUNT],
             });
+
+            if (approvalResult.isSponsored) {
+              ErrorHandler.showSuccess('USDC approval completed with sponsored transaction!');
+            }
 
             await new Promise(resolve => setTimeout(resolve, APPROVAL_DELAY));
           }
         }
 
-        const txHash = await writeContractAsync({
+        const result = await sendTransaction({
           address: groupAddress,
           abi: GROUP_ABI_CAST,
-          functionName: 'fundSettlement',
+          functionName: SPONSORED_FUNCTIONS.GROUP.fundSettlement,
           args: [],
         });
-        onTransactionStarted?.(txHash);
+        
+        if (result.hash) {
+          onTransactionStarted?.(result.hash);
+        }
+        
+        if (result.isSponsored) {
+          ErrorHandler.showSuccess('Settlement funded with sponsored transaction! No gas fees required.');
+        }
       } else {
         ErrorHandler.showSuccess(UI_MESSAGES.SETTLEMENT.SETTLED_BALANCE);
         return;
@@ -180,13 +202,20 @@ export function ActionButtons({
     setProcessing('gamble', true);
 
     try {
-      const txHash = await writeContractAsync({
+      const result = await sendTransaction({
         address: groupAddress,
         abi: GROUP_ABI,
-        functionName: 'proposeGamble',
+        functionName: SPONSORED_FUNCTIONS.GROUP.proposeGamble,
         args: [],
       });
-      onTransactionStarted?.(txHash);
+      
+      if (result.hash) {
+        onTransactionStarted?.(result.hash);
+      }
+      
+      if (result.isSponsored) {
+        ErrorHandler.showSuccess('Gamble proposed with sponsored transaction! No gas fees required.');
+      }
 
       await new Promise(resolve => setTimeout(resolve, TRANSACTION_CONFIRMATION_DELAY));
       onActionSuccess();
@@ -228,13 +257,21 @@ export function ActionButtons({
     setProcessing(actionType, true);
 
     try {
-      const txHash = await writeContractAsync({
+      const result = await sendTransaction({
         address: groupAddress,
         abi: GROUP_ABI,
-        functionName: 'voteOnGamble',
+        functionName: SPONSORED_FUNCTIONS.GROUP.voteOnGamble,
         args: [accept],
       });
-      onTransactionStarted?.(txHash);
+      
+      if (result.hash) {
+        onTransactionStarted?.(result.hash);
+      }
+      
+      if (result.isSponsored) {
+        const actionText = accept ? 'accepted' : 'rejected';
+        ErrorHandler.showSuccess(`Gamble ${actionText} with sponsored transaction! No gas fees required.`);
+      }
 
       await new Promise(resolve => setTimeout(resolve, TRANSACTION_CONFIRMATION_DELAY));
       onActionSuccess();

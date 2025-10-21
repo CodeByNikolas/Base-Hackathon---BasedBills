@@ -1,4 +1,4 @@
-import { useAccount, useReadContract, useReadContracts, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract, useReadContracts, useWriteContract, useSwitchChain } from 'wagmi';
 import { useCallback, useMemo } from 'react';
 import {
   getContractAddresses,
@@ -13,19 +13,46 @@ import { GroupData, GroupMember, Bill } from '../utils/groupUtils';
  */
 export function useUserGroups() {
   const { address, chainId } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
+
   
   const contractAddresses = useMemo(() => {
     if (!chainId) return null;
     try {
-      return getContractAddresses(chainId);
-    } catch {
+      const addresses = getContractAddresses(chainId);
+      console.log('Successfully loaded contract addresses for chain', chainId, ':', addresses);
+      return addresses;
+    } catch (error) {
+      console.error('Failed to load contract addresses for chain', chainId, ':', error);
+
+      // Check if this is because we're on the wrong network
+      if (chainId === 8453) {
+        console.warn('User is on Base Mainnet but contracts are only deployed on Base Sepolia');
+      }
+
       return null;
     }
   }, [chainId]);
 
+  // Check if user is on wrong network or if contract addresses are empty
+  const hasValidContracts = contractAddresses && contractAddresses.registry && (contractAddresses.registry as string) !== '';
+  const isOnWrongNetwork = (chainId === 8453 && !hasValidContracts) || (chainId !== 84532 && !hasValidContracts);
+  const correctChainId = 84532; // Base Sepolia
+
+  // Function to switch to correct network
+  const switchToCorrectNetwork = useCallback(async () => {
+    try {
+      await switchChainAsync({ chainId: correctChainId });
+      console.log('Successfully switched to Base Sepolia');
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      throw error;
+    }
+  }, [switchChainAsync, correctChainId]);
+
   // Get group addresses for user
-  const { 
-    data: groupAddresses, 
+  const {
+    data: groupAddresses,
     isLoading: isLoadingAddresses,
     error: addressesError,
     refetch: refetchAddresses
@@ -35,9 +62,13 @@ export function useUserGroups() {
     functionName: 'getGroupsForUser',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && !!contractAddresses?.registry,
+      enabled: !!address && !!contractAddresses?.registry && (contractAddresses.registry as string) !== '',
+      retry: 3,
+      retryDelay: 1000,
     },
   });
+
+
 
   // Get group count for user
   const { 
@@ -63,6 +94,11 @@ export function useUserGroups() {
     isLoading: isLoadingAddresses || isLoadingCount,
     error: addressesError,
     refetch,
+    isOnWrongNetwork,
+    switchToCorrectNetwork,
+    correctChainId,
+    contractAddresses,
+    hasValidContracts,
   };
 }
 
@@ -289,6 +325,11 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
         {
           address: groupAddress,
           abi: GROUP_ABI,
+          functionName: 'billCounter',
+        },
+        {
+          address: groupAddress,
+          abi: GROUP_ABI,
           functionName: 'settlementActive',
         },
         // Note: Skipping gamble status for multiple groups view since it requires user context
@@ -315,7 +356,7 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
     if (!contractResults || !groupAddresses) return [];
 
     const groups: GroupData[] = [];
-    const contractsPerGroup = 5; // group name, members, balances, unsettled bills, settlement active
+    const contractsPerGroup = 6; // group name, members, balances, unsettled bills, bill counter, settlement active
 
     for (let i = 0; i < groupAddresses.length; i++) {
       const baseIndex = i * contractsPerGroup;
@@ -325,7 +366,8 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
       const membersResult = contractResults[baseIndex + 1];
       const balancesResult = contractResults[baseIndex + 2];
       const unsettledBillsResult = contractResults[baseIndex + 3];
-      const settlementActiveResult = contractResults[baseIndex + 4];
+      const billCounterResult = contractResults[baseIndex + 4];
+      const settlementActiveResult = contractResults[baseIndex + 5];
 
       // Skip if essential data failed to load
       if (groupNameResult?.status !== 'success' || 
@@ -369,13 +411,30 @@ export function useMultipleGroupsData(groupAddresses: `0x${string}`[] | undefine
         ? settlementActiveResult.result as boolean
         : false;
 
+      const billCounter = billCounterResult?.status === 'success'
+        ? Number(billCounterResult.result as bigint)
+        : 0;
+
+      // Create a placeholder bills array with correct length for the activity summary
+      // We don't load all bills for performance, but we know the total count
+      const bills = Array(billCounter).fill(null).map((_, index) => ({
+        id: BigInt(index),
+        description: '',
+        totalAmount: 0n,
+        payer: groupAddress as `0x${string}`,
+        participants: [],
+        amounts: [],
+        timestamp: 0n,
+        settlementId: 0n,
+      })) as Bill[];
+
       const totalOwed = unsettledBills.reduce((sum, bill) => sum + bill.totalAmount, 0n);
 
       groups.push({
         address: groupAddress,
         name: groupName,
         members,
-        bills: [], // We don't load all bills for the list view for performance
+        bills, // Now includes placeholder bills with correct length
         unsettledBills,
         settlementActive,
         gambleActive: false, // We don't check gamble status in list view since it requires user context

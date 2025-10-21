@@ -93,14 +93,14 @@ export function GroupCard({ group }: GroupCardProps) {
             </div>
           )}
           
-          {activitySummary.lastActivity && (
+          {/* {activitySummary.lastActivity && (
             <div className={styles.activityItem}>
               <span className={styles.activityLabel}>Last Activity:</span>
               <span className={styles.activityValue}>
                 {getRelativeTime(BigInt(Math.floor(activitySummary.lastActivity.getTime() / 1000)))}
               </span>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Quick Actions Indicator */}

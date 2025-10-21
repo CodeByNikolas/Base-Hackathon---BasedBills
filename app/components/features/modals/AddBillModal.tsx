@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { parseUnits } from 'viem';
 import { Modal } from '../../ui/Modal';
 import { GROUP_ABI } from '../../../config/contracts';
+import { useSponsoredTransactions } from '../../../hooks/useSponsoredTransactions';
+import { SPONSORED_FUNCTIONS } from '../../../utils/sponsoredTransactions';
 import styles from './AddBillModal.module.css';
 
 interface AddBillModalProps {
@@ -32,7 +34,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
     }
   }, [isOpen, groupMembers]);
 
-  const { writeContractAsync } = useWriteContract();
+  const { sendTransaction, isLoading: isSponsoredLoading, isSponsored } = useSponsoredTransactions();
 
   const handleParticipantToggle = (memberAddress: string) => {
     const newParticipants = new Set(participants);
@@ -72,14 +74,14 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
     setIsSubmitting(true);
 
     try {
-      let _txHash;
+      let result;
 
       if (billType === 'equal') {
-        // Add equal split bill
-        _txHash = await writeContractAsync({
+        // Add equal split bill using sponsored transaction
+        result = await sendTransaction({
           address: groupAddress,
           abi: GROUP_ABI,
-          functionName: 'addBill',
+          functionName: SPONSORED_FUNCTIONS.GROUP.addBill,
           args: [
             description,
             parseUnits(amount, 6),
@@ -87,7 +89,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
           ],
         });
       } else {
-        // Add custom split bill
+        // Add custom split bill using sponsored transaction
         const amounts = selectedParticipants.map(addr => {
           const customAmount = customAmounts[addr];
           if (!customAmount || parseFloat(customAmount) <= 0) {
@@ -96,10 +98,10 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
           return parseUnits(customAmount, 6);
         });
 
-        _txHash = await writeContractAsync({
+        result = await sendTransaction({
           address: groupAddress,
           abi: GROUP_ABI,
-          functionName: 'addCustomBill',
+          functionName: SPONSORED_FUNCTIONS.GROUP.addCustomBill,
           args: [
             description,
             selectedParticipants as `0x${string}`[],
@@ -107,6 +109,13 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
           ],
         });
       }
+
+      // // Show success message based on whether transaction was sponsored
+      // if (result.isSponsored) {
+      //   alert('Bill added successfully with sponsored transaction! No gas fees required.');
+      // } else {
+      //   alert('Bill added successfully!');
+      // }
 
       // Wait for transaction confirmation (simple approach)
       // In a production app, you'd use useWaitForTransactionReceipt hook
@@ -295,16 +304,16 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
             type="button"
             onClick={handleClose}
             className={styles.cancelButton}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSponsoredLoading}
           >
             Cancel
           </button>
           <button
             type="submit"
             className={styles.submitButton}
-            disabled={isSubmitting || !description.trim() || !amount || parseFloat(amount) <= 0}
+            disabled={isSubmitting || isSponsoredLoading || !description.trim() || !amount || parseFloat(amount) <= 0}
           >
-            {isSubmitting ? 'Adding Bill...' : 'Add Bill'}
+            {(isSubmitting || isSponsoredLoading) ? 'Adding Bill...' : 'Add Bill'}
           </button>
         </div>
       </form>

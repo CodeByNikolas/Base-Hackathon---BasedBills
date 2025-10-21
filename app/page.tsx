@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 import { WelcomePage } from "./components/features/WelcomePage";
 import { HeaderBar } from "./components/ui/HeaderBar";
 import { GroupCard } from "./components/features/cards/GroupCard";
+import { WalletDebug } from "./components/WalletDebug";
 import { useUserGroups, useMultipleGroupsData } from "./hooks/useGroups";
 import { hasUserSeenWelcome, markWelcomeAsSeen } from "./utils/welcomeUtils";
 import {
@@ -20,10 +21,12 @@ import {
  * or the groups dashboard (for connected users)
  */
 export default function Home() {
-  const { address: userAddress, isConnected } = useAccount();
+  const { address: userAddress, isConnected, chainId, connector } = useAccount();
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'settled' | 'pending-settlement'>('all');
   const [showWelcome, setShowWelcome] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
+
 
   // Check if user should see welcome page
   useEffect(() => {
@@ -37,7 +40,11 @@ export default function Home() {
     groupCount,
     isLoading: isLoadingAddresses,
     error: addressesError,
-    refetch: refetchAddresses
+    refetch: refetchAddresses,
+    isOnWrongNetwork,
+    switchToCorrectNetwork,
+    correctChainId,
+    hasValidContracts
   } = useUserGroups();
 
   // Get detailed data for all groups (only if connected)
@@ -77,6 +84,18 @@ export default function Home() {
       ]);
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  const handleSwitchNetwork = async () => {
+    setIsSwitchingNetwork(true);
+    try {
+      await switchToCorrectNetwork();
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      alert('Failed to switch network. Please manually switch to Base Sepolia in your wallet.');
+    } finally {
+      setIsSwitchingNetwork(false);
     }
   };
 
@@ -137,8 +156,36 @@ export default function Home() {
             </div>
           )}
 
+          {/* Wrong Network Error State */}
+          {isOnWrongNetwork && (
+            <div className={styles.errorState}>
+              <div className={styles.errorIcon}>🔗</div>
+              <h3>Wrong Network Detected</h3>
+              <p>You're connected to Base Mainnet, but this app only works on Base Sepolia testnet where the contracts are deployed.</p>
+              <button
+                className={styles.retryButton}
+                onClick={handleSwitchNetwork}
+                disabled={isSwitchingNetwork}
+              >
+                {isSwitchingNetwork ? 'Switching...' : 'Switch to Base Sepolia'}
+              </button>
+            </div>
+          )}
+
+          {/* Invalid Contracts Error State */}
+          {!hasValidContracts && !isOnWrongNetwork && isConnected && (
+            <div className={styles.errorState}>
+              <div className={styles.errorIcon}>⚠️</div>
+              <h3>Contracts Not Available</h3>
+              <p>The smart contracts are not properly configured for this network. Please ensure you're on Base Sepolia testnet.</p>
+              <button className={styles.retryButton} onClick={handleRefresh}>
+                Try Again
+              </button>
+            </div>
+          )}
+
           {/* Error State */}
-          {error && (
+          {error && !isOnWrongNetwork && hasValidContracts && (
             <div className={styles.errorState}>
               <div className={styles.errorIcon}>⚠️</div>
               <h3>Failed to load groups</h3>
@@ -150,7 +197,7 @@ export default function Home() {
           )}
 
           {/* Groups List */}
-          {!isLoading && !error && (
+          {!isLoading && !error && !isOnWrongNetwork && hasValidContracts && (
             <>
               {groupsData.length === 0 ? (
                 /* Empty State */
@@ -237,8 +284,11 @@ export default function Home() {
               )}
             </>
           )}
-      </div>
+        </div>
       </main>
+
+      {/* Debug component for wallet troubleshooting */}
+      <WalletDebug />
     </div>
   );
 }

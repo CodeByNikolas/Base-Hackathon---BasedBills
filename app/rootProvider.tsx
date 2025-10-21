@@ -2,7 +2,7 @@
 import { ReactNode, useEffect } from "react";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { base, baseSepolia } from "wagmi/chains";
-import { coinbaseWallet } from "wagmi/connectors";
+import { coinbaseWallet, metaMask, walletConnect, injected } from "wagmi/connectors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { sdk } from "@farcaster/miniapp-sdk";
@@ -16,6 +16,11 @@ const wagmiConfig = createConfig({
       appName: "BasedBills",
       preference: "all",
     }),
+    metaMask(),
+    walletConnect({
+      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo-project-id",
+    }),
+    injected(),
   ],
   ssr: true,
   transports: {
@@ -50,9 +55,10 @@ export function RootProvider({ children }: { children: ReactNode }) {
             appearance: {
               mode: "auto",
             },
+            paymaster: process.env.NEXT_PUBLIC_PAYMASTER_ENDPOINT,
             wallet: {
               display: "modal",
-              preference: "all",
+              preference: "all", // Allow all wallet types, not just smart wallets
             },
           }}
         >

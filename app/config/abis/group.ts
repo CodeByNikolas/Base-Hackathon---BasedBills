@@ -815,6 +815,20 @@ export const GROUP_ABI = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  // Public variables (automatic getters)
+  {
+    "inputs": [],
+    "name": "billCounter",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const;
 

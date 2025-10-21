@@ -527,6 +527,17 @@
   }
 }
 
+.transactionWrapper {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.transactionContainer {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .content {
@@ -556,5 +567,10 @@
   .cancelButton,
   .createButton {
     width: 100%;
+  }
+
+  .transactionWrapper {
+    width: 100%;
+    justify-content: center;
   }
 }
