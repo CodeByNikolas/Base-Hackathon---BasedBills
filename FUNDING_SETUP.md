@@ -1,94 +1,78 @@
 # Funding Card Setup Guide
 
-This guide will help you set up the funding card functionality using Coinbase Developer Platform and OnchainKit.
+This guide will help you set up the funding card functionality using OnchainKit's FundCard component.
 
 ## Required Environment Variables
 
 Create a `.env.local` file in your project root with the following variables:
 
 ```bash
-# Coinbase Developer Platform Configuration
+# OnchainKit Configuration (Client-side safe)
 # Get these from https://portal.cdp.coinbase.com/
 
-# CDP API Credentials (Server-side only - NEVER expose these)
-CDP_API_KEY_NAME=your_api_key_name_here
-CDP_API_KEY_PRIVATE_KEY=your_private_key_here
-
-# OnchainKit Configuration (Client-side safe)
 NEXT_PUBLIC_CDP_PROJECT_ID=your_project_id_here
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_onchainkit_api_key_here
 NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME=BasedBills
 
-# CORS Security (Production) - Add your production domains
-ALLOWED_ORIGINS="https://base-hackathon-based-bills.vercel.app,http://localhost:3000"
-
-# Optional: Additional configuration
-NEXT_PUBLIC_ONCHAINKIT_WALLET_CONFIG=your_wallet_config_here
+# Optional: WalletConnect Project ID for wallet connections
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id_here
 ```
 
 ## Setup Steps
 
-### 1. Get CDP API Credentials
+### 1. Get CDP Project ID and OnchainKit API Key
 
-1. Go to [Coinbase Developer Portal](https://portal.cdp.coinbase.com/)
+1. Go to [Coinbase Developer Platform](https://portal.cdp.coinbase.com/)
 2. Create a new project or use an existing one
-3. Navigate to "API Keys" section
-4. Create a new API key with the following permissions:
-   - Onramp/Offramp
-   - Wallet operations
-5. Copy the API Key Name and Private Key
+3. In the project dashboard, find your Project ID
+4. Go to "OnchainKit" section and generate a new API key
 
-### 2. Get OnchainKit API Key
+### 2. Optional: Get WalletConnect Project ID
 
-1. In the same project, go to "OnchainKit" section
-2. Generate a new API key
-3. Copy the API key
-
-### 3. Configure CORS
-
-The application includes CORS protection. Make sure to add your production domains to the `ALLOWED_ORIGINS` environment variable.
+If you want to use WalletConnect for wallet connections:
+1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com/)
+2. Create a new project
+3. Copy the Project ID
 
 ## Testing
 
 1. Start the development server: `npm run dev`
 2. Navigate to `/funding` page
-3. Connect your wallet
-4. Test the funding flow
+3. Connect your wallet using the wallet connection in the top right corner
+4. Use the FundCard to purchase USDC
 
 ## Security Notes
 
 - Never commit `.env.local` to version control
-- The CDP API credentials are server-side only
-- CORS is configured to only allow requests from approved domains
-- Rate limiting is implemented to prevent abuse
+- All environment variables are client-side safe
+- OnchainKit handles all security internally
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"Missing CDP API credentials"**
-   - Check that `CDP_API_KEY_NAME` and `CDP_API_KEY_PRIVATE_KEY` are set
-   - Verify the credentials are correct
+1. **FundCard not showing**
+   - Check that `NEXT_PUBLIC_CDP_PROJECT_ID` is set correctly
+   - Verify you're using a supported network (Base, Ethereum, etc.)
 
-2. **"CDP Project ID is empty"**
-   - Check that `NEXT_PUBLIC_CDP_PROJECT_ID` is set
-   - Verify the project ID is correct
+2. **Wallet connection issues**
+   - Check that `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is set if using WalletConnect
+   - Make sure your wallet supports the Base network
 
-3. **CORS errors**
-   - Add your domain to `ALLOWED_ORIGINS`
-   - Check that the origin is exactly matching
-
-4. **JWT generation failed**
-   - Verify the private key format (should include `-----BEGIN` and `-----END`)
-   - Check that the API key has the correct permissions
-
-## API Endpoints
-
-- `POST /api/session` - Generate session tokens for funding
-- `POST /api/auth` - Get configuration for frontend
-- `OPTIONS /api/session` - CORS preflight
+3. **Environment variable not loading**
+   - Restart the development server after adding environment variables
+   - Check that variables are prefixed correctly (`NEXT_PUBLIC_`)
 
 ## Components
 
-- `FundCardComponent` - Main funding card using OnchainKit
+- `FundCardComponent` - Main funding card using OnchainKit FundCard
 - `FundingPage` - Test page for the funding functionality
+
+## Features
+
+The FundCard component provides:
+- Amount input with fiat/crypto switching
+- Payment method selection (Coinbase, Apple Pay, Debit Card)
+- Preset amount buttons ($10, $25, $50)
+- Real-time exchange rate updates
+- Automatic wallet connection integration

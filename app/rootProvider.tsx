@@ -49,6 +49,7 @@ export function RootProvider({ children }: { children: ReactNode }) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider
+          projectId={process.env.NEXT_PUBLIC_CDP_PROJECT_ID}
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
           chain={DEFAULT_CHAIN}
           config={{
