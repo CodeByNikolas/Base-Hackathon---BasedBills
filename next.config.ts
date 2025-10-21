@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Exclude demo folder from build
+  pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  experimental: {
+    // Exclude the demo folder from TypeScript compilation
+    typedRoutes: false,
+  },
 };
 
 export default nextConfig;
