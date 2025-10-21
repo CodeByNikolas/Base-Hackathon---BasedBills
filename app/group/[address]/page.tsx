@@ -9,6 +9,7 @@ import { OverviewTab } from '../../components/features/tabs/OverviewTab';
 import { BillsTab } from '../../components/features/tabs/BillsTab';
 import { MembersTab } from '../../components/features/tabs/MembersTab';
 import { WalletGuard } from '../../components/features/WalletGuard';
+import { FundCardModal } from '../../components/features/FundCardModal';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
 import { formatUnits } from 'viem';
@@ -26,6 +27,8 @@ export default function GroupPage() {
   const { groupData, isLoading, error, refetch: refetchGroupData } = useGroupData(groupAddress);
   const [activeTab, setActiveTab] = useState<'overview' | 'bills' | 'members'>('overview');
   const [showAddBillModal, setShowAddBillModal] = useState(false);
+  const [showFundCardModal, setShowFundCardModal] = useState(false);
+  const [fundCardPresetAmount, setFundCardPresetAmount] = useState<string | undefined>();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
   const [nameInput, setNameInput] = useState('');
@@ -106,6 +109,11 @@ export default function GroupPage() {
       setIsTxPending(false);
       setLatestTxHash(null);
     }, 5000);
+  };
+
+  const handleShowFundCardModal = (presetAmount?: string) => {
+    setFundCardPresetAmount(presetAmount);
+    setShowFundCardModal(true);
   };
 
   // Error logging effect - must be before any conditional returns
@@ -288,6 +296,7 @@ export default function GroupPage() {
         onActionSuccess={() => refreshAllData()}
         onTransactionStarted={handleTransactionStarted}
         onShowAddBillModal={() => setShowAddBillModal(true)}
+        onShowFundCardModal={handleShowFundCardModal}
       />
 
       {/* Warning Messages - Show below action buttons */}
@@ -308,6 +317,17 @@ export default function GroupPage() {
           groupMembers={groupData.members}
           isProcessActive={groupData.settlementActive || groupData.gambleActive}
           onBillAdded={() => refetchGroupData()}
+        />
+
+        {/* FundCard Modal */}
+        <FundCardModal
+          isOpen={showFundCardModal}
+          onClose={() => {
+            setShowFundCardModal(false);
+            setFundCardPresetAmount(undefined);
+          }}
+          presetAmount={fundCardPresetAmount}
+          title={`Add USDC for Settlement${fundCardPresetAmount ? ` - $${fundCardPresetAmount} needed` : ''}`}
         />
       </div>
     </WalletGuard>

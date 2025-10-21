@@ -1,0 +1,156 @@
+/* FundCardModal Styles */
+.modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.instructions {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.instructionsIcon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.instructionsContent {
+  flex: 1;
+}
+
+.instructionsTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.instructionsList {
+  list-style: decimal;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.instructionsList li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.suggestedAmount {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+
+.fundCardContainer {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.fundCardWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancelButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cancelButton:hover {
+  color: #374151;
+}
+
+.poweredBy {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .modal {
+    background: #1f2937;
+    color: white;
+  }
+
+  .instructions {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  }
+
+  .suggestedAmount {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+
+  .fundCardContainer {
+    background: #374151;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .actionButtons {
+    border-top-color: #4b5563;
+  }
+
+  .cancelButton {
+    color: #9ca3af;
+  }
+
+  .cancelButton:hover {
+    color: #d1d5db;
+  }
+
+  .poweredBy {
+    color: #6b7280;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .modal {
+    margin: 10px;
+    max-height: calc(100vh - 20px);
+  }
+
+  .instructions {
+    padding: 16px;
+  }
+
+  .fundCardContainer {
+    padding: 16px;
+  }
+
+  .fundCardWrapper {
+    min-height: 250px;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
