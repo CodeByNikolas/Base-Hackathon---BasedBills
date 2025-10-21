@@ -18,8 +18,6 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
   const [newName, setNewName] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [importData, setImportData] = useState('');
-  const [showImportExport, setShowImportExport] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const { address: userAddress } = useAccount();
@@ -92,25 +90,6 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
     setTimeout(() => setMessage(null), 3000);
   };
 
-  const handleExport = () => {
-    const data = exportAddressBook();
-    navigator.clipboard.writeText(data).then(() => {
-      setMessage({ type: 'success', text: 'Address book copied to clipboard' });
-      setTimeout(() => setMessage(null), 3000);
-    });
-  };
-
-  const handleImport = () => {
-    if (importAddressBook(importData)) {
-      setImportData('');
-      setShowImportExport(false);
-      setMessage({ type: 'success', text: 'Address book imported successfully' });
-      setTimeout(() => setMessage(null), 3000);
-    } else {
-      setMessage({ type: 'error', text: 'Invalid import data format' });
-      setTimeout(() => setMessage(null), 3000);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -155,7 +134,6 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
                 // Close other sections when opening this one
                 if (!showAddForm) {
                   setShowSuggestions(false);
-                  setShowImportExport(false);
                 }
               }}
               className={`${styles.actionButton} ${showAddForm ? styles.active : ''}`}
@@ -164,7 +142,7 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
             </button>
             
             {showAddForm && (
-              <div className={styles.addForm}>
+              <div className={styles.suggestionsSection}>
                 <h3>Add New Address</h3>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Address</label>
@@ -218,7 +196,6 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
                   // Close other sections when opening this one
                   if (!showSuggestions) {
                     setShowAddForm(false);
-                    setShowImportExport(false);
                   }
                 }}
                 className={`${styles.actionButton} ${showSuggestions ? styles.active : ''}`}
@@ -266,49 +243,6 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
             </div>
           )}
 
-          {/* Import/Export Section */}
-          <div className={styles.section}>
-            <button
-              onClick={() => {
-                setShowImportExport(!showImportExport);
-                // Close other sections when opening this one
-                if (!showImportExport) {
-                  setShowAddForm(false);
-                  setShowSuggestions(false);
-                }
-              }}
-              className={`${styles.actionButton} ${showImportExport ? styles.active : ''}`}
-            >
-              {showImportExport ? '▼' : '▶'} Import/Export
-            </button>
-            
-            {showImportExport && (
-              <div className={styles.importExport}>
-                <h3>Import/Export</h3>
-                <div className={styles.exportSection}>
-                  <button onClick={handleExport} className={styles.exportButton}>
-                    Export to Clipboard
-                  </button>
-                  <p className={styles.exportDescription}>
-                    Copy all your address book entries as JSON
-                  </p>
-                </div>
-                <div className={styles.importSection}>
-                  <label className={styles.label}>Import from JSON</label>
-                  <textarea
-                    value={importData}
-                    onChange={(e) => setImportData(e.target.value)}
-                    placeholder="Paste JSON data here..."
-                    className={styles.importTextarea}
-                    rows={4}
-                  />
-                  <button onClick={handleImport} className={styles.importButton}>
-                    Import Addresses
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         <div className={styles.searchSection}>
