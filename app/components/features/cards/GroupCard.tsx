@@ -93,37 +93,10 @@ export function GroupCard({ group }: GroupCardProps) {
             </div>
           )}
           
-          {/* {activitySummary.lastActivity && (
-            <div className={styles.activityItem}>
-              <span className={styles.activityLabel}>Last Activity:</span>
-              <span className={styles.activityValue}>
-                {getRelativeTime(BigInt(Math.floor(activitySummary.lastActivity.getTime() / 1000)))}
-              </span>
-            </div>
-          )} */}
+          
         </div>
 
-        {/* Quick Actions Indicator */}
-        <div className={styles.quickActions}>
-          {group.settlementActive && (
-            <div className={styles.actionIndicator}>
-              <span className={styles.actionIcon}>⚡</span>
-              <span>Settlement Ready</span>
-            </div>
-          )}
-          {group.gambleActive && (
-            <div className={styles.actionIndicator}>
-              <span className={styles.actionIcon}>🎲</span>
-              <span>Gamble Voting</span>
-            </div>
-          )}
-          {activitySummary.unsettledBills > 0 && !group.settlementActive && !group.gambleActive && (
-            <div className={styles.actionIndicator}>
-              <span className={styles.actionIcon}>💰</span>
-              <span>Ready to Settle</span>
-            </div>
-          )}
-        </div>
+        
       </div>
     </Link>
   );

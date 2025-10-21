@@ -42,17 +42,30 @@ export const SPONSORED_FUNCTIONS = {
     addMember: 'addMember',
     updateGroupName: 'updateGroupName',
   },
-  
+
   // GroupFactory contract functions
   GROUP_FACTORY: {
     createGroup: 'createGroup',
   },
-  
+
   // USDC contract functions (for approvals)
   USDC: {
     approve: 'approve',
   },
 } as const;
+
+// Union type of all possible sponsored function names
+export type SponsoredFunctionName =
+  | 'addBill'
+  | 'addCustomBill'
+  | 'approveSettlement'
+  | 'fundSettlement'
+  | 'proposeGamble'
+  | 'voteOnGamble'
+  | 'addMember'
+  | 'updateGroupName'
+  | 'createGroup'
+  | 'approve';
 
 // Get contract addresses for sponsored transactions
 export function getSponsoredContractAddresses(chainId?: number) {
@@ -60,13 +73,13 @@ export function getSponsoredContractAddresses(chainId?: number) {
 }
 
 // Check if a function should be sponsored
-export function shouldSponsorFunction(contractType: keyof typeof SPONSORED_FUNCTIONS, functionName: string): boolean {
+export function shouldSponsorFunction(contractType: keyof typeof SPONSORED_FUNCTIONS, functionName: SponsoredFunctionName): boolean {
   if (!PAYMASTER_CONFIG.ENABLE_SPONSORED_TRANSACTIONS) {
     return false;
   }
-  
+
   const sponsoredFunctions = SPONSORED_FUNCTIONS[contractType];
-  return Object.values(sponsoredFunctions).includes(functionName);
+  return (Object.values(sponsoredFunctions) as readonly SponsoredFunctionName[]).includes(functionName);
 }
 
 // Error messages for sponsored transactions
