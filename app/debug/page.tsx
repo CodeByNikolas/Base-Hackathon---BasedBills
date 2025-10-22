@@ -87,7 +87,7 @@ export default function DebugPage() {
   const testSessionTokenGeneration = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/session-token", {
+      const response = await fetch("/api/session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

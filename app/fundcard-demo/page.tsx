@@ -29,7 +29,7 @@ export default function FundCardDemo() {
     setError(null);
 
     try {
-      const response = await fetch("/api/session-token", {
+      const response = await fetch("/api/session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -223,7 +223,7 @@ export default function FundCardDemo() {
               </a>
             </li>
             <li>
-              <a target="_blank" rel="noreferrer" href="https://docs.cdp.coinbase.com/onchainkit/fund/session-token-authentication">
+              <a target="_blank" rel="noreferrer" href="https://docs.cdp.coinbase.com/onramp-&-offramp/session-token-authentication">
                 Session Token Authentication
               </a>
             </li>

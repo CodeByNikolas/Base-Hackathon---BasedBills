@@ -56,6 +56,12 @@ function getClientIP(request: NextRequest): string {
     return clientIP;
   }
 
+  // Check if we're in development and use a mock public IP for testing
+  // CDP requires public IPs, so we use a mock one for development
+  if (process.env.NODE_ENV === 'development') {
+    return "192.0.2.1"; // This is a mock public IP for testing (TEST-NET-1)
+  }
+
   // Fallback for local development
   // Note: In production with proper proxy setup, this should come from headers
   return "127.0.0.1";
@@ -101,7 +107,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get client IP first for logging
+    const clientIP = getClientIP(request);
+    console.log("Session token request - Client IP:", clientIP);
+
     // Generate JWT for session token API
+    console.log("Generating JWT for session token API...");
     const jwtToken = await generateJwt({
       apiKeyId,
       apiKeySecret,
@@ -110,9 +121,7 @@ export async function POST(request: NextRequest) {
       requestPath: "/onramp/v1/token",
       expiresIn: 120
     });
-
-    // Get client IP
-    const clientIP = getClientIP(request);
+    console.log("JWT generated successfully for session token API");
 
     // Create session token request payload
     const sessionTokenPayload = {
@@ -122,6 +131,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Make request to CDP API to generate session token
+    console.log("Making request to CDP API for session token...");
     const response = await fetch("https://api.developer.coinbase.com/onramp/v1/token", {
       method: "POST",
       headers: {
@@ -132,19 +142,55 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(sessionTokenPayload)
     });
 
+    console.log("CDP API response status:", response.status);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorData = {};
+      try {
+        const responseText = await response.text();
+        console.log("CDP API error response text:", responseText);
+        try {
+          errorData = JSON.parse(responseText);
+        } catch {
+          errorData = { message: responseText || "Unknown error" };
+        }
+      } catch (e) {
+        console.error("Failed to read CDP API error response:", e);
+        errorData = { message: "Failed to read error response" };
+      }
+
       return NextResponse.json(
         {
+          success: false,
           error: "Failed to create session token",
           details: errorData,
-          status: response.status
+          status: response.status,
+          clientIP,
+          timestamp: new Date().toISOString()
         },
         { status: response.status, headers: corsHeaders }
       );
     }
 
-    const sessionTokenData = await response.json();
+    let sessionTokenData;
+    try {
+      const responseText = await response.text();
+      console.log("CDP API success response:", responseText);
+      sessionTokenData = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse CDP API success response:", e);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid response from CDP API",
+          details: "Response was not valid JSON",
+          status: response.status,
+          clientIP,
+          timestamp: new Date().toISOString()
+        },
+        { status: 502, headers: corsHeaders }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -161,8 +207,16 @@ export async function POST(request: NextRequest) {
     console.error("Session token generation error:", error);
     const corsHeaders = createCorsHeaders(request);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const clientIP = getClientIP(request);
+
     return NextResponse.json(
-      { error: "Internal server error", details: errorMessage },
+      {
+        success: false,
+        error: "Internal server error",
+        details: errorMessage,
+        clientIP,
+        timestamp: new Date().toISOString()
+      },
       { status: 500, headers: corsHeaders }
     );
   }
