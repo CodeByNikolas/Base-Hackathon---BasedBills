@@ -1,0 +1,249 @@
+.container {
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+.header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.debugLink {
+  background: #0070f3;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.debugLink:hover {
+  background: #0051cc;
+}
+
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.connectSection,
+.loadingSection,
+.errorSection,
+.readySection {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.connectSection h2,
+.loadingSection h2,
+.errorSection h2,
+.readySection h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.connectSection p,
+.loadingSection p,
+.errorSection p,
+.readySection p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  border-top-color: #0070f3;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retryButton,
+.generateButton {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.generateButton {
+  background: #0070f3;
+}
+
+.retryButton:hover {
+  background: #b91c1c;
+}
+
+.generateButton:hover {
+  background: #0051cc;
+}
+
+.fundCardSection {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.fundCardSection h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 2rem;
+}
+
+.fundCardWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.infoSection {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  border: 1px solid #e5e7eb;
+}
+
+.infoSection h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.steps {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.steps li {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.debugInfo {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #d1d5db;
+}
+
+.debugInfo p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.documentationSection {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.documentationSection h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.docLinks {
+  list-style-type: disc;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.docLinks li {
+  margin-bottom: 0.5rem;
+}
+
+.docLinks a {
+  color: #0070f3;
+  text-decoration: none;
+}
+
+.docLinks a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .headerContent {
+    padding: 0 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  .fundCardWrapper {
+    padding: 1rem;
+    min-height: 300px;
+  }
+
+  .connectSection,
+  .loadingSection,
+  .errorSection,
+  .readySection {
+    padding: 2rem 1rem;
+  }
+
+  .infoSection,
+  .documentationSection {
+    padding: 1.5rem;
+  }
+}
