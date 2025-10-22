@@ -48,7 +48,7 @@ export default function DebugPage() {
   const [addresses] = useState([
     {
       address: "0x4315d134aCd3221a02dD380ADE3aF39Ce219037c",
-      blockchains: ["ethereum", "base"]
+      blockchains: ["base-sepolia", "base", "ethereum"]
     }
   ]);
   const [assets] = useState(["ETH", "USDC"]);

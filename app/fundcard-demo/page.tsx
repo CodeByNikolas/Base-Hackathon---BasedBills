@@ -38,7 +38,7 @@ export default function FundCardDemo() {
           addresses: [
             {
               address,
-              blockchains: ["ethereum", "base"]
+              blockchains: ["base-sepolia", "base", "ethereum"]
             }
           ],
           assets: ["ETH", "USDC"]
@@ -188,8 +188,9 @@ export default function FundCardDemo() {
               assetSymbol="ETH"
               country="US"
               currency="USD"
-              headerText="Fund Your Wallet"
+              headerText="Fund Your Base Wallet"
               buttonText="Purchase"
+              presetAmountInputs={['10', '25', '50']}
             />
           </div>
         </div>
@@ -199,8 +200,8 @@ export default function FundCardDemo() {
           <ol className={styles.steps}>
             <li>Connect your wallet using the Wallet component above</li>
             <li>The app automatically generates a JWT token using your CDP API credentials</li>
-            <li>A session token is created with your wallet address and supported assets</li>
-            <li>The FundCard component is rendered with the session token for secure funding</li>
+            <li>A session token is created with your wallet address and Base network support</li>
+            <li>The FundCard component is rendered with the session token for secure ETH/USDC funding on Base</li>
           </ol>
 
           <div className={styles.debugInfo}>
@@ -225,6 +226,11 @@ export default function FundCardDemo() {
             <li>
               <a target="_blank" rel="noreferrer" href="https://docs.cdp.coinbase.com/onramp-&-offramp/session-token-authentication">
                 Session Token Authentication
+              </a>
+            </li>
+            <li>
+              <a target="_blank" rel="noreferrer" href="https://docs.base.org/base-camp/docs/intro-to-base">
+                Base Network Documentation
               </a>
             </li>
             <li>
