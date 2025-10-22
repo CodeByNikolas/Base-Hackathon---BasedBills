@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.38.4",
     "@coinbase/onchainkit": "latest",
     "@farcaster/miniapp-sdk": "^0.2.1",
     "@tanstack/react-query": "^5.81.5",
