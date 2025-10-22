@@ -38,20 +38,41 @@ interface EnvironmentStatus {
   timestamp: string;
 }
 
+type Blockchain = "base-sepolia" | "base" | "ethereum";
+
 export default function DebugPage() {
   const [jwtResponse, setJwtResponse] = useState<JwtResponse | null>(null);
   const [sessionTokenResponse, setSessionTokenResponse] = useState<SessionTokenResponse | null>(null);
   const [envStatus, setEnvStatus] = useState<EnvironmentStatus | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
+  const [customAddress, setCustomAddress] = useState("0x4315d134aCd3221a02dD380ADE3aF39Ce219037c");
 
   // Sample data for testing
-  const [addresses] = useState([
+  const [addresses, setAddresses] = useState([
     {
-      address: "0x4315d134aCd3221a02dD380ADE3aF39Ce219037c",
+      address: customAddress,
       blockchains: ["base-sepolia", "base", "ethereum"]
     }
   ]);
   const [assets] = useState(["ETH", "USDC"]);
+
+  const updateAddresses = (blockchain: Blockchain, address: string) => {
+    setAddresses([{
+      address,
+      blockchains: [blockchain]
+    }]);
+  };
+
+  const handleBlockchainChange = (blockchain: Blockchain) => {
+    setSelectedBlockchain(blockchain);
+    updateAddresses(blockchain, customAddress);
+  };
+
+  const handleAddressChange = (address: string) => {
+    setCustomAddress(address);
+    updateAddresses(selectedBlockchain, address);
+  };
 
   // Check environment status on component mount
   useEffect(() => {
@@ -144,7 +165,34 @@ export default function DebugPage() {
         </p>
 
         <div className={styles.inputSection}>
-          <h4>Request Data:</h4>
+          <h4>Request Configuration:</h4>
+
+          <div className={styles.controlGroup}>
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Blockchain:</label>
+              <select
+                value={selectedBlockchain}
+                onChange={(e) => handleBlockchainChange(e.target.value as Blockchain)}
+                className={styles.controlSelect}
+              >
+                <option value="base-sepolia">Base Sepolia (Testnet)</option>
+                <option value="base">Base (Mainnet)</option>
+                <option value="ethereum">Ethereum (Mainnet)</option>
+              </select>
+            </div>
+
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Address:</label>
+              <input
+                type="text"
+                value={customAddress}
+                onChange={(e) => handleAddressChange(e.target.value)}
+                className={styles.controlInput}
+                placeholder="0x..."
+              />
+            </div>
+          </div>
+
           <div className={styles.dataDisplay}>
             <strong>Addresses:</strong>
             <pre className={styles.code}>{JSON.stringify(addresses, null, 2)}</pre>

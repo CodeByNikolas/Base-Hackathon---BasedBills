@@ -13,15 +13,33 @@ interface SessionTokenData {
   error?: string;
 }
 
+type Blockchain = "base-sepolia" | "base" | "ethereum";
+
 export default function FundCardDemo() {
   const { address, isConnected } = useAccount();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
+  const [customAddress, setCustomAddress] = useState<string>("");
+
+  // Update custom address when wallet connects
+  useEffect(() => {
+    if (address && !customAddress) {
+      setCustomAddress(address);
+    }
+  }, [address, customAddress]);
+
+  const useConnectedWallet = () => {
+    if (address) {
+      setCustomAddress(address);
+    }
+  };
 
   const generateSessionToken = useCallback(async () => {
-    if (!address) {
-      setError("Please connect your wallet first");
+    const targetAddress = customAddress || address;
+    if (!targetAddress) {
+      setError("Please connect your wallet or enter an address");
       return;
     }
 
@@ -37,8 +55,8 @@ export default function FundCardDemo() {
         body: JSON.stringify({
           addresses: [
             {
-              address,
-              blockchains: ["base-sepolia", "base", "ethereum"]
+              address: targetAddress,
+              blockchains: [selectedBlockchain]
             }
           ],
           assets: ["ETH", "USDC"]
@@ -58,7 +76,7 @@ export default function FundCardDemo() {
     }
 
     setLoading(false);
-  }, [address]);
+  }, [customAddress, address, selectedBlockchain]);
 
   // Auto-generate session token when wallet is connected
   useEffect(() => {
@@ -180,6 +198,57 @@ export default function FundCardDemo() {
       </header>
 
       <div className={styles.content}>
+        <div className={styles.configurationSection}>
+          <h3>Network Configuration</h3>
+          <div className={styles.controlGroup}>
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Blockchain:</label>
+              <select
+                value={selectedBlockchain}
+                onChange={(e) => setSelectedBlockchain(e.target.value as Blockchain)}
+                className={styles.controlSelect}
+              >
+                <option value="base-sepolia">Base Sepolia (Testnet)</option>
+                <option value="base">Base (Mainnet)</option>
+                <option value="ethereum">Ethereum (Mainnet)</option>
+              </select>
+            </div>
+
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Address:</label>
+              <div className={styles.addressControl}>
+                <input
+                  type="text"
+                  value={customAddress}
+                  onChange={(e) => setCustomAddress(e.target.value)}
+                  className={styles.controlInput}
+                  placeholder={address || "0x..."}
+                />
+                {address && address !== customAddress && (
+                  <button
+                    onClick={useConnectedWallet}
+                    className={styles.walletButton}
+                    title="Use connected wallet address"
+                  >
+                    Use Wallet
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Action:</label>
+              <button
+                onClick={generateSessionToken}
+                disabled={loading || !customAddress}
+                className={styles.generateButton}
+              >
+                {loading ? "Generating..." : "Generate Session Token"}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className={styles.fundCardSection}>
           <h2>FundCard Component</h2>
           <div className={styles.fundCardWrapper}>
