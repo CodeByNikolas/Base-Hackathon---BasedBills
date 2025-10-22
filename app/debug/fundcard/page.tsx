@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HeaderBar } from "../../components/ui/HeaderBar";
 import { FundCardModal } from "../../components/features/FundCardModal";
 import { FundCard } from "@coinbase/onchainkit/fund";
@@ -17,14 +17,13 @@ interface ValidationResult {
 
 interface ValidationResponse {
   success: boolean;
-  results: ValidationResult[];
-  summary: {
-    total: number;
-    valid: number;
-    invalid: number;
-    missing: number;
-    serverOnly: number;
+  environmentStatus: {
+    CDP_SECRET_API_KEY_ID: { configured: boolean };
+    CDP_SECRET_API_KEY_PRIVATEKEY: { configured: boolean };
+    NEXT_PUBLIC_ONCHAINKIT_API_KEY: { configured: boolean };
   };
+  note: string;
+  timestamp: string;
 }
 
 export default function FundCardDebugPage() {
@@ -35,6 +34,11 @@ export default function FundCardDebugPage() {
   const { isConnected, address } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
+
+  // Check environment status on component mount
+  useEffect(() => {
+    validateEnvironmentVariables();
+  }, []);
 
   const handleConnect = (connectorId: string) => {
     const connector = connectors.find(c => c.id === connectorId);
@@ -51,15 +55,20 @@ export default function FundCardDebugPage() {
   const validateEnvironmentVariables = async () => {
     setIsValidating(true);
     try {
-      const response = await fetch('/api/validate-env');
+      const response = await fetch('/api/env-status');
       const data = await response.json();
       setValidationResults(data);
     } catch (error) {
       console.error('Failed to validate environment variables:', error);
       setValidationResults({
         success: false,
-        results: [],
-        summary: { total: 0, valid: 0, invalid: 0, missing: 0, serverOnly: 0 }
+        environmentStatus: {
+          CDP_SECRET_API_KEY_ID: { configured: false },
+          CDP_SECRET_API_KEY_PRIVATEKEY: { configured: false },
+          NEXT_PUBLIC_ONCHAINKIT_API_KEY: { configured: false },
+        },
+        note: "Error checking environment status",
+        timestamp: new Date().toISOString()
       });
     } finally {
       setIsValidating(false);
@@ -276,32 +285,23 @@ export default function FundCardDebugPage() {
                       <div className={styles.validationResults}>
                         <div className={styles.validationSummary}>
                           <span className={styles.validationSummaryItem}>
-                            ✅ Valid: {validationResults.summary.valid}
+                            ✅ Configured: {Object.values(validationResults.environmentStatus).filter(v => v.configured).length}
                           </span>
                           <span className={styles.validationSummaryItem}>
-                            ❌ Invalid: {validationResults.summary.invalid}
-                          </span>
-                          <span className={styles.validationSummaryItem}>
-                            ⚠️ Missing: {validationResults.summary.missing}
+                            ❌ Missing: {Object.values(validationResults.environmentStatus).filter(v => !v.configured).length}
                           </span>
                         </div>
-                        
+
                         <div className={styles.validationDetails}>
-                          {validationResults.results.map((result) => (
-                            <div key={result.variable} className={`${styles.envItem} ${result.isRequired ? styles['envItem-required'] : styles['envItem-optional']}`}>
-                              <span className={styles.envLabel}>{result.variable}:</span>
+                          {Object.entries(validationResults.environmentStatus).map(([key, value]) => (
+                            <div key={key} className={`${styles.envItem} ${styles['envItem-required']}`}>
+                              <span className={styles.envLabel}>{key}:</span>
                               <span className={`${styles.envStatusBadge} ${
-                                result.status === 'valid' ? styles['envStatusBadge-success'] :
-                                result.status === 'invalid' ? styles['envStatusBadge-error'] :
-                                result.status === 'missing' ? styles['envStatusBadge-error'] :
-                                styles['envStatusBadge-warning']
+                                value.configured ? styles['envStatusBadge-success'] : styles['envStatusBadge-error']
                               }`}>
-                                {result.status === 'valid' && '✅ Valid'}
-                                {result.status === 'invalid' && '❌ Invalid'}
-                                {result.status === 'missing' && '❌ Missing'}
-                                {result.status === 'server-only' && '⚠️ Server-only'}
+                                {value.configured ? '✅ Configured' : '❌ Missing'}
                               </span>
-                              <div className={styles.envMessage}>{result.message}</div>
+                              <div className={styles.envMessage}>Checked securely on server-side</div>
                             </div>
                           ))}
                         </div>
@@ -311,34 +311,25 @@ export default function FundCardDebugPage() {
                     {!validationResults && (
                       <div className="space-y-2">
                         <div className={`${styles.envItem} ${styles['envItem-required']}`}>
-                          <span className={styles.envLabel}>NEXT_PUBLIC_CDP_PROJECT_ID:</span>
-                          <span className={`${styles.envStatusBadge} ${process.env.NEXT_PUBLIC_CDP_PROJECT_ID ? styles['envStatusBadge-success'] : styles['envStatusBadge-error']}`}>
-                            {process.env.NEXT_PUBLIC_CDP_PROJECT_ID ? '✅ Set' : '❌ Missing'}
+                          <span className={styles.envLabel}>CDP_SECRET_API_KEY_ID:</span>
+                          <span className={`${styles.envStatusBadge} ${styles['envStatusBadge-warning']}`}>
+                            🔄 Checking...
                           </span>
                         </div>
                         <div className={`${styles.envItem} ${styles['envItem-required']}`}>
-                          <span className={styles.envLabel}>CDP_PROJECT_ID:</span>
+                          <span className={styles.envLabel}>CDP_SECRET_API_KEY_PRIVATEKEY:</span>
                           <span className={`${styles.envStatusBadge} ${styles['envStatusBadge-warning']}`}>
-                            ⚠️ Server-only (not accessible in browser)
+                            🔄 Checking...
                           </span>
                         </div>
                         <div className={`${styles.envItem} ${styles['envItem-required']}`}>
                           <span className={styles.envLabel}>NEXT_PUBLIC_ONCHAINKIT_API_KEY:</span>
-                          <span className={`${styles.envStatusBadge} ${process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY ? styles['envStatusBadge-success'] : styles['envStatusBadge-error']}`}>
-                            {process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY ? '✅ Set' : '❌ Missing'}
-                          </span>
-                        </div>
-                        <div className={`${styles.envItem} ${styles['envItem-required']}`}>
-                          <span className={styles.envLabel}>ONCHAINKIT_API_KEY:</span>
                           <span className={`${styles.envStatusBadge} ${styles['envStatusBadge-warning']}`}>
-                            ⚠️ Server-only (not accessible in browser)
+                            🔄 Checking...
                           </span>
                         </div>
-                        <div className={`${styles.envItem} ${styles['envItem-required']}`}>
-                          <span className={styles.envLabel}>NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:</span>
-                          <span className={`${styles.envStatusBadge} ${process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID && process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID !== 'demo-project-id' ? styles['envStatusBadge-success'] : styles['envStatusBadge-error']}`}>
-                            {process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID && process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID !== 'demo-project-id' ? '✅ Set' : '❌ Missing (causing 403 errors)'}
-                          </span>
+                        <div className={styles.testNote}>
+                          <strong>💡 Note:</strong> Environment variables are checked securely via API on load.
                         </div>
                       </div>
                     )}
@@ -347,19 +338,13 @@ export default function FundCardDebugPage() {
               </div>
 
               <div className={styles.envSection}>
-                <h3 className={styles.envSectionTitle}>⚠️ Optional Variables</h3>
+                <h3 className={styles.envSectionTitle}>🔧 Additional Setup</h3>
                 <div className="space-y-2">
-                  <div className={`${styles.envItem} ${styles['envItem-optional']}`}>
-                    <span className={styles.envLabel}>CDP_API_KEY_NAME:</span>
-                    <span className={`${styles.envStatusBadge} ${process.env.CDP_API_KEY_NAME ? styles['envStatusBadge-success'] : styles['envStatusBadge-warning']}`}>
-                      {process.env.CDP_API_KEY_NAME ? '✅ Set' : '⚠️ Optional'}
-                    </span>
+                  <div className={styles.testNote}>
+                    <strong>💡 Note:</strong> Additional environment variables (like CDP_API_KEY_NAME, IRON_PASSWORD) are not checked here but should be configured in your environment if needed.
                   </div>
-                  <div className={`${styles.envItem} ${styles['envItem-optional']}`}>
-                    <span className={styles.envLabel}>IRON_PASSWORD:</span>
-                    <span className={`${styles.envStatusBadge} ${process.env.IRON_PASSWORD ? styles['envStatusBadge-success'] : styles['envStatusBadge-warning']}`}>
-                      {process.env.IRON_PASSWORD ? '✅ Set' : '⚠️ Optional'}
-                    </span>
+                  <div className={styles.envSetupText}>
+                    <strong>🔧 Setup:</strong> Ensure all required CDP and OnchainKit keys are set in your Vercel environment variables.
                   </div>
                 </div>
               </div>
