@@ -9,27 +9,28 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #1a1a1a;
+  color: var(--foreground);
   text-align: center;
 }
 
 .section {
   margin-bottom: 3rem;
   padding: 2rem;
-  background: #f8f9fa;
+  background: var(--background);
   border-radius: 12px;
-  border: 1px solid #e9ecef;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .section h2 {
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #1a1a1a;
+  color: var(--foreground);
 }
 
 .description {
-  color: #6c757d;
+  color: var(--foreground);
+  opacity: 0.7;
   margin-bottom: 1.5rem;
   line-height: 1.6;
 }
@@ -98,7 +99,7 @@
 .inputSection h4 {
   margin-bottom: 0.75rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--foreground);
 }
 
 .controlGroup {
@@ -117,17 +118,19 @@
 
 .controlLabel {
   font-weight: 500;
-  color: #495057;
+  color: var(--foreground);
+  opacity: 0.8;
   font-size: 0.875rem;
 }
 
 .controlSelect,
 .controlInput {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 6px;
   font-size: 0.875rem;
-  background: white;
+  background: var(--background);
+  color: var(--foreground);
   transition: border-color 0.2s ease;
 }
 
@@ -167,28 +170,31 @@
 }
 
 .dataDisplay {
-  background: white;
+  background: var(--background);
   padding: 1rem;
   border-radius: 6px;
-  border: 1px solid #dee2e6;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--foreground);
 }
 
 .dataDisplay strong {
-  color: #495057;
+  color: var(--foreground);
+  opacity: 0.8;
 }
 
 .info {
   padding: 2rem;
-  background: #e9ecef;
+  background: var(--background);
   border-radius: 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--foreground);
 }
 
 .info h3 {
   margin-top: 0;
   font-size: 1.4rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--foreground);
 }
 
 .envStatus {
@@ -202,14 +208,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: white;
+  background: var(--background);
   border-radius: 6px;
-  border: 1px solid #dee2e6;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--foreground);
 }
 
 .envItem span:first-child {
   font-weight: 500;
-  color: #495057;
+  opacity: 0.8;
 }
 
 .configured {
@@ -225,21 +232,23 @@
 .note {
   margin-top: 1rem;
   padding: 1rem;
-  background: #e9ecef;
+  background: rgba(0, 112, 243, 0.1);
   border-radius: 6px;
   border-left: 4px solid #0070f3;
+  color: var(--foreground);
 }
 
 .note p {
   margin: 0;
-  color: #495057;
+  opacity: 0.8;
   font-size: 0.875rem;
 }
 
 .loading {
   text-align: center;
   padding: 1rem;
-  color: #6c757d;
+  color: var(--foreground);
+  opacity: 0.7;
 }
 
 /* Responsive design */
