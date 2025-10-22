@@ -138,6 +138,34 @@
   box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.1);
 }
 
+.addressControl {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.addressControl .controlInput {
+  flex: 1;
+}
+
+.walletButton {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  height: auto;
+}
+
+.walletButton:hover {
+  background: #059669;
+}
+
 .dataDisplay {
   background: white;
   padding: 1rem;
@@ -235,6 +263,15 @@
 
   .controlItem {
     min-width: auto;
+    width: 100%;
+  }
+
+  .addressControl {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .walletButton {
     width: 100%;
   }
 

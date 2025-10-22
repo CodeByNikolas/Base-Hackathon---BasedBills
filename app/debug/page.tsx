@@ -9,7 +9,6 @@ interface JwtResponse {
   expiresIn?: number;
   generatedAt?: string;
   error?: string;
-  details?: string;
 }
 
 interface SessionTokenResponse {
@@ -25,7 +24,11 @@ interface SessionTokenResponse {
   generatedAt?: string;
   expiresIn?: number;
   error?: string;
-  details?: string | Record<string, unknown>;
+  details?: {
+    message?: string;
+    code?: string;
+    status?: number;
+  };
 }
 
 interface EnvironmentStatus {
@@ -98,8 +101,7 @@ export default function DebugPage() {
     } catch (error) {
       setJwtResponse({
         success: false,
-        error: "Network error",
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: "Network error"
       });
     }
     setLoading(false);
@@ -123,8 +125,7 @@ export default function DebugPage() {
     } catch (error) {
       setSessionTokenResponse({
         success: false,
-        error: "Network error",
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: "Network error"
       });
     }
     setLoading(false);
@@ -175,21 +176,41 @@ export default function DebugPage() {
                 onChange={(e) => handleBlockchainChange(e.target.value as Blockchain)}
                 className={styles.controlSelect}
               >
-                <option value="base-sepolia">Base Sepolia (Testnet)</option>
-                <option value="base">Base (Mainnet)</option>
+                <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
+                <option value="base-sepolia">Base Sepolia (Testnet) - Limited Support</option>
               </select>
             </div>
 
             <div className={styles.controlItem}>
               <label className={styles.controlLabel}>Address:</label>
-              <input
-                type="text"
-                value={customAddress}
-                onChange={(e) => handleAddressChange(e.target.value)}
-                className={styles.controlInput}
-                placeholder="0x..."
-              />
+              <div className={styles.addressControl}>
+                <input
+                  type="text"
+                  value={customAddress}
+                  onChange={(e) => handleAddressChange(e.target.value)}
+                  className={styles.controlInput}
+                  placeholder="0x..."
+                />
+                {typeof window !== 'undefined' && (window as any).ethereum && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+                        if (accounts && accounts[0]) {
+                          handleAddressChange(accounts[0]);
+                        }
+                      } catch (error) {
+                        console.error('Failed to get wallet address:', error);
+                      }
+                    }}
+                    className={styles.walletButton}
+                    title="Get wallet address"
+                  >
+                    Get Wallet
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

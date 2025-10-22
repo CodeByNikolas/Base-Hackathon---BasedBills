@@ -96,6 +96,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if any addresses contain base-sepolia (which may not be supported)
+    const hasBaseSepolia = addresses.some(addr =>
+      addr.blockchains.includes("base-sepolia")
+    );
+
+    if (hasBaseSepolia) {
+      console.log("Warning: Base Sepolia detected - may not be supported by CDP session tokens");
+    }
+
     // Get environment variables
     const apiKeyId = process.env.CDP_SECRET_API_KEY_ID;
     const apiKeySecret = process.env.CDP_SECRET_API_KEY_PRIVATEKEY;
@@ -110,6 +119,8 @@ export async function POST(request: NextRequest) {
     // Get client IP first for logging
     const clientIP = getClientIP(request);
     console.log("Session token request - Client IP:", clientIP);
+    console.log("Session token request - Addresses:", addresses);
+    console.log("Session token request - Assets:", assets);
 
     // Generate JWT for session token API
     console.log("Generating JWT for session token API...");

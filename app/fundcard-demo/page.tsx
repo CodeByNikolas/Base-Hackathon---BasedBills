@@ -11,6 +11,11 @@ interface SessionTokenData {
   success: boolean;
   sessionToken?: string;
   error?: string;
+  details?: {
+    message?: string;
+    code?: string;
+    status?: number;
+  };
 }
 
 type Blockchain = "base-sepolia" | "base" | "ethereum";
@@ -20,7 +25,7 @@ export default function FundCardDemo() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
+  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [customAddress, setCustomAddress] = useState<string>("");
 
   // Update custom address when wallet connects
@@ -67,8 +72,15 @@ export default function FundCardDemo() {
 
       if (data.success && data.sessionToken) {
         setSessionToken(data.sessionToken);
+        setError(null);
       } else {
-        setError(data.error || "Failed to generate session token");
+        let errorMessage = data.error || "Failed to generate session token";
+        if (data.details?.message?.includes("base-sepolia")) {
+          errorMessage += " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
+        } else if (data.details?.message?.includes("not valid for blockchain")) {
+          errorMessage += " 💡 Make sure your address is valid for the selected network. Try using your connected wallet address or switch to Base (Mainnet).";
+        }
+        setError(errorMessage);
       }
     } catch (err) {
       setError("Network error while generating session token");
@@ -78,12 +90,26 @@ export default function FundCardDemo() {
     setLoading(false);
   }, [customAddress, address, selectedBlockchain]);
 
-  // Auto-generate session token when wallet is connected
+  // Auto-generate session token when wallet is connected (initial)
   useEffect(() => {
-    if (isConnected && address && !sessionToken) {
+    if (isConnected && address && !sessionToken && !customAddress) {
       generateSessionToken();
     }
   }, [isConnected, address, sessionToken, generateSessionToken]);
+
+  // Auto-regenerate session token when blockchain changes
+  useEffect(() => {
+    if (sessionToken && customAddress) {
+      generateSessionToken();
+    }
+  }, [selectedBlockchain, generateSessionToken, sessionToken, customAddress]);
+
+  // Auto-regenerate session token when address changes (but keep existing token if no address)
+  useEffect(() => {
+    if (sessionToken && customAddress && customAddress !== address) {
+      generateSessionToken();
+    }
+  }, [customAddress, generateSessionToken, sessionToken, address]);
 
   if (!isConnected) {
     return (
@@ -208,9 +234,9 @@ export default function FundCardDemo() {
                 onChange={(e) => setSelectedBlockchain(e.target.value as Blockchain)}
                 className={styles.controlSelect}
               >
-                <option value="base-sepolia">Base Sepolia (Testnet)</option>
-                <option value="base">Base (Mainnet)</option>
+                <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
+                <option value="base-sepolia">Base Sepolia (Testnet) - Limited Support</option>
               </select>
             </div>
 
@@ -238,13 +264,24 @@ export default function FundCardDemo() {
 
             <div className={styles.controlItem}>
               <label className={styles.controlLabel}>Action:</label>
-              <button
-                onClick={generateSessionToken}
-                disabled={loading || !customAddress}
-                className={styles.generateButton}
-              >
-                {loading ? "Generating..." : "Generate Session Token"}
-              </button>
+              <div className={styles.buttonGroup}>
+                {address && address !== customAddress && (
+                  <button
+                    onClick={useConnectedWallet}
+                    className={styles.walletButton}
+                    title="Use connected wallet address"
+                  >
+                    Use Wallet
+                  </button>
+                )}
+                <button
+                  onClick={generateSessionToken}
+                  disabled={loading || !customAddress}
+                  className={styles.generateButton}
+                >
+                  {loading ? "Generating..." : "Generate Session Token"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -272,6 +309,16 @@ export default function FundCardDemo() {
             <li>A session token is created with your wallet address and Base network support</li>
             <li>The FundCard component is rendered with the session token for secure ETH/USDC funding on Base</li>
           </ol>
+
+          <div className={styles.networkInfo}>
+            <p><strong>💡 Network Support:</strong></p>
+            <ul>
+              <li><strong>Base (Mainnet):</strong> Fully supported ✅</li>
+              <li><strong>Ethereum (Mainnet):</strong> Fully supported ✅</li>
+              <li><strong>Base Sepolia (Testnet):</strong> Limited support - may require testnet addresses</li>
+            </ul>
+            <p>If Base Sepolia fails, try using <strong>Base (Mainnet)</strong> which has the best CDP support.</p>
+          </div>
 
           <div className={styles.debugInfo}>
             <p>

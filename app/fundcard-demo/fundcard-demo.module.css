@@ -194,6 +194,31 @@
   color: #6b7280;
 }
 
+.networkInfo {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #e0f2fe;
+  border-radius: 8px;
+  border: 1px solid #0ea5e9;
+}
+
+.networkInfo p {
+  margin: 0 0 0.5rem 0;
+  color: #0c4a6e;
+  font-weight: 600;
+}
+
+.networkInfo ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.networkInfo li {
+  margin-bottom: 0.25rem;
+  color: #0c4a6e;
+  line-height: 1.5;
+}
+
 .documentationSection {
   background: white;
   border-radius: 12px;
@@ -317,6 +342,12 @@
   background: #059669;
 }
 
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .headerContent {
@@ -373,5 +404,10 @@
 
   .walletButton {
     width: 100%;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
