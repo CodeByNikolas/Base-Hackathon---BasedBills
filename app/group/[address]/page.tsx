@@ -126,10 +126,14 @@ export default function GroupPage() {
       <WalletGuard>
         <div className={styles.container}>
           <HeaderBar />
-          <div className={styles.loadingState}>
-            <div className={styles.spinner}></div>
-            <p>Loading display names...</p>
-          </div>
+          <main className={styles.main}>
+            <div className={styles.content}>
+              <div className={styles.loadingState}>
+                <div className={styles.spinner}></div>
+                <p>Loading display names...</p>
+              </div>
+            </div>
+          </main>
         </div>
       </WalletGuard>
     );
@@ -140,10 +144,14 @@ export default function GroupPage() {
     return (
       <div className={styles.container}>
         <HeaderBar />
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>Loading group...</p>
-        </div>
+        <main className={styles.main}>
+          <div className={styles.content}>
+            <div className={styles.loadingState}>
+              <div className={styles.spinner}></div>
+              <p>Loading group...</p>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -153,13 +161,18 @@ export default function GroupPage() {
     return (
       <div className={styles.container}>
         <HeaderBar />
-        <div className={styles.error}>
-          <h2>Group Not Found</h2>
-          <p>The group you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
-          <button onClick={() => router.push('/')} className={styles.backButton}>
-            ← Back to Groups
-          </button>
-        </div>
+        <main className={styles.main}>
+          <div className={styles.content}>
+            <div className={styles.errorState}>
+              <div className={styles.errorIcon}>⚠️</div>
+              <h2>Group Not Found</h2>
+              <p>The group you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
+              <button onClick={() => router.push('/')} className={styles.backButton}>
+                ← Back to Groups
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -169,136 +182,139 @@ export default function GroupPage() {
       <div className={styles.container}>
         <HeaderBar />
 
-        {/* Back Button */}
-        <div className={styles.backButtonContainer}>
-          <button
-            onClick={() => router.push('/')}
-            className={styles.backButton}
-            title="Back to Groups"
-          >
-            ← Back
-          </button>
-        </div>
+        <main className={styles.main}>
+          <div className={styles.content}>
+            {/* Back Button */}
+            <div className={styles.backButtonContainer}>
+              <button
+                onClick={() => router.push('/')}
+                className={styles.backButton}
+                title="Back to Groups"
+              >
+                ← Back
+              </button>
+            </div>
 
-        {/* Group Header */}
-        <div className={styles.groupHeader}>
-          <div className={styles.groupInfo}>
-            <h1 className={styles.groupName}>{groupData.name}</h1>
-            <p className={styles.groupAddress}>{groupAddress.slice(0, 6)}...{groupAddress.slice(-4)}</p>
+            {/* Group Header */}
+            <div className={styles.groupHeader}>
+              <div className={styles.groupInfo}>
+                <h1 className={styles.groupName}>{groupData.name}</h1>
+                <p className={styles.groupAddress}>{groupAddress.slice(0, 6)}...{groupAddress.slice(-4)}</p>
+              </div>
+
+              <div className={styles.groupStats}>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Members</span>
+                  <span className={styles.statValue}>{groupData.memberCount}</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Total Bills</span>
+                  <span className={styles.statValue}>{groupData.bills.length}</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>Unsettled Bills</span>
+                  <span className={styles.statValue}>{groupData.unsettledBills.length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* User Balance Card */}
+            <div className={styles.balanceCard}>
+              <h3>Your Balance</h3>
+              <div className={`${styles.balance} ${isUserCreditor ? styles.positive : isUserDebtor ? styles.negative : styles.neutral}`}>
+                {isUserCreditor ? '+' : ''}{formatUnits(userBalance, 6)} USDC
+              </div>
+              <p className={styles.balanceDescription}>
+                {isUserCreditor ? 'Others owe you money' :
+                 isUserDebtor ? 'You owe others money' :
+                 'All settled up!'}
+              </p>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className={styles.tabs}>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'overview' ? styles.active : ''}`}
+                onClick={() => setActiveTab('overview')}
+              >
+                Overview
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'bills' ? styles.active : ''}`}
+                onClick={() => setActiveTab('bills')}
+              >
+                Bills ({groupData.bills.length})
+              </button>
+              <button
+                className={`${styles.tabButton} ${activeTab === 'members' ? styles.active : ''}`}
+                onClick={() => setActiveTab('members')}
+              >
+                Members ({groupData.memberCount})
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className={styles.tabContent}>
+              {activeTab === 'overview' && (
+                <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />
+              )}
+              {activeTab === 'bills' && <BillsTab bills={groupData.bills} />}
+              {activeTab === 'members' && (
+                <MembersTab
+                  members={groupData.members}
+                  memberDisplayNames={memberDisplayNames}
+                  userAddress={userAddress}
+                  onNameAdded={handleNameAdded}
+                  editingAddress={editingAddress}
+                  setEditingAddress={setEditingAddress}
+                  nameInput={nameInput}
+                  setNameInput={setNameInput}
+                  addAddress={addAddress}
+                />
+              )}
+            </div>
+
+            {/* Success Messages - Show above action buttons */}
+            <SuccessMessage
+              groupData={groupData}
+              userBalance={userBalance}
+              hasUserApproved={hasUserApproved}
+              hasUserFunded={hasUserFunded}
+              hasUserVoted={groupData.hasUserVoted}
+            />
+
+            {/* Transaction Pending Indicator */}
+            {isTxPending && latestTxHash && (
+              <div className={styles.transactionPending}>
+                ⏳ Transaction pending confirmation...
+              </div>
+            )}
+
+            {/* Action Buttons - Now handled by reusable component */}
+            <ActionButtons
+              groupData={groupData}
+              groupAddress={groupAddress}
+              userAddress={userAddress}
+              usdcBalance={usdcBalance}
+              usdcAllowance={usdcAllowance}
+              hasUserApproved={hasUserApproved}
+              hasUserFunded={hasUserFunded}
+              hasUserVoted={groupData.hasUserVoted}
+              onActionSuccess={() => refreshAllData()}
+              onTransactionStarted={handleTransactionStarted}
+              onShowAddBillModal={() => setShowAddBillModal(true)}
+            />
+
+            {/* Warning Messages - Show below action buttons */}
+            <WarningMessage
+              groupData={groupData}
+              userBalance={userBalance}
+              hasUserApproved={hasUserApproved}
+              hasUserFunded={hasUserFunded}
+              hasUserVoted={groupData.hasUserVoted}
+            />
           </div>
-
-        <div className={styles.groupStats}>
-          <div className={styles.stat}>
-            <span className={styles.statLabel}>Members</span>
-            <span className={styles.statValue}>{groupData.memberCount}</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statLabel}>Total Bills</span>
-            <span className={styles.statValue}>{groupData.bills.length}</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statLabel}>Unsettled Bills</span>
-            <span className={styles.statValue}>{groupData.unsettledBills.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* User Balance Card */}
-      <div className={styles.balanceCard}>
-        <h3>Your Balance</h3>
-        <div className={`${styles.balance} ${isUserCreditor ? styles.positive : isUserDebtor ? styles.negative : styles.neutral}`}>
-          {isUserCreditor ? '+' : ''}{formatUnits(userBalance, 6)} USDC
-        </div>
-        <p className={styles.balanceDescription}>
-          {isUserCreditor ? 'Others owe you money' :
-           isUserDebtor ? 'You owe others money' :
-           'All settled up!'}
-        </p>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tabButton} ${activeTab === 'overview' ? styles.active : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </button>
-        <button
-          className={`${styles.tabButton} ${activeTab === 'bills' ? styles.active : ''}`}
-          onClick={() => setActiveTab('bills')}
-        >
-          Bills ({groupData.bills.length})
-        </button>
-        <button
-          className={`${styles.tabButton} ${activeTab === 'members' ? styles.active : ''}`}
-          onClick={() => setActiveTab('members')}
-        >
-          Members ({groupData.memberCount})
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className={styles.tabContent}>
-        {activeTab === 'overview' && (
-          <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />
-        )}
-        {activeTab === 'bills' && <BillsTab bills={groupData.bills} />}
-        {activeTab === 'members' && (
-          <MembersTab
-            members={groupData.members}
-            memberDisplayNames={memberDisplayNames}
-            userAddress={userAddress}
-            onNameAdded={handleNameAdded}
-            editingAddress={editingAddress}
-            setEditingAddress={setEditingAddress}
-            nameInput={nameInput}
-            setNameInput={setNameInput}
-            addAddress={addAddress}
-          />
-        )}
-      </div>
-
-      {/* Success Messages - Show above action buttons */}
-      <SuccessMessage
-        groupData={groupData}
-        userBalance={userBalance}
-        hasUserApproved={hasUserApproved}
-        hasUserFunded={hasUserFunded}
-        hasUserVoted={groupData.hasUserVoted}
-      />
-
-      {/* Transaction Pending Indicator */}
-      {isTxPending && latestTxHash && (
-        <div className={styles.transactionPending}>
-          ⏳ Transaction pending confirmation...
-        </div>
-      )}
-
-      {/* Action Buttons - Now handled by reusable component */}
-      <ActionButtons
-        groupData={groupData}
-        groupAddress={groupAddress}
-        userAddress={userAddress}
-        usdcBalance={usdcBalance}
-        usdcAllowance={usdcAllowance}
-        hasUserApproved={hasUserApproved}
-        hasUserFunded={hasUserFunded}
-        hasUserVoted={groupData.hasUserVoted}
-        onActionSuccess={() => refreshAllData()}
-        onTransactionStarted={handleTransactionStarted}
-        onShowAddBillModal={() => setShowAddBillModal(true)}
-      />
-
-      {/* Warning Messages - Show below action buttons */}
-      <WarningMessage
-        groupData={groupData}
-        userBalance={userBalance}
-        hasUserApproved={hasUserApproved}
-        hasUserFunded={hasUserFunded}
-        hasUserVoted={groupData.hasUserVoted}
-      />
-
+        </main>
 
         {/* Add Bill Modal */}
         <AddBillModal

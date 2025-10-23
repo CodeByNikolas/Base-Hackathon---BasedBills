@@ -3,65 +3,105 @@
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding-bottom: 2rem;
 }
 
-.loading, .error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  color: white;
+.main {
+  padding: 0 20px;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.loadingState {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 60px 40px;
   text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
 }
 
-.spinner {
+.loadingState .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #667eea;
   border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 1rem;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.loadingState p {
+  color: #6b7280;
+  margin: 0;
 }
 
-.error h2 {
-  margin-bottom: 1rem;
+.errorState {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.errorState .errorIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.errorState h2 {
+  font-size: 1.5rem;
+  color: #dc2626;
+  margin: 0 0 12px 0;
+}
+
+.errorState p {
+  color: #6b7280;
+  margin: 0 0 24px 0;
 }
 
 .backButton {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #dc2626;
   color: white;
-  padding: 0.75rem 1.5rem;
+  border: none;
+  padding: 12px 24px;
   border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .backButton:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background: #b91c1c;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
 }
 
 /* Group Header */
 .groupHeader {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 2rem;
-  margin: 2rem;
-  color: white;
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 24px;
+  color: #1f2937;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .groupInfo {
@@ -69,8 +109,7 @@
 }
 
 .backButtonContainer {
-  padding: 0 2rem;
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
 }
 
 .backButtonContainer .backButton {
@@ -110,17 +149,14 @@
 }
 
 .groupName {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin: 0 0 8px 0;
+  color: #1f2937;
 }
 
 .groupAddress {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 0.9rem;
 }
@@ -137,7 +173,7 @@
 .statLabel {
   display: block;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin-bottom: 0.25rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -147,376 +183,102 @@
   display: block;
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: #1f2937;
 }
 
 /* Balance Card */
 .balanceCard {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 2rem;
-  margin: 0 2rem;
-  color: white;
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 32px;
+  color: #1f2937;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .balanceCard h3 {
   margin: 0 0 1rem 0;
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .balance {
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .positive {
-  color: #4ade80;
-  text-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  color: #059669;
 }
 
 .negative {
-  color: #f87171;
-  text-shadow: 0 0 20px rgba(248, 113, 113, 0.3);
+  color: #dc2626;
 }
 
 .neutral {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 .balanceDescription {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin: 0;
+  font-size: 1rem;
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  margin: 2rem;
-  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 0.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .tabButton {
   flex: 1;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 15px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .tabButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
 }
 
 .tabButton.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 /* Tab Content */
 .tabContent {
-  margin: 0 2rem;
+  margin-bottom: 24px;
 }
 
-/* Overview Tab */
-.overviewTab {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
-.summaryCards {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.summaryCard {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  color: white;
-}
-
-.summaryCard h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.amount {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fbbf24;
-}
-
-.status {
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.recentActivity {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  color: white;
-}
-
-.recentActivity h4 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-}
-
-.activityList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.activityItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.activityInfo {
-  flex: 1;
-}
-
-.activityDescription {
-  display: block;
-  font-weight: 500;
-}
-
-.activityDate {
-  display: block;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.activityAmount {
-  font-weight: 600;
-  color: #4ade80;
-}
-
-/* Bills Tab */
-.billsTab {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  color: white;
-}
-
-.billsList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.billCard {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.billHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.billHeader h4 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.billAmount {
-  font-weight: 600;
-  color: #fbbf24;
-}
-
-.billDetails {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 0.5rem;
-}
-
-.billParticipants {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-/* Members Tab */
-.membersTab {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  color: white;
-}
-
-.membersList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.memberCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.memberInfo {
-  flex: 1;
-}
-
-.memberName {
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.memberAddress {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Monaco', 'Menlo', monospace;
-}
-
-.memberAddressSection {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.memberAddressWithAction {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.nameInputContainer {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.nameInput {
-  flex: 1;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 0.8rem;
-  font-family: inherit;
-}
-
-.nameInput:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.nameInput::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.nameInputActions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.saveNameButton,
-.cancelNameButton,
-.addNameButton {
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-}
-
-.addNameButton {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.addNameButton:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.saveNameButton {
-  background: #4ade80;
-  color: white;
-}
-
-.saveNameButton:hover:not(:disabled) {
-  background: #22c55e;
-}
-
-.saveNameButton:disabled {
-  background: #6b7280;
-  cursor: not-allowed;
-}
-
-.cancelNameButton {
-  background: #ef4444;
-  color: white;
-}
-
-.cancelNameButton:hover {
-  background: #dc2626;
-}
-
-.memberBalance {
-  font-weight: 600;
-  font-size: 1.1rem;
-}
 
 /* Actions */
 .actions {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin: 2rem;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
@@ -545,14 +307,16 @@
 }
 
 .secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(102, 126, 234, 0.1);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
 }
 
 .accent {
@@ -593,31 +357,34 @@
 
 /* Process Active Warning */
 .processWarning {
-  background: rgba(251, 191, 36, 0.2);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 20px;
   padding: 1rem 2rem;
-  margin: 0 2rem;
+  margin-bottom: 24px;
+  color: #92400e;
+  font-weight: 500;
+  text-align: center;
 }
 
 .successMessage {
-  background: rgba(34, 197, 94, 0.2);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 20px;
   padding: 1rem 2rem;
-  margin: 0 2rem;
-  color: #10b981;
+  margin-bottom: 24px;
+  color: #059669;
   font-weight: 500;
   text-align: center;
 }
 
 .transactionPending {
-  background: rgba(251, 191, 36, 0.2);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 20px;
   padding: 1rem 2rem;
-  margin: 2rem 2rem 0 2rem;
-  color: #f59e0b;
+  margin-bottom: 24px;
+  color: #92400e;
   font-weight: 500;
   text-align: center;
   animation: pulse 2s infinite;
@@ -630,71 +397,66 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .backButtonContainer {
-    padding: 0 1rem;
+  .content {
+    padding: 16px 0;
   }
 
   .groupHeader {
     flex-direction: column;
     gap: 1.5rem;
     text-align: center;
+    padding: 24px;
   }
 
   .groupStats {
     gap: 1rem;
   }
 
-  .overviewTab {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .tabs {
-    margin: 1rem 2rem;
-  }
 
   .actions {
-    margin: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .actionButton {
-    flex: 1;
-    min-width: 120px;
+    width: 100%;
+    justify-content: center;
   }
 
   .processWarning,
-  .successMessage {
-    margin: 0 1rem;
-    padding: 0.75rem 1rem;
-  }
-
+  .successMessage,
   .transactionPending {
-    margin: 1rem 1rem 0 1rem;
     padding: 0.75rem 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .backButtonContainer {
-    padding: 0 0.5rem;
+  .main {
+    padding: 0 16px;
   }
 
-  .container {
-    padding-bottom: 1rem;
+  .content {
+    padding: 16px 0;
   }
 
-  .groupHeader,
-  .balanceCard,
-  .tabContent {
-    margin: 1rem;
+  .groupHeader {
+    padding: 20px;
   }
 
-  .transactionPending {
-    margin: 1rem 0.5rem 0 0.5rem;
+  .balanceCard {
+    padding: 20px;
+  }
+
+  .tabs {
+    padding: 0.25rem;
+  }
+
+  .tabButton {
+    padding: 0.75rem;
   }
 
   .groupName {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 
   .balance {
