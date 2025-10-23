@@ -252,40 +252,6 @@ export function FundCardModal({
         {/* FundCard Component */}
         {sessionToken && !loading && (
           <div className={styles.fundCardContainer}>
-            {/* External Status/Error Display */}
-            {(fundCardStatus || fundCardError || fundCardSuccess) && (
-              <div className={styles.externalMessages}>
-                <div className={styles.messagesHeader}>
-                  <h4 className="text-sm sm:text-base">FundCard Events</h4>
-                  <button
-                    onClick={() => {
-                      setFundCardStatus("");
-                      setFundCardError("");
-                      setFundCardSuccess("");
-                    }}
-                    className={styles.clearButton}
-                  >
-                    Clear
-                  </button>
-                </div>
-                {fundCardStatus && (
-                  <div className={styles.statusMessage}>
-                    <strong>Status:</strong> {fundCardStatus}
-                  </div>
-                )}
-                {fundCardError && (
-                  <div className={styles.errorMessage}>
-                    <strong>Error:</strong> {fundCardError}
-                  </div>
-                )}
-                {fundCardSuccess && (
-                  <div className={styles.successMessage}>
-                    <strong>Success:</strong> {fundCardSuccess}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* FundCard with External Event Handlers */}
             <div className={styles.fundCardWrapper}>
               <FundCard
