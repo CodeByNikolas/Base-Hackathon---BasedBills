@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
 import { AddBillModal } from '../../components/features/modals/AddBillModal';
+import { FundCardModal } from '../../components/features/FundCardModal';
 import { OverviewTab } from '../../components/features/tabs/OverviewTab';
 import { BillsTab } from '../../components/features/tabs/BillsTab';
 import { MembersTab } from '../../components/features/tabs/MembersTab';
@@ -27,6 +28,8 @@ export default function GroupPage() {
   const { groupData, isLoading, error, refetch: refetchGroupData } = useGroupData(groupAddress);
   const [activeTab, setActiveTab] = useState<'overview' | 'bills' | 'members'>('overview');
   const [showAddBillModal, setShowAddBillModal] = useState(false);
+  const [showFundCardModal, setShowFundCardModal] = useState(false);
+  const [fundingAmount, setFundingAmount] = useState<string>('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
   const [nameInput, setNameInput] = useState('');
@@ -107,6 +110,25 @@ export default function GroupPage() {
       setIsTxPending(false);
       setLatestTxHash(null);
     }, 5000);
+  };
+
+  const handleShowFundCard = (amountOwed: bigint) => {
+    // Calculate preset amount: amount owed + $1 for rounding errors
+    const presetAmount = (Number(amountOwed) / 1e6) + 1; // Convert from wei to USDC and add $1
+    setFundingAmount(presetAmount.toString());
+    setShowFundCardModal(true);
+  };
+
+  const handleFundCardSuccess = () => {
+    setShowFundCardModal(false);
+    setFundingAmount('');
+    // Refresh data to get updated balance
+    refreshAllData();
+  };
+
+  const handleFundCardError = (error: string) => {
+    console.error('FundCard error:', error);
+    // Keep modal open on error so user can retry
   };
 
   // Error logging effect - must be before any conditional returns
@@ -304,6 +326,7 @@ export default function GroupPage() {
               onActionSuccess={() => refreshAllData()}
               onTransactionStarted={handleTransactionStarted}
               onShowAddBillModal={() => setShowAddBillModal(true)}
+              onShowFundCard={handleShowFundCard}
             />
 
             {/* Warning Messages - Show below action buttons */}
@@ -325,6 +348,15 @@ export default function GroupPage() {
           groupMembers={groupData.members}
           isProcessActive={groupData.settlementActive || groupData.gambleActive}
           onBillAdded={() => refetchGroupData()}
+        />
+
+        {/* Fund Card Modal */}
+        <FundCardModal
+          isOpen={showFundCardModal}
+          onClose={() => setShowFundCardModal(false)}
+          onSuccess={handleFundCardSuccess}
+          onError={handleFundCardError}
+          presetAmount={fundingAmount}
         />
       </div>
     </WalletGuard>

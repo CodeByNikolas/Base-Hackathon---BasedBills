@@ -34,6 +34,7 @@ interface ActionButtonsProps {
   onActionSuccess: () => void;
   onTransactionStarted?: (txHash: `0x${string}`) => void;
   onShowAddBillModal: () => void;
+  onShowFundCard: (amountOwed: bigint) => void;
 }
 
 type ActionType = 'add-bill' | 'settle-up' | 'gamble' | 'approve-settlement' | 'fund-settlement' | 'reject-settlement' | 'accept-gamble' | 'reject-gamble';
@@ -58,7 +59,8 @@ export function ActionButtons({
   hasUserVoted,
   onActionSuccess,
   onTransactionStarted,
-  onShowAddBillModal
+  onShowAddBillModal,
+  onShowFundCard
 }: ActionButtonsProps) {
   const [processingActions, setProcessingActions] = useState<Set<ActionType>>(new Set());
   const { writeContractAsync } = useWriteContract();
@@ -136,13 +138,8 @@ export function ActionButtons({
         }
 
         if (currentBalance < amountOwed) {
-          const neededAmount = formatCurrency(amountOwed);
-          const currentAmount = formatCurrency(currentBalance);
-          const message = GroupUtils.formatMessage(UI_MESSAGES.SETTLEMENT.INSUFFICIENT_BALANCE, {
-            neededAmount,
-            currentAmount
-          });
-          ErrorHandler.showError(message);
+          // Show FundCard modal instead of error
+          onShowFundCard(amountOwed);
           return;
         }
 

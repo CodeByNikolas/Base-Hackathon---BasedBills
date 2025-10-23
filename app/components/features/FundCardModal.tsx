@@ -23,6 +23,8 @@ interface SessionTokenData {
 interface FundCardModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
   presetAmount?: string; // Optional preset amount (e.g., "50" for $50)
   title?: string;
 }
@@ -34,6 +36,8 @@ interface FundCardModalProps {
 export function FundCardModal({
   isOpen,
   onClose,
+  onSuccess,
+  onError,
   presetAmount,
   title = "Add USDC to Your Wallet"
 }: FundCardModalProps) {
@@ -219,7 +223,7 @@ export function FundCardModal({
               </ol>
               {presetAmount && (
                 <div className={styles.suggestedAmount}>
-                  <strong>Suggested amount:</strong> ${presetAmount} (based on your outstanding bills)
+                  <strong>Suggested amount:</strong> ${presetAmount} (includes $1 buffer for rounding)
                 </div>
               )}
             </div>
@@ -263,7 +267,7 @@ export function FundCardModal({
                 buttonText={presetAmount ? `Buy $${presetAmount} USDC` : "Buy USDC"}
                 presetAmountInputs={
                   presetAmount
-                    ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), "100"]
+                    ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), Math.max(parseFloat(presetAmount) * 3, 100).toString()]
                     : ["25", "50", "120"]
                 }
                 onStatus={(status) => {
@@ -272,14 +276,18 @@ export function FundCardModal({
                   setFundCardSuccess("");
                 }}
                 onError={(error) => {
-                  setFundCardError(error ? `${error.errorType}: ${error.debugMessage || error.code || 'Unknown error'}` : '');
+                  const errorMessage = error ? `${error.errorType}: ${error.debugMessage || error.code || 'Unknown error'}` : 'Unknown error';
+                  setFundCardError(errorMessage);
                   setFundCardStatus("");
                   setFundCardSuccess("");
+                  onError?.(errorMessage);
                 }}
                 onSuccess={(data) => {
-                  setFundCardSuccess(`Transaction successful: ${data.assetSymbol} on ${data.assetName}`);
+                  const successMessage = `Transaction successful: ${data.assetSymbol} on ${data.assetName}`;
+                  setFundCardSuccess(successMessage);
                   setFundCardStatus("");
                   setFundCardError("");
+                  onSuccess?.();
                 }}
               />
             </div>
