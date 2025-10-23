@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { FundCard } from "@coinbase/onchainkit/fund";
 import { Modal } from "../ui/Modal";
+import { formatCurrency } from "../../utils/currencyUtils";
 import styles from "./FundCardModal.module.css";
 
 type Blockchain = "base-sepolia" | "base";
@@ -26,6 +27,8 @@ interface FundCardModalProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   presetAmount?: string; // Optional preset amount (e.g., "50" for $50)
+  shortfallAmount?: bigint; // Amount user is short in wei
+  currentBalance?: bigint; // Current USDC balance in wei
   title?: string;
 }
 
@@ -39,7 +42,9 @@ export function FundCardModal({
   onSuccess,
   onError,
   presetAmount,
-  title = "Add USDC to Your Wallet"
+  shortfallAmount,
+  currentBalance,
+  title = shortfallAmount && shortfallAmount > 0n ? "Fund Your Wallet for Settlement" : "Add USDC to Your Wallet"
 }: FundCardModalProps) {
   const { address, isConnected } = useAccount();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -152,6 +157,22 @@ export function FundCardModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="large">
       <div className="space-y-4 sm:space-y-5 md:space-y-6">
+        {/* Shortfall Information - Only show when actually short */}
+        {shortfallAmount && currentBalance && shortfallAmount > 0n && (
+          <div className={styles.shortfallInfo}>
+            <div className={styles.shortfallIcon}>⚠️</div>
+            <div className={styles.shortfallContent}>
+              <h4 className={styles.shortfallTitle}>Insufficient USDC Balance</h4>
+              <p className={styles.shortfallMessage}>
+                You are short <strong>{formatCurrency(shortfallAmount)} USDC</strong> to complete this settlement.
+              </p>
+              <p className={styles.shortfallDetails}>
+                Current balance: {formatCurrency(currentBalance)} USDC | Required: {formatCurrency(shortfallAmount + currentBalance)} USDC
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Network Configuration */}
         <div className={styles.networkConfig}>
           <h4 className={styles.configTitle}>Network Selection</h4>
@@ -219,11 +240,15 @@ export function FundCardModal({
                 <li><strong>Coinbase Account:</strong> Use existing Coinbase balances or payment methods</li>
                 <li>Complete the purchase in the secure popup</li>
                 <li>Funds will be added to your wallet automatically</li>
-                <li>Close this modal and continue with your bill settlement</li>
+                {shortfallAmount && shortfallAmount > 0n ? (
+                  <li>Close this modal and continue with your bill settlement</li>
+                ) : (
+                  <li>Close this modal to return to your previous screen</li>
+                )}
               </ol>
-              {presetAmount && (
+              {presetAmount && shortfallAmount && shortfallAmount > 0n && (
                 <div className={styles.suggestedAmount}>
-                  <strong>Suggested amount:</strong> ${presetAmount} (includes $1 buffer for rounding)
+                  <strong>Suggested amount:</strong> ${presetAmount} (your shortfall of {formatCurrency(shortfallAmount)} + $1 buffer for rounding)
                 </div>
               )}
             </div>
@@ -263,8 +288,8 @@ export function FundCardModal({
                 assetSymbol="USDC"
                 country="US"
                 currency="USD"
-                headerText={presetAmount ? `Fund $${presetAmount} USDC` : "Add USDC"}
-                buttonText={presetAmount ? `Buy $${presetAmount} USDC` : "Buy USDC"}
+                headerText={shortfallAmount && shortfallAmount > 0n ? `Fund ${formatCurrency(shortfallAmount)} USDC for Settlement` : "Add USDC"}
+                buttonText={shortfallAmount && shortfallAmount > 0n ? `Buy ${formatCurrency(shortfallAmount)} USDC` : "Buy USDC"}
                 presetAmountInputs={
                   presetAmount
                     ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), Math.max(parseFloat(presetAmount) * 3, 100).toString()]

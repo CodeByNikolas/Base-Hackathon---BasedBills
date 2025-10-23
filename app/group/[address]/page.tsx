@@ -30,6 +30,8 @@ export default function GroupPage() {
   const [showAddBillModal, setShowAddBillModal] = useState(false);
   const [showFundCardModal, setShowFundCardModal] = useState(false);
   const [fundingAmount, setFundingAmount] = useState<string>('');
+  const [shortfallAmount, setShortfallAmount] = useState<bigint>(0n);
+  const [currentBalance, setCurrentBalance] = useState<bigint>(0n);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [editingAddress, setEditingAddress] = useState<`0x${string}` | null>(null);
   const [nameInput, setNameInput] = useState('');
@@ -112,9 +114,15 @@ export default function GroupPage() {
     }, 5000);
   };
 
-  const handleShowFundCard = (amountOwed: bigint) => {
-    // Calculate preset amount: amount owed + $1 for rounding errors
-    const presetAmount = (Number(amountOwed) / 1e6) + 1; // Convert from wei to USDC and add $1
+  const handleShowFundCard = (amountOwed: bigint, currentBalance: bigint) => {
+    // Calculate the shortfall (difference between what they owe and what they have)
+    const shortfall = amountOwed - currentBalance;
+
+    // Calculate preset amount: shortfall + $1 for rounding errors
+    const presetAmount = (Number(shortfall) / 1e6) + 1; // Convert from wei to USDC and add $1
+
+    setShortfallAmount(shortfall);
+    setCurrentBalance(currentBalance);
     setFundingAmount(presetAmount.toString());
     setShowFundCardModal(true);
   };
@@ -122,6 +130,8 @@ export default function GroupPage() {
   const handleFundCardSuccess = () => {
     setShowFundCardModal(false);
     setFundingAmount('');
+    setShortfallAmount(0n);
+    setCurrentBalance(0n);
     // Refresh data to get updated balance
     refreshAllData();
   };
@@ -326,7 +336,7 @@ export default function GroupPage() {
               onActionSuccess={() => refreshAllData()}
               onTransactionStarted={handleTransactionStarted}
               onShowAddBillModal={() => setShowAddBillModal(true)}
-              onShowFundCard={handleShowFundCard}
+              onShowFundCard={(amountOwed: bigint, currentBalance: bigint) => handleShowFundCard(amountOwed, currentBalance)}
             />
 
             {/* Warning Messages - Show below action buttons */}
@@ -353,10 +363,16 @@ export default function GroupPage() {
         {/* Fund Card Modal */}
         <FundCardModal
           isOpen={showFundCardModal}
-          onClose={() => setShowFundCardModal(false)}
+          onClose={() => {
+            setShowFundCardModal(false);
+            setShortfallAmount(0n);
+            setCurrentBalance(0n);
+          }}
           onSuccess={handleFundCardSuccess}
           onError={handleFundCardError}
           presetAmount={fundingAmount}
+          shortfallAmount={shortfallAmount}
+          currentBalance={currentBalance}
         />
       </div>
     </WalletGuard>

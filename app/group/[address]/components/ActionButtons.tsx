@@ -34,7 +34,7 @@ interface ActionButtonsProps {
   onActionSuccess: () => void;
   onTransactionStarted?: (txHash: `0x${string}`) => void;
   onShowAddBillModal: () => void;
-  onShowFundCard: (amountOwed: bigint) => void;
+  onShowFundCard: (amountOwed: bigint, currentBalance: bigint) => void;
 }
 
 type ActionType = 'add-bill' | 'settle-up' | 'gamble' | 'approve-settlement' | 'fund-settlement' | 'reject-settlement' | 'accept-gamble' | 'reject-gamble';
@@ -139,7 +139,7 @@ export function ActionButtons({
 
         if (currentBalance < amountOwed) {
           // Show FundCard modal instead of error
-          onShowFundCard(amountOwed);
+          onShowFundCard(amountOwed, currentBalance);
           return;
         }
 
