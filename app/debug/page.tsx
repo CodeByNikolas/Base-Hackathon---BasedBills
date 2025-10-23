@@ -20,8 +20,13 @@ interface SessionTokenResponse {
     address: string;
     blockchains: string[];
   }>;
+  originalAddresses?: Array<{
+    address: string;
+    blockchains: string[];
+  }>;
   assets?: string[];
   testnet?: boolean;
+  testnetConverted?: boolean;
   generatedAt?: string;
   expiresIn?: number;
   error?: string;
@@ -29,6 +34,7 @@ interface SessionTokenResponse {
     message?: string;
     code?: string;
     status?: number;
+    supportedNetworks?: string[];
   };
 }
 
@@ -49,7 +55,7 @@ export default function DebugPage() {
   const [sessionTokenResponse, setSessionTokenResponse] = useState<SessionTokenResponse | null>(null);
   const [envStatus, setEnvStatus] = useState<EnvironmentStatus | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
+  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [customAddress, setCustomAddress] = useState("0x4315d134aCd3221a02dD380ADE3aF39Ce219037c");
   const [isTestnet, setIsTestnet] = useState<boolean>(false);
 
@@ -57,7 +63,7 @@ export default function DebugPage() {
   const [addresses, setAddresses] = useState([
     {
       address: customAddress,
-      blockchains: ["base-sepolia", "base", "ethereum"]
+      blockchains: ["base", "ethereum"]
     }
   ]);
   const [assets] = useState(["ETH", "USDC"]);
@@ -124,8 +130,7 @@ export default function DebugPage() {
         },
         body: JSON.stringify({
           addresses,
-          assets,
-          testnet: isTestnet
+          assets
         }),
       });
       const data = await response.json();
@@ -168,7 +173,7 @@ export default function DebugPage() {
       </div>
 
       <div className={styles.section}>
-        <h2>Session Token Generation {isTestnet ? "(Testnet Mode)" : ""}</h2>
+        <h2>Session Token Generation</h2>
         <p className={styles.description}>
           Test session token generation for FundCard component
         </p>
@@ -186,7 +191,7 @@ export default function DebugPage() {
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
-                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Limited Support</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Supported via Conversion</option>
               </select>
             </div>
 
@@ -236,12 +241,7 @@ export default function DebugPage() {
             <div className={styles.warningIcon}>🧪</div>
             <div className={styles.warningContent}>
               <h4>Testnet Mode Active</h4>
-              <p>You're testing with Base Sepolia testnet. This requires:</p>
-              <ul>
-                <li>Testnet wallet connection</li>
-                <li>Test ETH for transaction fees</li>
-                <li>Test USDC if purchasing that asset</li>
-              </ul>
+              <p>Session token will be generated for Base mainnet but can be used with Base Sepolia in onramp URLs.</p>
               <div className={styles.testnetActions}>
                 <a
                   href="https://faucet.circle.com"
@@ -274,10 +274,11 @@ export default function DebugPage() {
 
         {sessionTokenResponse && (
           <div className={`${styles.response} ${sessionTokenResponse.success ? styles.success : styles.error}`}>
-            <h3>Session Token Response {sessionTokenResponse.testnet ? "(Testnet)" : ""}:</h3>
-            {sessionTokenResponse.testnet && (
+            <h3>Session Token Response:</h3>
+            {sessionTokenResponse.testnetConverted && (
               <div className={styles.testnetNote}>
-                <strong>🧪 Testnet Mode:</strong> This session token was generated for testnet use.
+                <strong>🧪 Testnet Conversion:</strong> Base Sepolia was converted to Base mainnet for session token generation.
+                The session token can be used with Base Sepolia in onramp URLs.
               </div>
             )}
             <pre className={styles.code}>

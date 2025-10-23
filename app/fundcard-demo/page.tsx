@@ -11,6 +11,7 @@ interface SessionTokenData {
   success: boolean;
   sessionToken?: string;
   error?: string;
+  testnetConverted?: boolean;
   details?: {
     message?: string;
     code?: string;
@@ -70,8 +71,7 @@ export default function FundCardDemo() {
               blockchains: [selectedBlockchain]
             }
           ],
-          assets: ["ETH", "USDC"],
-          testnet: isTestnet
+          assets: ["ETH", "USDC"]
         }),
       });
 
@@ -82,7 +82,9 @@ export default function FundCardDemo() {
         setError(null);
       } else {
         let errorMessage = data.error || "Failed to generate session token";
-        if (data.details?.message?.includes("base-sepolia")) {
+        if (data.testnetConverted) {
+          errorMessage = "🧪 Base Sepolia converted to Base mainnet for session token generation. The session token will work with Base Sepolia in the onramp URL.";
+        } else if (data.details?.message?.includes("base-sepolia")) {
           errorMessage += isTestnet
             ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
             : " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
@@ -247,7 +249,7 @@ export default function FundCardDemo() {
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
-                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Limited Support</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Supported via Conversion</option>
               </select>
             </div>
 
@@ -301,10 +303,10 @@ export default function FundCardDemo() {
           <h2>FundCard Component {isTestnet ? "(Testnet Mode)" : ""}</h2>
           {isTestnet && (
             <div className={styles.testnetWarning}>
-              <div className={styles.warningIcon}>⚠️</div>
+              <div className={styles.warningIcon}>🧪</div>
               <div className={styles.warningContent}>
                 <h4>Testnet Mode Active</h4>
-                <p>You're using Base Sepolia testnet. Make sure your wallet is connected to the correct testnet and you have test funds available.</p>
+                <p>Session token generated for Base mainnet but will work with Base Sepolia. Make sure your wallet is connected to Base Sepolia testnet.</p>
                 <div className={styles.testnetActions}>
                   <a
                     href="https://faucet.circle.com"
@@ -329,12 +331,12 @@ export default function FundCardDemo() {
           <div className={styles.fundCardWrapper}>
             <FundCard
               sessionToken={sessionToken}
-              assetSymbol={isTestnet ? "USDC" : "ETH"}
+              assetSymbol="ETH"
               country="US"
               currency="USD"
-              headerText={isTestnet ? "Fund Your Testnet Wallet" : "Fund Your Base Wallet"}
+              headerText="Fund Your Base Wallet"
               buttonText="Purchase"
-              presetAmountInputs={isTestnet ? ['1', '5', '10'] : ['10', '25', '50']}
+              presetAmountInputs={['10', '25', '50']}
             />
           </div>
         </div>
@@ -353,21 +355,9 @@ export default function FundCardDemo() {
             <ul>
               <li><strong>Base (Mainnet):</strong> Fully supported ✅</li>
               <li><strong>Ethereum (Mainnet):</strong> Fully supported ✅</li>
-              <li><strong>Base Sepolia (Testnet):</strong> {isTestnet ? "Active - " : "Limited support - "}may require testnet addresses</li>
+              <li><strong>Base Sepolia (Testnet):</strong> 🧪 Supported via conversion ✅</li>
             </ul>
-            {isTestnet ? (
-              <div className={styles.testnetInfo}>
-                <p><strong>Testnet Active!</strong> Make sure:</p>
-                <ul>
-                  <li>Your wallet is connected to Base Sepolia testnet</li>
-                  <li>You have test ETH for transaction fees</li>
-                  <li>You have test USDC if purchasing that asset</li>
-                  <li>Visit <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer">Circle Faucet</a> for test USDC</li>
-                </ul>
-              </div>
-            ) : (
-              <p>If Base Sepolia fails, try using <strong>Base (Mainnet)</strong> which has the best CDP support.</p>
-            )}
+            <p><strong>How it works:</strong> Session tokens are generated for Base mainnet, but can be used with Base Sepolia in onramp URLs.</p>
           </div>
 
           <div className={styles.debugInfo}>

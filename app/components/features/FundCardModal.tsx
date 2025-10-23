@@ -12,6 +12,7 @@ interface SessionTokenData {
   success: boolean;
   sessionToken?: string;
   error?: string;
+  testnetConverted?: boolean;
   details?: {
     message?: string;
     code?: string;
@@ -40,7 +41,7 @@ export function FundCardModal({
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
+  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [isTestnet, setIsTestnet] = useState<boolean>(false);
 
   const generateSessionToken = useCallback(async () => {
@@ -65,8 +66,7 @@ export function FundCardModal({
               blockchains: [selectedBlockchain]
             }
           ],
-          assets: ["ETH", "USDC"],
-          testnet: isTestnet
+          assets: ["ETH", "USDC"]
         }),
       });
 
@@ -77,7 +77,9 @@ export function FundCardModal({
         setError(null);
       } else {
         let errorMessage = data.error || "Failed to generate session token";
-        if (data.details?.message?.includes("base-sepolia")) {
+        if (data.testnetConverted) {
+          errorMessage = "🧪 Base Sepolia converted to Base mainnet for session token generation. The session token will work with Base Sepolia in the onramp URL.";
+        } else if (data.details?.message?.includes("base-sepolia")) {
           errorMessage += isTestnet
             ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
             : " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
@@ -137,7 +139,7 @@ export function FundCardModal({
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
-                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Limited Support</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Supported via Conversion</option>
               </select>
             </div>
             <div className={styles.configItem}>
@@ -152,8 +154,8 @@ export function FundCardModal({
           <div className={styles.testnetWarning}>
             <div className={styles.warningIcon}>🧪</div>
             <div className={styles.warningContent}>
-              <h4>Testnet Mode</h4>
-              <p>You're using Base Sepolia testnet. Make sure your wallet is connected to the correct testnet.</p>
+              <h4>Testnet Mode Active</h4>
+              <p>Session token generated for Base mainnet but will work with Base Sepolia. Make sure your wallet is connected to Base Sepolia testnet.</p>
               <div className={styles.testnetActions}>
                 <a
                   href="https://faucet.circle.com"
@@ -199,11 +201,6 @@ export function FundCardModal({
                   <strong>Suggested amount:</strong> ${presetAmount} (based on your outstanding bills)
                 </div>
               )}
-              {isTestnet && (
-                <div className={styles.testnetNote}>
-                  <strong>Testnet Note:</strong> This is for testing only. No real funds will be transferred.
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -237,17 +234,13 @@ export function FundCardModal({
             <div className={styles.fundCardWrapper}>
               <FundCard
                 sessionToken={sessionToken}
-                assetSymbol={isTestnet ? "USDC" : "USDC"}
+                assetSymbol="USDC"
                 country="US"
                 currency="USD"
-                headerText={isTestnet ? `Fund Testnet $${presetAmount || "25"} USDC` : (presetAmount ? `Fund $${presetAmount} USDC` : "Add USDC")}
-                buttonText={isTestnet ? `Buy Test USDC` : (presetAmount ? `Buy $${presetAmount} USDC` : "Buy USDC")}
+                headerText={presetAmount ? `Fund $${presetAmount} USDC` : "Add USDC"}
+                buttonText={presetAmount ? `Buy $${presetAmount} USDC` : "Buy USDC"}
                 presetAmountInputs={
-                  isTestnet
-                    ? presetAmount
-                      ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), "10"]
-                      : ["1", "5", "10"]
-                    : presetAmount
+                  presetAmount
                     ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), "100"]
                     : ["25", "50", "120"]
                 }

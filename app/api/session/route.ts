@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if any addresses contain base-sepolia (which may not be supported)
+    // Check if any addresses contain base-sepolia (which is NOT supported by CDP)
     const hasBaseSepolia = addresses.some(addr =>
       addr.blockchains.includes("base-sepolia")
     );
@@ -106,8 +106,23 @@ export async function POST(request: NextRequest) {
       console.log("Testnet mode detected:", { testnet, hasBaseSepolia, blockchains: addresses.map(addr => addr.blockchains) });
     }
 
-    if (hasBaseSepolia) {
-      console.log("Warning: Base Sepolia detected - may not be supported by CDP session tokens");
+    // Convert Base Sepolia to Base mainnet for session token generation
+    // Session tokens should be generated for mainnet networks, testnet is specified in the onramp URL
+    let modifiedAddresses = addresses.map(addr => ({
+      ...addr,
+      blockchains: addr.blockchains.map((blockchain: string) =>
+        blockchain === "base-sepolia" ? "base" : blockchain
+      )
+    }));
+
+    // Check if we converted any testnet addresses
+    const hadTestnetConversion = addresses.some((addr, index) =>
+      addr.blockchains.includes("base-sepolia") &&
+      !modifiedAddresses[index].blockchains.includes("base-sepolia")
+    );
+
+    if (hadTestnetConversion) {
+      console.log("Converting Base Sepolia to Base mainnet for session token generation");
     }
 
     // Get environment variables
@@ -141,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     // Create session token request payload
     const sessionTokenPayload = {
-      addresses,
+      addresses: modifiedAddresses,
       assets,
       clientIp: clientIP
     };
@@ -213,9 +228,11 @@ export async function POST(request: NextRequest) {
       sessionToken: sessionTokenData.token,
       channelId: sessionTokenData.channel_id,
       clientIP,
-      addresses,
+      addresses: modifiedAddresses,
+      originalAddresses: addresses,
       assets,
       testnet: testnet || hasBaseSepolia,
+      testnetConverted: hadTestnetConversion,
       generatedAt: new Date().toISOString(),
       expiresIn: 300 // 5 minutes as per CDP docs
     }, { headers: corsHeaders });
