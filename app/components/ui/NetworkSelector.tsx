@@ -2,6 +2,8 @@
 
 import { useAccount, useSwitchChain, useChains } from 'wagmi';
 import { base, baseSepolia } from 'wagmi/chains';
+import { useMemo } from 'react';
+import { getContractAddresses } from '../../config/contracts';
 import styles from './NetworkSelector.module.css';
 
 export function NetworkSelector() {
@@ -9,13 +11,23 @@ export function NetworkSelector() {
   const { switchChainAsync } = useSwitchChain();
   const chains = useChains();
 
-  const supportedChains = [
-    { id: base.id, name: 'Base', isTestnet: false },
-    { id: baseSepolia.id, name: 'Base Sepolia', isTestnet: true },
-  ];
+  const supportedChains = useMemo(() => {
+    return [
+      { id: base.id, name: 'Base', isTestnet: false },
+      { id: baseSepolia.id, name: 'Base Sepolia', isTestnet: true },
+    ].filter(chain => {
+      try {
+        const addresses = getContractAddresses(chain.id);
+        return addresses && addresses.registry && (addresses.registry as string) !== '';
+      } catch {
+        return false;
+      }
+    });
+  }, []);
 
   const currentChain = supportedChains.find(chain => chain.id === chainId);
-  const isWrongNetwork = isConnected && chainId !== baseSepolia.id;
+  const hasValidContracts = supportedChains.some(chain => chain.id === chainId);
+  const isWrongNetwork = isConnected && !hasValidContracts;
 
   const handleNetworkSwitch = async (targetChainId: number) => {
     try {
@@ -35,7 +47,7 @@ export function NetworkSelector() {
         value={chainId || ''}
         onChange={(e) => handleNetworkSwitch(parseInt(e.target.value))}
         className={`${styles.select} ${isWrongNetwork ? styles.warning : ''}`}
-        title={isWrongNetwork ? 'Currently on wrong network - contracts are deployed on Base Sepolia' : 'Select network'}
+        title={isWrongNetwork ? 'Currently on unsupported network - switch to a network with deployed contracts' : 'Select network'}
       >
         {supportedChains.map((chain) => (
           <option key={chain.id} value={chain.id}>

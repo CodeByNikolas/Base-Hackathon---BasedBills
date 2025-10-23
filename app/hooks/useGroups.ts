@@ -1,4 +1,5 @@
 import { useAccount, useReadContract, useReadContracts, useWriteContract, useSwitchChain } from 'wagmi';
+import { base, baseSepolia } from 'wagmi/chains';
 import { useCallback, useMemo } from 'react';
 import {
   getContractAddresses,
@@ -36,8 +37,19 @@ export function useUserGroups() {
 
   // Check if user is on wrong network or if contract addresses are empty
   const hasValidContracts = contractAddresses && contractAddresses.registry && (contractAddresses.registry as string) !== '';
-  const isOnWrongNetwork = (chainId === 8453 && !hasValidContracts) || (chainId !== 84532 && !hasValidContracts);
-  const correctChainId = 84532; // Base Sepolia
+
+  // Find networks with valid contracts
+  const networksWithContracts = [base.id, baseSepolia.id].filter(networkId => {
+    try {
+      const addresses = getContractAddresses(networkId);
+      return addresses && addresses.registry && (addresses.registry as string) !== '';
+    } catch {
+      return false;
+    }
+  });
+
+  const isOnWrongNetwork = !hasValidContracts && networksWithContracts.length > 0;
+  const correctChainId = networksWithContracts[0] || baseSepolia.id; // Default to Base Sepolia if available
 
   // Function to switch to correct network
   const switchToCorrectNetwork = useCallback(async () => {

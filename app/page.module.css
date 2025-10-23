@@ -44,6 +44,13 @@
   margin: 0;
 }
 
+/* Network Selector Section */
+.networkSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
 /* Balance Summary */
 .balanceSummary {
   display: flex;
