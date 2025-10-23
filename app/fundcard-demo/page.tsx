@@ -57,8 +57,11 @@ export default function FundCardDemo() {
 
     setLoading(true);
     setError(null);
+    setSessionToken(null);
 
     try {
+      console.log("Generating session token for:", { targetAddress, selectedBlockchain });
+
       const response = await fetch("/api/session", {
         method: "POST",
         headers: {
@@ -75,16 +78,20 @@ export default function FundCardDemo() {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data: SessionTokenData = await response.json();
+      console.log("Session token response:", data);
 
       if (data.success && data.sessionToken) {
+        console.log("Session token generated successfully:", data.sessionToken);
         setSessionToken(data.sessionToken);
         setError(null);
       } else {
         let errorMessage = data.error || "Failed to generate session token";
-        if (data.testnetConverted) {
-          errorMessage = "🧪 Base Sepolia converted to Base mainnet for session token generation. The session token will work with Base Sepolia in the onramp URL.";
-        } else if (data.details?.message?.includes("base-sepolia")) {
+        if (data.details?.message?.includes("base-sepolia")) {
           errorMessage += isTestnet
             ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
             : " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
@@ -96,33 +103,34 @@ export default function FundCardDemo() {
         setError(errorMessage);
       }
     } catch (err) {
-      setError("Network error while generating session token");
+      const errorMessage = err instanceof Error ? err.message : "Network error while generating session token";
       console.error("Session token error:", err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  }, [customAddress, address, selectedBlockchain]);
+  }, [customAddress, address, selectedBlockchain, isTestnet]);
 
   // Auto-generate session token when wallet is connected (initial)
   useEffect(() => {
-    if (isConnected && address && !sessionToken && !customAddress) {
+    if (isConnected && address && !sessionToken && !customAddress && !loading) {
       generateSessionToken();
     }
-  }, [isConnected, address, sessionToken, generateSessionToken]);
+  }, [isConnected, address, sessionToken, generateSessionToken, customAddress, loading]);
 
   // Auto-regenerate session token when blockchain changes
   useEffect(() => {
-    if (sessionToken && customAddress) {
+    if (sessionToken && customAddress && !loading) {
       generateSessionToken();
     }
-  }, [selectedBlockchain, generateSessionToken, sessionToken, customAddress]);
+  }, [selectedBlockchain, generateSessionToken, sessionToken, customAddress, loading]);
 
   // Auto-regenerate session token when address changes (but keep existing token if no address)
   useEffect(() => {
-    if (sessionToken && customAddress && customAddress !== address) {
+    if (sessionToken && customAddress && customAddress !== address && !loading) {
       generateSessionToken();
     }
-  }, [customAddress, generateSessionToken, sessionToken, address]);
+  }, [customAddress, generateSessionToken, sessionToken, address, loading]);
 
   if (!isConnected) {
     return (
@@ -299,35 +307,144 @@ export default function FundCardDemo() {
           </div>
         </div>
 
-        <div className={styles.fundCardSection}>
-          <h2>FundCard Component {isTestnet ? "(Testnet Mode)" : ""}</h2>
-          {isTestnet && (
-            <div className={styles.testnetWarning}>
-              <div className={styles.warningIcon}>🧪</div>
-              <div className={styles.warningContent}>
-                <h4>Testnet Mode Active</h4>
-                <p>Session token generated for Base mainnet but will work with Base Sepolia. Make sure your wallet is connected to Base Sepolia testnet.</p>
-                <div className={styles.testnetActions}>
-                  <a
-                    href="https://faucet.circle.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.testnetButton}
+        {/* Network Configuration Section */}
+        <div className={styles.configurationSection}>
+          <h3>Network Configuration</h3>
+          <div className={styles.controlGroup}>
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Blockchain:</label>
+              <select
+                value={selectedBlockchain}
+                onChange={(e) => setSelectedBlockchain(e.target.value as Blockchain)}
+                className={styles.controlSelect}
+              >
+                <option value="base">Base (Mainnet) - Recommended</option>
+                <option value="ethereum">Ethereum (Mainnet)</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Supported via Conversion</option>
+              </select>
+            </div>
+
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Address:</label>
+              <div className={styles.addressControl}>
+                <input
+                  type="text"
+                  value={customAddress}
+                  onChange={(e) => setCustomAddress(e.target.value)}
+                  className={styles.controlInput}
+                  placeholder={address || "0x..."}
+                />
+                {address && address !== customAddress && (
+                  <button
+                    onClick={useConnectedWallet}
+                    className={styles.walletButton}
+                    title="Use connected wallet address"
                   >
-                    Get Test USDC
-                  </a>
-                  <a
-                    href="https://sepoliafaucet.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.testnetButton}
+                    Use Wallet
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Action:</label>
+              <div className={styles.buttonGroup}>
+                {address && address !== customAddress && (
+                  <button
+                    onClick={useConnectedWallet}
+                    className={styles.walletButton}
+                    title="Use connected wallet address"
                   >
-                    Get Test ETH
-                  </a>
+                    Use Wallet
+                  </button>
+                )}
+                <button
+                  onClick={generateSessionToken}
+                  disabled={loading || !customAddress}
+                  className={styles.generateButton}
+                >
+                  {loading ? "Generating..." : "Generate Session Token"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Session Token Response Display */}
+          {sessionToken && (
+            <div className={styles.responseSection}>
+              <h4>✅ Session Token Generated Successfully!</h4>
+              <div className={styles.tokenDisplay}>
+                <div className={styles.tokenInfo}>
+                  <strong>Session Token:</strong>
+                  <code className={styles.tokenCode}>{sessionToken}</code>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(sessionToken)}
+                    className={styles.copyButton}
+                  >
+                    📋 Copy
+                  </button>
                 </div>
+                <div className={styles.tokenInfo}>
+                  <strong>Network:</strong> {isTestnet ? "Base Sepolia (via conversion)" : selectedBlockchain}
+                </div>
+                <div className={styles.tokenInfo}>
+                  <strong>Status:</strong> Ready to use with FundCard
+                </div>
+                {isTestnet && (
+                  <div className={styles.tokenInfo}>
+                    <strong>🧪 Conversion:</strong> Base Sepolia → Base mainnet (for token generation)
+                  </div>
+                )}
               </div>
             </div>
           )}
+
+          {/* Error Display */}
+          {error && (
+            <div className={styles.errorSection}>
+              <h4>❌ Error</h4>
+              <p>{error}</p>
+              <button
+                onClick={generateSessionToken}
+                className={styles.retryButton}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Testnet Info */}
+        {isTestnet && (
+          <div className={styles.testnetWarning}>
+            <div className={styles.warningIcon}>🧪</div>
+            <div className={styles.warningContent}>
+              <h4>Base Sepolia Testnet Mode</h4>
+              <p>✅ Session token successfully generated via conversion (Base Sepolia → Base mainnet). Make sure your wallet is connected to Base Sepolia testnet.</p>
+              <div className={styles.testnetActions}>
+                <a
+                  href="https://faucet.circle.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.testnetButton}
+                >
+                  Get Test USDC
+                </a>
+                <a
+                  href="https://sepoliafaucet.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.testnetButton}
+                >
+                  Get Test ETH
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className={styles.fundCardSection}>
+          <h2>FundCard Component</h2>
           <div className={styles.fundCardWrapper}>
             <FundCard
               sessionToken={sessionToken}
@@ -355,9 +472,9 @@ export default function FundCardDemo() {
             <ul>
               <li><strong>Base (Mainnet):</strong> Fully supported ✅</li>
               <li><strong>Ethereum (Mainnet):</strong> Fully supported ✅</li>
-              <li><strong>Base Sepolia (Testnet):</strong> 🧪 Supported via conversion ✅</li>
+              <li><strong>Base Sepolia (Testnet):</strong> ✅ Supported via conversion ✅</li>
             </ul>
-            <p><strong>How it works:</strong> Session tokens are generated for Base mainnet, but can be used with Base Sepolia in onramp URLs.</p>
+            <p><strong>How it works:</strong> Session tokens are generated for Base mainnet, but work seamlessly with Base Sepolia in onramp URLs.</p>
           </div>
 
           <div className={styles.debugInfo}>

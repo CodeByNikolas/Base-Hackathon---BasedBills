@@ -497,3 +497,107 @@
 .testnetInfo a:hover {
   text-decoration: underline;
 }
+
+/* Configuration Section */
+.configurationSection {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.responseSection {
+  background: #ecfdf5;
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.responseSection h4 {
+  margin: 0 0 1rem 0;
+  color: #065f46;
+  font-weight: 600;
+}
+
+.tokenDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tokenInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tokenInfo strong {
+  color: #374151;
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.tokenCode {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  color: #1f2937;
+  flex: 1;
+  word-break: break-all;
+}
+
+.copyButton {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copyButton:hover {
+  background: #2563eb;
+}
+
+.errorSection {
+  background: #fef2f2;
+  border: 1px solid #f87171;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.errorSection h4 {
+  margin: 0 0 1rem 0;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.errorSection p {
+  margin: 0 0 1rem 0;
+  color: #dc2626;
+}
+
+.retryButton {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background: #b91c1c;
+}

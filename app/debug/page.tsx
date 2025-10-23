@@ -107,22 +107,34 @@ export default function DebugPage() {
 
   const testJwtGeneration = async () => {
     setLoading(true);
+    setJwtResponse(null);
+
     try {
       const response = await fetch("/api/jwt");
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setJwtResponse(data);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Network error";
+      console.error("JWT generation error:", error);
       setJwtResponse({
         success: false,
-        error: "Network error"
+        error: errorMessage
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const testSessionTokenGeneration = async () => {
     setLoading(true);
+    setSessionTokenResponse(null);
+
     try {
+      console.log("Testing session token generation for:", { addresses, assets });
+
       const response = await fetch("/api/session", {
         method: "POST",
         headers: {
@@ -133,15 +145,24 @@ export default function DebugPage() {
           assets
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
+      console.log("Debug session token response:", data);
       setSessionTokenResponse(data);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Network error";
+      console.error("Debug session token error:", error);
       setSessionTokenResponse({
         success: false,
-        error: "Network error"
+        error: errorMessage
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -235,13 +256,13 @@ export default function DebugPage() {
           </div>
         </div>
 
-        {/* Testnet Warning */}
+        {/* Testnet Info */}
         {isTestnet && (
           <div className={styles.testnetWarning}>
             <div className={styles.warningIcon}>🧪</div>
             <div className={styles.warningContent}>
-              <h4>Testnet Mode Active</h4>
-              <p>Session token will be generated for Base mainnet but can be used with Base Sepolia in onramp URLs.</p>
+              <h4>Base Sepolia Testnet Mode</h4>
+              <p>✅ Session tokens are generated for Base mainnet but can be used with Base Sepolia in onramp URLs.</p>
               <div className={styles.testnetActions}>
                 <a
                   href="https://faucet.circle.com"
@@ -277,8 +298,13 @@ export default function DebugPage() {
             <h3>Session Token Response:</h3>
             {sessionTokenResponse.testnetConverted && (
               <div className={styles.testnetNote}>
-                <strong>🧪 Testnet Conversion:</strong> Base Sepolia was converted to Base mainnet for session token generation.
-                The session token can be used with Base Sepolia in onramp URLs.
+                <strong>✅ Testnet Conversion Successful!</strong>
+                <br />
+                Original: Base Sepolia → Generated for: Base mainnet
+                <br />
+                <strong>Session Token:</strong> {sessionTokenResponse.sessionToken}
+                <br />
+                This token can be used with Base Sepolia in onramp URLs.
               </div>
             )}
             <pre className={styles.code}>

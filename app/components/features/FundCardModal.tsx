@@ -52,8 +52,11 @@ export function FundCardModal({
 
     setLoading(true);
     setError(null);
+    setSessionToken(null);
 
     try {
+      console.log("Generating session token for:", { address, selectedBlockchain });
+
       const response = await fetch("/api/session", {
         method: "POST",
         headers: {
@@ -70,16 +73,27 @@ export function FundCardModal({
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data: SessionTokenData = await response.json();
+      console.log("Session token response:", data);
 
       if (data.success && data.sessionToken) {
+        console.log("Session token generated successfully:", data.sessionToken);
         setSessionToken(data.sessionToken);
+
+        // Show conversion info if testnet was converted
+        if (data.testnetConverted) {
+          console.log("Testnet conversion successful");
+          // You could set a success message here if needed
+        }
+
         setError(null);
       } else {
         let errorMessage = data.error || "Failed to generate session token";
-        if (data.testnetConverted) {
-          errorMessage = "🧪 Base Sepolia converted to Base mainnet for session token generation. The session token will work with Base Sepolia in the onramp URL.";
-        } else if (data.details?.message?.includes("base-sepolia")) {
+        if (data.details?.message?.includes("base-sepolia")) {
           errorMessage += isTestnet
             ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
             : " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
@@ -91,12 +105,13 @@ export function FundCardModal({
         setError(errorMessage);
       }
     } catch (err) {
-      setError("Network error while generating session token");
+      const errorMessage = err instanceof Error ? err.message : "Network error while generating session token";
       console.error("Session token error:", err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  }, [address, selectedBlockchain]);
+  }, [address, selectedBlockchain, isTestnet]);
 
   // Update testnet status when blockchain changes
   useEffect(() => {
@@ -105,10 +120,10 @@ export function FundCardModal({
 
   // Auto-generate session token when modal opens and wallet is connected
   useEffect(() => {
-    if (isOpen && isConnected && address && !sessionToken) {
+    if (isOpen && isConnected && address && !sessionToken && !loading) {
       generateSessionToken();
     }
-  }, [isOpen, isConnected, address, sessionToken, generateSessionToken]);
+  }, [isOpen, isConnected, address, sessionToken, generateSessionToken, loading]);
 
   // Don't render anything if wallet not connected
   if (!isConnected || !address) {
@@ -149,13 +164,13 @@ export function FundCardModal({
           </div>
         </div>
 
-        {/* Testnet Warning */}
+        {/* Testnet Info */}
         {isTestnet && (
           <div className={styles.testnetWarning}>
             <div className={styles.warningIcon}>🧪</div>
             <div className={styles.warningContent}>
-              <h4>Testnet Mode Active</h4>
-              <p>Session token generated for Base mainnet but will work with Base Sepolia. Make sure your wallet is connected to Base Sepolia testnet.</p>
+              <h4>Base Sepolia Testnet Mode</h4>
+              <p>✅ Session token successfully generated via conversion (Base Sepolia → Base mainnet). Make sure your wallet is connected to Base Sepolia testnet.</p>
               <div className={styles.testnetActions}>
                 <a
                   href="https://faucet.circle.com"
