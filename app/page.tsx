@@ -8,6 +8,7 @@ import { HeaderBar } from "./components/ui/HeaderBar";
 import { NetworkSelector } from "./components/ui/NetworkSelector";
 import { GroupCard } from "./components/features/cards/GroupCard";
 import { WalletDebug } from "./components/WalletDebug";
+import { FundCardModal } from "./components/features/FundCardModal";
 import { useUserGroups, useMultipleGroupsData } from "./hooks/useGroups";
 import { hasUserSeenWelcome, markWelcomeAsSeen } from "./utils/welcomeUtils";
 import {
@@ -27,6 +28,7 @@ export default function Home() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
+  const [showFundCardModal, setShowFundCardModal] = useState(false);
 
 
   // Check if user should see welcome page
@@ -260,12 +262,23 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Create Group Button */}
+                  {/* Create Group and Onramp Buttons */}
                   <div className={styles.createGroupSection}>
-                    <Link href="/create-group" className={styles.createGroupButton}>
-                      <span className={styles.createIcon}>+</span>
-                      New Group
-                    </Link>
+                    <div className={styles.buttonGroup}>
+                      <Link href="/create-group" className={styles.createGroupButton}>
+                        <span className={styles.createIcon}>+</span>
+                        New Group
+                      </Link>
+                      <button
+                        onClick={() => setShowFundCardModal(true)}
+                        className={styles.onrampButton}
+                        disabled={!isConnected}
+                        title={!isConnected ? "Connect your wallet first" : "Add USDC to your wallet"}
+                      >
+                        <span className={styles.onrampIcon}>💳</span>
+                        Add USDC
+                      </button>
+                    </div>
                   </div>
 
                   {/* Groups Grid */}
@@ -295,6 +308,13 @@ export default function Home() {
 
       {/* Debug component for wallet troubleshooting */}
       <WalletDebug />
+
+      {/* FundCard Modal */}
+      <FundCardModal
+        isOpen={showFundCardModal}
+        onClose={() => setShowFundCardModal(false)}
+        title="Add USDC to Your Wallet"
+      />
     </div>
   );
 }

@@ -38,6 +38,7 @@ export default function CreateGroupPage() {
   const [transactionStatus, setTransactionStatus] = useState<LifecycleStatus | null>(null);
   const [useGasSponsorship, setUseGasSponsorship] = useState(true);
   const [, setCreatedGroupAddress] = useState('');
+  const [transactionStartTime, setTransactionStartTime] = useState<number | null>(null);
 
   // Initialize with current user as first member
   useEffect(() => {
@@ -45,6 +46,29 @@ export default function CreateGroupPage() {
       setMembers([userAddress]);
     }
   }, [userAddress, members]);
+
+  // Timeout mechanism for stuck transactions
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    if (isCreating && transactionStartTime) {
+      // If transaction has been running for more than 2 minutes, reset it
+      timeoutId = setTimeout(() => {
+        if (isCreating) {
+          setIsCreating(false);
+          setTransactionStatus(null);
+          setTransactionStartTime(null);
+          alert('Transaction timed out. Please try again.');
+        }
+      }, 120000); // 2 minutes
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isCreating, transactionStartTime]);
 
   // Transaction calls for group creation
   const getTransactionCalls = async () => {
@@ -61,12 +85,19 @@ export default function CreateGroupPage() {
   const handleTransactionStatus = (status: LifecycleStatus) => {
     setTransactionStatus(status);
 
+    // Track when transaction starts
+    if (status.statusName === 'transactionPending' && !transactionStartTime) {
+      setTransactionStartTime(Date.now());
+    }
+
     if (status.statusName === 'success') {
       setIsCreating(false);
+      setTransactionStartTime(null);
       setShowSuccessModal(true);
       refetchGroups();
     } else if (status.statusName === 'error') {
       setIsCreating(false);
+      setTransactionStartTime(null);
       console.error('Transaction failed:', status.statusData);
 
       // Check if it's a gas sponsorship issue
@@ -79,6 +110,10 @@ export default function CreateGroupPage() {
       } else {
         alert('Failed to create group. Please try again.');
       }
+    } else if (status.statusName === 'transactionIdle') {
+      // Transaction was cancelled or declined by user
+      setIsCreating(false);
+      setTransactionStartTime(null);
     }
   };
 
@@ -87,6 +122,12 @@ export default function CreateGroupPage() {
       setMembers([...members, newMemberAddress]);
       setNewMemberAddress('');
     }
+  };
+
+  const handleCancelTransaction = () => {
+    setIsCreating(false);
+    setTransactionStatus(null);
+    setTransactionStartTime(null);
   };
 
   const handleRemoveMember = (address: string) => {
@@ -325,7 +366,7 @@ export default function CreateGroupPage() {
                   <div className={styles.formActions}>
                     <button
                       type="button"
-                      onClick={() => router.push('/')}
+                      onClick={handleCancelTransaction}
                       className={styles.cancelButton}
                     >
                       Cancel
