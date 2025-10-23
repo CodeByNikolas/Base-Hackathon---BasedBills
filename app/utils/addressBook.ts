@@ -195,6 +195,41 @@ export function shortenAddress(address: `0x${string}`, chars = 4): string {
 }
 
 /**
+ * Shorten an Ethereum address with consistent 6+4 format (for backward compatibility)
+ */
+export function formatAddress(address: `0x${string}`): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+/**
+ * Get display name for an address with priority: custom name → ENS → shortened address
+ * This is the main utility function for displaying addresses consistently
+ */
+export function getDisplayNameForAddress(
+  address: `0x${string}`,
+  options: {
+    currentUserAddress?: `0x${string}`;
+    ensName?: string | null;
+    fallbackToShortened?: boolean;
+    maxLength?: number;
+  } = {}
+): string {
+  const { currentUserAddress, ensName, fallbackToShortened = true, maxLength = 20 } = options;
+
+  // 1. Current user gets "You"
+  if (currentUserAddress && address.toLowerCase() === currentUserAddress.toLowerCase()) {
+    return 'You';
+  }
+
+  // 2. Get display name using existing logic
+  return getDisplayName(address, {
+    ensName,
+    fallbackToShortened,
+    maxLength
+  });
+}
+
+/**
  * Check if an address has a custom name
  */
 export function hasCustomName(address: `0x${string}`): boolean {

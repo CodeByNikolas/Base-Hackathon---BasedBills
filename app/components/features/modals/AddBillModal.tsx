@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { parseUnits } from 'viem';
 import { Modal } from '../../ui/Modal';
@@ -8,6 +8,7 @@ import { GROUP_ABI } from '../../../config/contracts';
 import { useSponsoredTransactions } from '../../../hooks/useSponsoredTransactions';
 import { SPONSORED_FUNCTIONS } from '../../../utils/sponsoredTransactions';
 import { formatCurrency } from '../../../utils/currencyUtils';
+import { getDisplayNameForAddress } from '../../../utils/addressBook';
 import styles from './AddBillModal.module.css';
 
 interface AddBillModalProps {
@@ -36,6 +37,68 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
   }, [isOpen, groupMembers]);
 
   const { sendTransaction, isLoading: isSponsoredLoading, isSponsored } = useSponsoredTransactions();
+
+  // Calculate bill shares for all members
+  const billShares = useMemo(() => {
+    const shares: { [address: string]: { amount: bigint; formatted: string; isValid: boolean } } = {};
+
+    groupMembers.forEach(member => {
+      if (participants.has(member.address)) {
+        if (billType === 'equal') {
+          if (amount && participants.size > 0) {
+            try {
+              const totalAmount = parseUnits(amount, 6);
+              const shareAmount = totalAmount / BigInt(participants.size);
+              shares[member.address] = {
+                amount: shareAmount,
+                formatted: formatCurrency(shareAmount),
+                isValid: true
+              };
+            } catch (error) {
+              shares[member.address] = {
+                amount: 0n,
+                formatted: 'Invalid amount',
+                isValid: false
+              };
+            }
+          } else {
+            shares[member.address] = {
+              amount: 0n,
+              formatted: 'Enter amount',
+              isValid: false
+            };
+          }
+        } else {
+          // Custom bill type
+          const customAmount = customAmounts[member.address];
+          if (customAmount && parseFloat(customAmount) > 0) {
+            try {
+              const shareAmount = parseUnits(customAmount, 6);
+              shares[member.address] = {
+                amount: shareAmount,
+                formatted: formatCurrency(shareAmount),
+                isValid: true
+              };
+            } catch (error) {
+              shares[member.address] = {
+                amount: 0n,
+                formatted: 'Invalid',
+                isValid: false
+              };
+            }
+          } else {
+            shares[member.address] = {
+              amount: 0n,
+              formatted: 'Enter amount',
+              isValid: false
+            };
+          }
+        }
+      }
+    });
+
+    return shares;
+  }, [amount, participants, customAmounts, billType, groupMembers]);
 
   const handleParticipantToggle = (memberAddress: string) => {
     const newParticipants = new Set(participants);
@@ -94,7 +157,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
         const amounts = selectedParticipants.map(addr => {
           const customAmount = customAmounts[addr];
           if (!customAmount || parseFloat(customAmount) <= 0) {
-            throw new Error(`Invalid amount for participant ${addr.slice(0, 6)}...`);
+            throw new Error(`Invalid amount for participant ${getDisplayNameForAddress(addr as `0x${string}`, { currentUserAddress: userAddress })}`);
           }
           return parseUnits(customAmount, 6);
         });
@@ -220,11 +283,17 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
           </label>
           <input
             id="amount"
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
+            pattern="^\d+(\.\d{1,2})?$"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Only allow numbers and up to 2 decimal places
+              if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                setAmount(value);
+              }
+            }}
             className={styles.input}
             placeholder="0.00"
             required
@@ -239,6 +308,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
             {groupMembers.map((member) => {
               const isSelected = participants.has(member.address);
               const isUser = member.address.toLowerCase() === userAddress?.toLowerCase();
+              const memberShare = billShares[member.address];
 
               return (
                 <div key={member.address} className={styles.participantCard}>
@@ -251,13 +321,10 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
                     />
                     <div className={styles.participantInfo}>
                       <span className={styles.participantName}>
-                        {isUser ? 'You' : `${member.address.slice(0, 6)}...${member.address.slice(-4)}`}
+                        {getDisplayNameForAddress(member.address, { currentUserAddress: userAddress })}
                       </span>
-                      <span className={`${styles.participantBalance} ${
-                        member.balance > 0n ? styles.positive :
-                        member.balance < 0n ? styles.negative : styles.neutral
-                      }`}>
-                        {formatCurrency(member.balance)} USDC
+                      <span className={`${styles.participantBalance} ${memberShare ? (memberShare.isValid ? styles.billShare : styles.neutral) : styles.neutral}`}>
+                        {memberShare ? `${memberShare.formatted} USDC` : 'Not included'}
                       </span>
                     </div>
                   </label>
@@ -265,11 +332,17 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
                   {/* Custom Amount Input */}
                   {billType === 'custom' && isSelected && (
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="^\d+(\.\d{1,2})?$"
                       value={customAmounts[member.address] || ''}
-                      onChange={(e) => handleCustomAmountChange(member.address, e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Only allow numbers and up to 2 decimal places
+                        if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                          handleCustomAmountChange(member.address, value);
+                        }
+                      }}
                       className={styles.customAmountInput}
                       placeholder="Amount"
                       disabled={isSubmitting}
@@ -282,7 +355,13 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
         </div>
 
         {/* Custom Amount Validation */}
-        {billType === 'custom' && participants.size > 0 && (
+        {billType === 'custom' && participants.size > 0 && (() => {
+          const totalCustom = Object.values(customAmounts)
+            .filter(val => val && parseFloat(val) > 0)
+            .reduce((sum, val) => sum + parseFloat(val), 0);
+          const totalAmount = parseFloat(amount);
+          return Math.abs(totalCustom - totalAmount) !== 0; // Show if difference is not 0
+        })() && (
           <div className={styles.formGroup}>
             <div className={styles.customValidation}>
               <span>Total Custom Amounts: </span>

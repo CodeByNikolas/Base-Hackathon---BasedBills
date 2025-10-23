@@ -116,7 +116,7 @@ export function ActionButtons({
         }
         
         if (result.isSponsored) {
-          ErrorHandler.showSuccess('Settlement approved with sponsored transaction! No gas fees required.');
+          ErrorHandler.showSuccess('Settlement approved successfully!');
         }
       } else if (userBalance < 0n) {
         // User is a debtor
@@ -162,7 +162,7 @@ export function ActionButtons({
             });
 
             if (approvalResult.isSponsored) {
-              ErrorHandler.showSuccess('USDC approval completed with sponsored transaction!');
+              ErrorHandler.showSuccess('USDC approval completed successfully!');
             }
 
             await new Promise(resolve => setTimeout(resolve, APPROVAL_DELAY));
@@ -181,7 +181,7 @@ export function ActionButtons({
         }
         
         if (result.isSponsored) {
-          ErrorHandler.showSuccess('Settlement funded with sponsored transaction! No gas fees required.');
+          ErrorHandler.showSuccess('Settlement funded successfully!');
         }
       } else {
         ErrorHandler.showSuccess(UI_MESSAGES.SETTLEMENT.SETTLED_BALANCE);
@@ -215,7 +215,7 @@ export function ActionButtons({
       }
       
       if (result.isSponsored) {
-        ErrorHandler.showSuccess('Gamble proposed with sponsored transaction! No gas fees required.');
+        ErrorHandler.showSuccess('Gamble proposed successfully!');
       }
 
       await new Promise(resolve => setTimeout(resolve, TRANSACTION_CONFIRMATION_DELAY));
@@ -271,7 +271,7 @@ export function ActionButtons({
       
       if (result.isSponsored) {
         const actionText = accept ? 'accepted' : 'rejected';
-        ErrorHandler.showSuccess(`Gamble ${actionText} with sponsored transaction! No gas fees required.`);
+        ErrorHandler.showSuccess(`Gamble ${actionText} successfully!`);
       }
 
       await new Promise(resolve => setTimeout(resolve, TRANSACTION_CONFIRMATION_DELAY));

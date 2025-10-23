@@ -8,10 +8,12 @@ import {
   updateEnsName,
   getCachedEnsName,
   getDisplayName,
+  getDisplayNameForAddress,
   hasCustomName,
   getAllAddressBookEntries,
   searchAddressBook,
   shortenAddress as _shortenAddress,
+  formatAddress,
   type AddressBookEntry,
 } from '../utils/addressBook';
 
@@ -219,6 +221,44 @@ export function useBatchDisplayNames(addresses: `0x${string}`[], refreshTrigger?
     isLoading: false, // Never show loading state
     isInitialized,
     getDisplayNameForAddress,
+  };
+}
+
+/**
+ * Hook for getting a single address display name with current user context
+ */
+export function useAddressDisplay(
+  address: `0x${string}` | undefined,
+  currentUserAddress?: `0x${string}`
+) {
+  const { ensName } = useEnsResolver(address);
+  const { getEntry, isInitialized } = useAddressBook();
+
+  if (!address) {
+    return {
+      displayName: '',
+      hasCustomName: false,
+      ensName: null,
+      isLoading: false,
+      isInitialized,
+    };
+  }
+
+  const displayName = getDisplayNameForAddress(address, {
+    currentUserAddress,
+    ensName,
+  });
+
+  const entry = getEntry(address);
+  const hasCustom = hasCustomName(address);
+
+  return {
+    displayName,
+    hasCustomName: hasCustom,
+    ensName,
+    customName: entry?.name,
+    isLoading: false,
+    isInitialized,
   };
 }
 

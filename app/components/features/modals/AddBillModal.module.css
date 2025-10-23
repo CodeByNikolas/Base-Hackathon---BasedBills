@@ -130,6 +130,11 @@
   color: #6b7280;
 }
 
+.participantBalance.billShare {
+  color: #059669;
+  font-weight: 600;
+}
+
 .customAmountInput {
   width: 100%;
   padding: 0.5rem;

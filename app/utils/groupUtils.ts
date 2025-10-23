@@ -1,5 +1,6 @@
 import { formatUnits, parseUnits } from 'viem';
 import { formatCurrency } from './currencyUtils';
+import { shortenAddress } from './addressBook';
 
 // Types for our data structures
 export interface Bill {
@@ -110,12 +111,6 @@ export function generateGroupName(members: `0x${string}`[], currentUser?: `0x${s
   return `You & ${otherMembers.length} others`;
 }
 
-/**
- * Shorten an Ethereum address for display
- */
-export function shortenAddress(address: `0x${string}`, chars = 4): string {
-  return `${address.slice(0, 2 + chars)}...${address.slice(-chars)}`;
-}
 
 /**
  * Get settlement breakdown for a group

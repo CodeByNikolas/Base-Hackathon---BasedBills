@@ -1,7 +1,7 @@
 'use client';
 
 import { formatUnits } from 'viem';
-import { hasCustomName } from '../../../utils/addressBook';
+import { hasCustomName, formatAddress, getDisplayNameForAddress } from '../../../utils/addressBook';
 import { GroupMember } from '../../../utils/groupUtils';
 import { formatCurrency } from '../../../utils/currencyUtils';
 import styles from './MembersTab.module.css';
@@ -12,7 +12,6 @@ interface MembersTabProps {
     displayNames: Record<string, string>;
     isLoading: boolean;
     isInitialized: boolean;
-    getDisplayNameForAddress: (address: `0x${string}`) => string;
   };
   userAddress?: `0x${string}`;
   onNameAdded?: () => void;
@@ -60,14 +59,11 @@ export function MembersTab({
     <div className={styles.membersTab}>
       <div className={styles.membersList}>
         {members.map((member: GroupMember) => {
-          const isPositive = member.balance > 0n;
+          const isPositive = member.balance >= 0n;
           const isNegative = member.balance < 0n;
-          const isZero = member.balance === 0n;
           const isCurrentUser = member.address.toLowerCase() === userAddress?.toLowerCase();
           const hasName = hasCustomName(member.address);
-          const displayName = isCurrentUser
-            ? 'You'
-            : (memberDisplayNames.displayNames[member.address.toLowerCase()] || `${member.address.slice(0, 6)}...${member.address.slice(-4)}`);
+          const displayName = getDisplayNameForAddress(member.address, { currentUserAddress: userAddress });
 
           return (
             <div key={member.address} className={styles.memberCard}>
@@ -107,7 +103,7 @@ export function MembersTab({
                       </div>
                     ) : (
                       <div className={styles.memberAddressWithAction}>
-                        <span className={styles.memberAddress}>{member.address.slice(0, 6)}...{member.address.slice(-4)}</span>
+                        <span className={styles.memberAddress}>{formatAddress(member.address)}</span>
                         {!hasName && (
                           <button
                             onClick={() => handleAddName(member.address)}

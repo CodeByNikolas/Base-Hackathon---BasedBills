@@ -3,13 +3,15 @@
 import { formatUnits } from 'viem';
 import { Bill } from '../../../utils/groupUtils';
 import { formatCurrency } from '../../../utils/currencyUtils';
+import { getDisplayNameForAddress } from '../../../utils/addressBook';
 import styles from './BillsTab.module.css';
 
 interface BillsTabProps {
   bills: Bill[];
+  userAddress: `0x${string}`;
 }
 
-export function BillsTab({ bills }: BillsTabProps) {
+export function BillsTab({ bills, userAddress }: BillsTabProps) {
   return (
     <div className={styles.billsTab}>
       <div className={styles.billsList}>
@@ -20,7 +22,7 @@ export function BillsTab({ bills }: BillsTabProps) {
               <span className={styles.billAmount}>{formatCurrency(bill.totalAmount)} USDC</span>
             </div>
             <div className={styles.billDetails}>
-              <span>Payer: {bill.payer.slice(0, 6)}...{bill.payer.slice(-4)}</span>
+              <span>Payer: {getDisplayNameForAddress(bill.payer, { currentUserAddress: userAddress })}</span>
               <span>{new Date(Number(bill.timestamp) * 1000).toLocaleDateString()}</span>
             </div>
             <div className={styles.billParticipants}>

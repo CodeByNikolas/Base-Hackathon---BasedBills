@@ -11,9 +11,9 @@ import { MembersTab } from '../../components/features/tabs/MembersTab';
 import { WalletGuard } from '../../components/features/WalletGuard';
 import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
-import { formatUnits } from 'viem';
-import { GROUP_ABI, USDC_ABI, getContractAddresses, isTestnet } from '../../config/contracts';
+import { GROUP_ABI, USDC_ABI, getContractAddresses } from '../../config/contracts';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { formatAddress } from '../../utils/addressBook';
 import { ActionButtons } from './components/ActionButtons';
 import { SuccessMessage, WarningMessage } from './components/ProcessWarning';
 import styles from './GroupPage.module.css';
@@ -200,7 +200,7 @@ export default function GroupPage() {
             <div className={styles.groupHeader}>
               <div className={styles.groupInfo}>
                 <h1 className={styles.groupName}>{groupData.name}</h1>
-                <p className={styles.groupAddress}>{groupAddress.slice(0, 6)}...{groupAddress.slice(-4)}</p>
+                <p className={styles.groupAddress}>{formatAddress(groupAddress)}</p>
               </div>
 
               <div className={styles.groupStats}>
@@ -259,7 +259,7 @@ export default function GroupPage() {
               {activeTab === 'overview' && (
                 <OverviewTab groupData={groupData} memberDisplayNames={memberDisplayNames} />
               )}
-              {activeTab === 'bills' && <BillsTab bills={groupData.bills} />}
+              {activeTab === 'bills' && <BillsTab bills={groupData.bills} userAddress={userAddress as `0x${string}`} />}
               {activeTab === 'members' && (
                 <MembersTab
                   members={groupData.members}
