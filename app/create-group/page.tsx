@@ -6,11 +6,11 @@ import { useAccount } from 'wagmi';
 import { WalletGuard } from '../components/features/WalletGuard';
 import { HeaderBar } from '../components/ui/HeaderBar';
 import { Modal } from '../components/ui/Modal';
-import { useAddressBook } from '../hooks/useAddressBook';
+import { useAddressBook, useBaseEnsResolver } from '../hooks/useAddressBook';
 import { useUserGroups } from '../hooks/useGroups';
 import { useSponsoredTransactions } from '../hooks/useSponsoredTransactions';
 import { GROUP_FACTORY_ABI, getContractAddresses } from '../config/contracts';
-import { isValidAddress, formatAddress, getDisplayNameForAddress } from '../utils/addressBook';
+import { isValidAddress, formatAddress, getDisplayNameForAddress, addToAddressBook } from '../utils/addressBook';
 import styles from './CreateGroup.module.css';
 
 export default function CreateGroupPage() {
@@ -28,6 +28,11 @@ export default function CreateGroupPage() {
   const [selectedAddressBookMembers, setSelectedAddressBookMembers] = useState<Set<string>>(new Set());
   const [isCreating, setIsCreating] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [ensResolvingAddress, setEnsResolvingAddress] = useState<string | null>(null);
+  const [resolvedEnsAddress, setResolvedEnsAddress] = useState<`0x${string}` | null>(null);
+
+  // Base ENS resolution hook (only .base.eth names)
+  const baseEnsResolver = useBaseEnsResolver(ensResolvingAddress || undefined);
   // Initialize with current user as first member
   useEffect(() => {
     if (userAddress && !members.includes(userAddress)) {
@@ -35,16 +40,79 @@ export default function CreateGroupPage() {
     }
   }, [userAddress, members]);
 
+  // Handle Base ENS resolution
+  useEffect(() => {
+    if (ensResolvingAddress) {
+      if (baseEnsResolver.address) {
+        setResolvedEnsAddress(baseEnsResolver.address);
+      } else if (baseEnsResolver.error) {
+        setResolvedEnsAddress(null);
+        console.error('Base ENS resolution failed:', baseEnsResolver.error);
+      }
+    } else {
+      setResolvedEnsAddress(null);
+    }
+  }, [ensResolvingAddress, baseEnsResolver.address, baseEnsResolver.error]);
 
-  const handleAddMember = () => {
-    if (newMemberAddress && isValidAddress(newMemberAddress) && !members.includes(newMemberAddress)) {
-      setMembers([...members, newMemberAddress]);
+
+  const handleAddMember = async () => {
+    if (!newMemberAddress) return;
+
+    let finalAddress: string;
+
+    // Check if it's a .base.eth name
+    if (newMemberAddress.includes('.base.eth')) {
+      if (baseEnsResolver.isResolving) {
+        // Still resolving, don't add yet
+        return;
+      }
+
+      if (baseEnsResolver.error) {
+        // Try to retry the resolution
+        baseEnsResolver.retry();
+        return;
+      }
+
+      if (!baseEnsResolver.address) {
+        alert('Please wait for Base ENS name to resolve or enter a valid address');
+        return;
+      }
+
+      finalAddress = baseEnsResolver.address;
+      
+      // Auto-add to address book with ENS name as display name
+      addToAddressBook(finalAddress as `0x${string}`, newMemberAddress);
+    } else if (isValidAddress(newMemberAddress)) {
+      finalAddress = newMemberAddress;
+    } else {
+      alert('Please enter a valid address or .base.eth name');
+      return;
+    }
+
+    if (!members.includes(finalAddress)) {
+      setMembers([...members, finalAddress]);
       setNewMemberAddress('');
+      setEnsResolvingAddress(null);
+      setResolvedEnsAddress(null);
     }
   };
 
   const handleCancelTransaction = () => {
     setIsCreating(false);
+  };
+
+  // Handle input changes and trigger Base ENS resolution
+  const handleMemberInputChange = (value: string) => {
+    setNewMemberAddress(value);
+
+    // Reset Base ENS resolution state
+    setEnsResolvingAddress(null);
+    setResolvedEnsAddress(null);
+
+    // If it's a .base.eth name, start resolution
+    if (value && value.includes('.base.eth')) {
+      setEnsResolvingAddress(value);
+    }
   };
 
   const handleRemoveMember = (address: string) => {
@@ -54,6 +122,26 @@ export default function CreateGroupPage() {
       newSet.delete(address);
       return newSet;
     });
+  };
+
+  // Validation for the Add button with improved error handling
+  const isAddButtonValid = () => {
+    if (!newMemberAddress || isCreating) return false;
+
+    // If it's a .base.eth name, check if it's resolved and not already added
+    if (newMemberAddress.includes('.base.eth')) {
+      return !baseEnsResolver.isResolving &&
+             baseEnsResolver.address !== null &&
+             baseEnsResolver.error === null &&
+             !members.includes(baseEnsResolver.address);
+    }
+
+    // If it's an address, check if it's valid and not already added
+    if (isValidAddress(newMemberAddress)) {
+      return !members.includes(newMemberAddress);
+    }
+
+    return false;
   };
 
   const handleAddressBookToggle = (address: string) => {
@@ -231,24 +319,50 @@ export default function CreateGroupPage() {
                 {/* Manual Member Entry */}
                 {!useAddressBookToggle && (
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Add Member Address</label>
+                    <label className={styles.label}>Add Member Address or ENS Name</label>
                     <div className={styles.manualEntry}>
                       <input
                         type="text"
                         value={newMemberAddress}
-                        onChange={(e) => setNewMemberAddress(e.target.value)}
+                        onChange={(e) => handleMemberInputChange(e.target.value)}
                         className={styles.input}
-                        placeholder="0x..."
+                        placeholder="0x... or name.base.eth"
                         disabled={isCreating}
                       />
+
+                      {/* Show Base ENS resolution status */}
+                      {newMemberAddress.includes('.base.eth') && (
+                        <div className={styles.ensStatus}>
+                          {baseEnsResolver.isResolving ? (
+                            <span className={styles.ensResolving}>
+                              Resolving Base ENS name...
+                            </span>
+                          ) : baseEnsResolver.address ? (
+                            <span className={styles.ensResolved}>✓ {formatAddress(baseEnsResolver.address)}</span>
+                          ) : baseEnsResolver.error ? (
+                            <span className={styles.ensError}>
+                              ❌ {baseEnsResolver.error.message}
+                            </span>
+                          ) : (
+                            <span className={styles.ensError}>
+                              Invalid Base ENS name
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <button
                         type="button"
                         onClick={handleAddMember}
                         className={styles.addButton}
-                        disabled={!newMemberAddress || !isValidAddress(newMemberAddress) || members.includes(newMemberAddress)}
+                        disabled={!isAddButtonValid() || isCreating}
                       >
-                        Add
+                        {newMemberAddress.includes('.base.eth') && baseEnsResolver.isResolving ? 'Resolving...' :
+                         baseEnsResolver.error ? 'Retry' : 'Add'}
                       </button>
+                    </div>
+                    <div className={styles.helpText}>
+                      Enter an Ethereum address (0x...) or Base ENS name (name.base.eth)
                     </div>
                   </div>
                 )}

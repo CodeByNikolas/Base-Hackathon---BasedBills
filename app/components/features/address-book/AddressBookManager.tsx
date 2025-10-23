@@ -1,10 +1,11 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { useAccount } from 'wagmi';
-import { useAddressBook, useAddressBookStats } from '../../../hooks/useAddressBook';
+import { useState, useMemo, useEffect } from 'react';
+import { useAccount, useEnsAddress } from 'wagmi';
+import { base, baseSepolia } from 'wagmi/chains';
+import { useAddressBook, useAddressBookStats, useBaseEnsResolver } from '../../../hooks/useAddressBook';
 import { useUserGroups, useMultipleGroupsData } from '../../../hooks/useGroups';
 import { AddressDisplay, AddressInput } from './AddressDisplay';
-import { isValidAddress, exportAddressBook, importAddressBook, hasCustomName } from '../../../utils/addressBook';
+import { isValidAddress, isValidEnsName, isBaseEnsName, exportAddressBook, importAddressBook, hasCustomName } from '../../../utils/addressBook';
 import styles from './AddressBookManager.module.css';
 
 interface AddressBookManagerProps {
@@ -19,11 +20,32 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [ensResolvingAddress, setEnsResolvingAddress] = useState<string | null>(null);
+  const [resolvedEnsAddress, setResolvedEnsAddress] = useState<`0x${string}` | null>(null);
 
   const { address: userAddress } = useAccount();
   const addressBookData = useAddressBook();
   const { getAllEntries, search, addAddress, removeAddress, isInitialized } = addressBookData;
   const stats = useAddressBookStats();
+
+  // Base ENS resolution hook
+  const baseEnsResolver = useBaseEnsResolver(
+    ensResolvingAddress && ensResolvingAddress.includes('.base.eth') ? ensResolvingAddress : undefined
+  );
+
+  // Handle Base ENS resolution
+  useEffect(() => {
+    if (ensResolvingAddress) {
+      if (baseEnsResolver.address) {
+        setResolvedEnsAddress(baseEnsResolver.address);
+      } else if (baseEnsResolver.error) {
+        setResolvedEnsAddress(null);
+        console.error('Base ENS resolution failed:', baseEnsResolver.error);
+      }
+    } else {
+      setResolvedEnsAddress(null);
+    }
+  }, [ensResolvingAddress, baseEnsResolver.address, baseEnsResolver.error]);
 
   // Get user's groups to suggest addresses (only if address book is initialized)
   const { groupAddresses } = useUserGroups();
@@ -64,24 +86,66 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
 
   const entries = searchQuery ? search(searchQuery) : getAllEntries();
 
-  const handleAddAddress = () => {
-    if (!isValidAddress(newAddress)) {
-      setMessage({ type: 'error', text: 'Invalid address format' });
+  const handleAddAddress = async () => {
+    if (!newAddress || !newName.trim()) {
+      setMessage({ type: 'error', text: 'Address and name are required' });
       return;
     }
 
-    if (!newName.trim()) {
-      setMessage({ type: 'error', text: 'Name is required' });
+    let finalAddress: string;
+    let displayName = newName.trim();
+
+    // Check if it's a .base.eth name
+    if (newAddress.includes('.base.eth')) {
+      if (baseEnsResolver.isResolving) {
+        setMessage({ type: 'error', text: 'Please wait for Base ENS name to resolve' });
+        return;
+      }
+
+      if (baseEnsResolver.error) {
+        // Try to retry the resolution
+        baseEnsResolver.retry();
+        return;
+      }
+
+      if (!baseEnsResolver.address) {
+        setMessage({ type: 'error', text: 'Invalid Base ENS name or resolution failed' });
+        return;
+      }
+
+      finalAddress = baseEnsResolver.address;
+      // Use the ENS name as the display name
+      displayName = newAddress;
+    } else if (isValidAddress(newAddress)) {
+      finalAddress = newAddress;
+    } else {
+      setMessage({ type: 'error', text: 'Please enter a valid address or .base.eth name' });
       return;
     }
 
-    addAddress(newAddress as `0x${string}`, newName.trim());
+    addAddress(finalAddress as `0x${string}`, displayName);
     setNewAddress('');
     setNewName('');
     setShowAddForm(false);
+    setEnsResolvingAddress(null);
+    setResolvedEnsAddress(null);
     setMessage({ type: 'success', text: 'Address added successfully' });
-    
+
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  // Handle input changes and trigger Base ENS resolution
+  const handleAddressInputChange = (value: string) => {
+    setNewAddress(value);
+
+    // Reset Base ENS resolution state
+    setEnsResolvingAddress(null);
+    setResolvedEnsAddress(null);
+
+    // If it's a .base.eth name, start resolution
+    if (value && value.includes('.base.eth')) {
+      setEnsResolvingAddress(value);
+    }
   };
 
   const handleRemoveAddress = (address: `0x${string}`) => {
@@ -145,14 +209,31 @@ export function AddressBookManager({ isOpen, onClose }: AddressBookManagerProps)
               <div className={styles.suggestionsSection}>
                 <h3>Add New Address</h3>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Address</label>
+                  <label className={styles.label}>Address or ENS Name</label>
                   <input
                     type="text"
                     value={newAddress}
-                    onChange={(e) => setNewAddress(e.target.value)}
-                    placeholder="0x..."
+                    onChange={(e) => handleAddressInputChange(e.target.value)}
+                    placeholder="0x... or name.base.eth"
                     className={styles.input}
                   />
+
+                  {/* Show Base ENS resolution status */}
+                  {newAddress.includes('.base.eth') && (
+                    <div className={styles.ensStatus}>
+                      {baseEnsResolver.isResolving ? (
+                        <span className={styles.ensResolving}>Resolving Base ENS...</span>
+                      ) : baseEnsResolver.address ? (
+                        <span className={styles.ensResolved}>✓ {baseEnsResolver.address.slice(0, 6)}...{baseEnsResolver.address.slice(-4)}</span>
+                      ) : baseEnsResolver.error ? (
+                        <span className={styles.ensError}>
+                          ❌ {baseEnsResolver.error.message}
+                        </span>
+                      ) : (
+                        <span className={styles.ensError}>Invalid Base ENS name</span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Name</label>

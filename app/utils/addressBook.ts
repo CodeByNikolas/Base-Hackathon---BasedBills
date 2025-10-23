@@ -1,4 +1,5 @@
 import { normalize as _normalize } from 'viem/ens';
+import { getAddress } from '@coinbase/onchainkit/identity';
 
 // Types for address book
 export interface AddressBookEntry {
@@ -15,6 +16,7 @@ export interface AddressBook {
 // Local storage key
 const ADDRESS_BOOK_KEY = 'basedbills_address_book';
 const ENS_CACHE_KEY = 'basedbills_ens_cache';
+const REVERSE_ENS_CACHE_KEY = 'basedbills_reverse_ens_cache';
 const ENS_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
@@ -146,20 +148,109 @@ export function getCachedEnsName(address: `0x${string}`): string | null | undefi
 }
 
 /**
+ * Get reverse ENS cache from local storage
+ */
+function getReverseEnsCache(): { [address: string]: { name: string | null; timestamp: number } } {
+  if (typeof window === 'undefined') return {};
+  
+  try {
+    const stored = localStorage.getItem(REVERSE_ENS_CACHE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error('Error loading reverse ENS cache:', error);
+    return {};
+  }
+}
+
+/**
+ * Save reverse ENS cache to local storage
+ */
+function saveReverseEnsCache(cache: { [address: string]: { name: string | null; timestamp: number } }): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem(REVERSE_ENS_CACHE_KEY, JSON.stringify(cache));
+  } catch (error) {
+    console.error('Error saving reverse ENS cache:', error);
+  }
+}
+
+/**
+ * Get cached reverse ENS name if available and not expired
+ */
+export function getCachedReverseEnsName(address: `0x${string}`): string | null | undefined {
+  const normalizedAddress = address.toLowerCase();
+  const reverseEnsCache = getReverseEnsCache();
+  const cached = reverseEnsCache[normalizedAddress];
+  
+  if (!cached) return undefined; // Not cached
+  
+  const isExpired = Date.now() - cached.timestamp > ENS_CACHE_DURATION;
+  if (isExpired) {
+    // Clean up expired cache entry
+    delete reverseEnsCache[normalizedAddress];
+    saveReverseEnsCache(reverseEnsCache);
+    return undefined;
+  }
+  
+  return cached.name;
+}
+
+/**
+ * Cache reverse ENS name for an address
+ */
+export function cacheReverseEnsName(address: `0x${string}`, ensName: string | null): void {
+  const normalizedAddress = address.toLowerCase();
+  const reverseEnsCache = getReverseEnsCache();
+  
+  reverseEnsCache[normalizedAddress] = {
+    name: ensName,
+    timestamp: Date.now(),
+  };
+  
+  saveReverseEnsCache(reverseEnsCache);
+}
+
+/**
+ * Resolve reverse ENS name for an address using CDP SDK
+ * This performs reverse DNS lookup to find .base.eth names
+ */
+export async function resolveReverseEnsName(address: `0x${string}`): Promise<string | null> {
+  try {
+    // Check cache first
+    const cached = getCachedReverseEnsName(address);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    // For now, we'll return null as reverse ENS resolution requires additional setup
+    // This is a placeholder for future implementation
+    // In a full implementation, you would use a reverse ENS resolver here
+    console.log(`Reverse ENS resolution not yet implemented for ${address}`);
+    return null;
+  } catch (error) {
+    console.error('Error resolving reverse ENS name:', error);
+    return null;
+  }
+}
+
+/**
  * Get display name for an address with priority:
  * 1. Custom name from address book
- * 2. ENS name (.base.eth)
- * 3. Shortened address
+ * 2. ENS name (.base.eth) - forward resolution
+ * 3. Reverse ENS name (.base.eth) - reverse DNS lookup
+ * 4. Shortened address
  */
 export function getDisplayName(
   address: `0x${string}`, 
   options: {
     ensName?: string | null;
+    reverseEnsName?: string | null;
     fallbackToShortened?: boolean;
     maxLength?: number;
   } = {}
 ): string {
-  const { ensName, fallbackToShortened = true, maxLength = 20 } = options;
+  const { ensName, reverseEnsName, fallbackToShortened = true, maxLength = 20 } = options;
   const normalizedAddress = address.toLowerCase();
   const addressBook = getAddressBook();
   const entry = addressBook[normalizedAddress];
@@ -171,7 +262,7 @@ export function getDisplayName(
       : entry.name;
   }
   
-  // 2. ENS name (.base.eth or other)
+  // 2. ENS name (.base.eth or other) - forward resolution
   const resolvedEnsName = ensName || entry?.ensName;
   if (resolvedEnsName) {
     return resolvedEnsName.length > maxLength 
@@ -179,7 +270,15 @@ export function getDisplayName(
       : resolvedEnsName;
   }
   
-  // 3. Shortened address (fallback)
+  // 3. Reverse ENS name (.base.eth) - reverse DNS lookup
+  const resolvedReverseEnsName = reverseEnsName || getCachedReverseEnsName(address);
+  if (resolvedReverseEnsName) {
+    return resolvedReverseEnsName.length > maxLength 
+      ? `${resolvedReverseEnsName.slice(0, maxLength - 3)}...` 
+      : resolvedReverseEnsName;
+  }
+  
+  // 4. Shortened address (fallback)
   if (fallbackToShortened) {
     return shortenAddress(address);
   }
@@ -202,7 +301,7 @@ export function formatAddress(address: `0x${string}`): string {
 }
 
 /**
- * Get display name for an address with priority: custom name → ENS → shortened address
+ * Get display name for an address with priority: custom name → ENS → reverse ENS → shortened address
  * This is the main utility function for displaying addresses consistently
  */
 export function getDisplayNameForAddress(
@@ -210,20 +309,22 @@ export function getDisplayNameForAddress(
   options: {
     currentUserAddress?: `0x${string}`;
     ensName?: string | null;
+    reverseEnsName?: string | null;
     fallbackToShortened?: boolean;
     maxLength?: number;
   } = {}
 ): string {
-  const { currentUserAddress, ensName, fallbackToShortened = true, maxLength = 20 } = options;
+  const { currentUserAddress, ensName, reverseEnsName, fallbackToShortened = true, maxLength = 20 } = options;
 
   // 1. Current user gets "You"
   if (currentUserAddress && address.toLowerCase() === currentUserAddress.toLowerCase()) {
     return 'You';
   }
 
-  // 2. Get display name using existing logic
+  // 2. Get display name using existing logic with reverse ENS support
   return getDisplayName(address, {
     ensName,
+    reverseEnsName,
     fallbackToShortened,
     maxLength
   });
@@ -299,13 +400,218 @@ export function isValidAddress(address: string): address is `0x${string}` {
 }
 
 /**
- * Validate ENS name format
+ * Validate ENS name format with detailed error reporting
  */
 export function isValidEnsName(name: string): boolean {
   try {
-    // Basic validation for ENS names
-    return /^[a-zA-Z0-9-]+\.(eth|base\.eth)$/.test(name) && name.length >= 7;
+    if (!name || typeof name !== 'string') {
+      return false;
+    }
+
+    // Enhanced validation for ENS names including Base ENS names
+    // Supports: name.eth, name.base.eth (mainnet), name.basetest.eth (testnet)
+    const isValidFormat = /^[a-zA-Z0-9-]+\.(eth|base\.eth|basetest\.eth)$/.test(name);
+    const isValidLength = name.length >= 7;
+
+    // Additional validation: no consecutive dots or dots at start/end
+    const hasConsecutiveDots = /\.\./.test(name);
+    const startsWithDot = name.startsWith('.');
+    const endsWithDot = name.endsWith('.');
+
+    return isValidFormat && isValidLength && !hasConsecutiveDots && !startsWithDot && !endsWithDot;
   } catch {
     return false;
   }
+}
+
+/**
+ * Validate Base username (Basename) format
+ * Base usernames are simple names without domain extensions
+ */
+export function isValidBaseUsername(name: string): boolean {
+  try {
+    if (!name || typeof name !== 'string') {
+      return false;
+    }
+
+    // Base usernames are simple names without domain extensions
+    // Must be 3-20 characters, alphanumeric and hyphens only
+    const isValidFormat = /^[a-zA-Z0-9-]{3,20}$/.test(name);
+    const noConsecutiveHyphens = !/--/.test(name);
+    const noLeadingTrailingHyphens = !name.startsWith('-') && !name.endsWith('-');
+
+    return isValidFormat && noConsecutiveHyphens && noLeadingTrailingHyphens;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a name is a Base username (not an ENS name)
+ */
+export function isBaseUsername(name: string): boolean {
+  return isValidBaseUsername(name) && !isValidEnsName(name);
+}
+
+/**
+ * Get validation details for an ENS name (for debugging)
+ */
+export function getEnsNameValidationDetails(name: string): {
+  isValid: boolean;
+  formatValid: boolean;
+  lengthValid: boolean;
+  noConsecutiveDots: boolean;
+  noLeadingTrailingDots: boolean;
+  supportedDomains: string[];
+  error?: string;
+} {
+  if (!name || typeof name !== 'string') {
+    return {
+      isValid: false,
+      formatValid: false,
+      lengthValid: false,
+      noConsecutiveDots: true,
+      noLeadingTrailingDots: true,
+      supportedDomains: ['.eth', '.base.eth', '.basetest.eth'],
+      error: 'Invalid input type'
+    };
+  }
+
+  const formatValid = /^[a-zA-Z0-9-]+\.(eth|base\.eth|basetest\.eth)$/.test(name);
+  const lengthValid = name.length >= 7;
+  const noConsecutiveDots = !/\.\./.test(name);
+  const noLeadingTrailingDots = !name.startsWith('.') && !name.endsWith('.');
+  const isValid = formatValid && lengthValid && noConsecutiveDots && noLeadingTrailingDots;
+
+  let error: string | undefined;
+  if (!formatValid) {
+    error = 'Invalid format - must be name.eth, name.base.eth, or name.basetest.eth';
+  } else if (!lengthValid) {
+    error = 'Name too short - minimum 7 characters required';
+  } else if (!noConsecutiveDots) {
+    error = 'Consecutive dots not allowed';
+  } else if (!noLeadingTrailingDots) {
+    error = 'Name cannot start or end with a dot';
+  }
+
+  return {
+    isValid,
+    formatValid,
+    lengthValid,
+    noConsecutiveDots,
+    noLeadingTrailingDots,
+    supportedDomains: ['.eth', '.base.eth', '.basetest.eth'],
+    error
+  };
+}
+
+/**
+ * Get validation details for a Base username (for debugging)
+ */
+export function getBaseUsernameValidationDetails(name: string): {
+  isValid: boolean;
+  formatValid: boolean;
+  lengthValid: boolean;
+  noConsecutiveHyphens: boolean;
+  noLeadingTrailingHyphens: boolean;
+  error?: string;
+} {
+  if (!name || typeof name !== 'string') {
+    return {
+      isValid: false,
+      formatValid: false,
+      lengthValid: false,
+      noConsecutiveHyphens: true,
+      noLeadingTrailingHyphens: true,
+      error: 'Invalid input type'
+    };
+  }
+
+  const formatValid = /^[a-zA-Z0-9-]{3,20}$/.test(name);
+  const lengthValid = name.length >= 3 && name.length <= 20;
+  const noConsecutiveHyphens = !/--/.test(name);
+  const noLeadingTrailingHyphens = !name.startsWith('-') && !name.endsWith('-');
+  const isValid = formatValid && lengthValid && noConsecutiveHyphens && noLeadingTrailingHyphens;
+
+  let error: string | undefined;
+  if (!formatValid) {
+    error = 'Invalid format - must be 3-20 characters, alphanumeric and hyphens only';
+  } else if (!lengthValid) {
+    error = 'Name must be 3-20 characters long';
+  } else if (!noConsecutiveHyphens) {
+    error = 'Consecutive hyphens not allowed';
+  } else if (!noLeadingTrailingHyphens) {
+    error = 'Name cannot start or end with a hyphen';
+  }
+
+  return {
+    isValid,
+    formatValid,
+    lengthValid,
+    noConsecutiveHyphens,
+    noLeadingTrailingHyphens,
+    error
+  };
+}
+
+/**
+ * Get validation details for any name (ENS or Base username)
+ */
+export function getNameValidationDetails(name: string): {
+  type: 'ens' | 'base-username' | 'address' | 'invalid';
+  isValid: boolean;
+  ensDetails?: ReturnType<typeof getEnsNameValidationDetails>;
+  baseUsernameDetails?: ReturnType<typeof getBaseUsernameValidationDetails>;
+  error?: string;
+} {
+  if (!name || typeof name !== 'string') {
+    return {
+      type: 'invalid',
+      isValid: false,
+      error: 'Invalid input type'
+    };
+  }
+
+  // Check if it's an address first
+  if (isValidAddress(name)) {
+    return {
+      type: 'address',
+      isValid: true
+    };
+  }
+
+  // Check if it's an ENS name
+  if (isValidEnsName(name)) {
+    const ensDetails = getEnsNameValidationDetails(name);
+    return {
+      type: 'ens',
+      isValid: ensDetails.isValid,
+      ensDetails,
+      error: ensDetails.error
+    };
+  }
+
+  // Check if it's a Base username
+  if (isValidBaseUsername(name)) {
+    const baseUsernameDetails = getBaseUsernameValidationDetails(name);
+    return {
+      type: 'base-username',
+      isValid: baseUsernameDetails.isValid,
+      baseUsernameDetails,
+      error: baseUsernameDetails.error
+    };
+  }
+
+  return {
+    type: 'invalid',
+    isValid: false,
+    error: 'Not a valid address, ENS name, or Base username'
+  };
+}
+
+/**
+ * Check if ENS name is a Base ENS name (mainnet or testnet)
+ */
+export function isBaseEnsName(name: string): boolean {
+  return name.endsWith('.base.eth') || name.endsWith('.basetest.eth');
 }
