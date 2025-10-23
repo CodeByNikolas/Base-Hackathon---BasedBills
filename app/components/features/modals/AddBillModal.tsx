@@ -7,6 +7,7 @@ import { Modal } from '../../ui/Modal';
 import { GROUP_ABI } from '../../../config/contracts';
 import { useSponsoredTransactions } from '../../../hooks/useSponsoredTransactions';
 import { SPONSORED_FUNCTIONS } from '../../../utils/sponsoredTransactions';
+import { formatCurrency } from '../../../utils/currencyUtils';
 import styles from './AddBillModal.module.css';
 
 interface AddBillModalProps {
@@ -256,7 +257,7 @@ export function AddBillModal({ isOpen, onClose, groupAddress, groupMembers, isPr
                         member.balance > 0n ? styles.positive :
                         member.balance < 0n ? styles.negative : styles.neutral
                       }`}>
-                        {member.balance > 0n ? '+' : ''}{(Number(member.balance) / 1e6).toFixed(2)} USDC
+                        {formatCurrency(member.balance)} USDC
                       </span>
                     </div>
                   </label>

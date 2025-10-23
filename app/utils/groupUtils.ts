@@ -1,4 +1,5 @@
 import { formatUnits, parseUnits } from 'viem';
+import { formatCurrency } from './currencyUtils';
 
 // Types for our data structures
 export interface Bill {
@@ -46,7 +47,7 @@ export const USDC_DECIMALS = 6;
  * Format USDC amount for display
  */
 export function formatUSDC(amount: bigint): string {
-  return formatUnits(amount, USDC_DECIMALS);
+  return formatCurrency(amount, USDC_DECIMALS);
 }
 
 /**
@@ -60,7 +61,7 @@ export function parseUSDC(amount: string): bigint {
  * Format USDC with currency symbol
  */
 export function formatUSDCWithSymbol(amount: bigint): string {
-  return `$${formatUSDC(amount)}`;
+  return `$${formatCurrency(amount, USDC_DECIMALS)}`;
 }
 
 /**

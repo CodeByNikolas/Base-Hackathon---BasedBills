@@ -19,6 +19,7 @@ import {
   UNLIMITED_APPROVAL_AMOUNT
 } from '../constants';
 import { ErrorHandler, GroupUtils } from '../utils';
+import { formatCurrency } from '../../../utils/currencyUtils';
 import styles from './ActionButtons.module.css';
 
 interface ActionButtonsProps {
@@ -135,8 +136,8 @@ export function ActionButtons({
         }
 
         if (currentBalance < amountOwed) {
-          const neededAmount = formatUnits(amountOwed, 6);
-          const currentAmount = formatUnits(currentBalance, 6);
+          const neededAmount = formatCurrency(amountOwed);
+          const currentAmount = formatCurrency(currentBalance);
           const message = GroupUtils.formatMessage(UI_MESSAGES.SETTLEMENT.INSUFFICIENT_BALANCE, {
             neededAmount,
             currentAmount

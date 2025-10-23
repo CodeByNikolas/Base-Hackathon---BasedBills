@@ -13,6 +13,7 @@ import { useGroupData } from '../../hooks/useGroups';
 import { useBatchDisplayNames, useAddressBook } from '../../hooks/useAddressBook';
 import { formatUnits } from 'viem';
 import { GROUP_ABI, USDC_ABI, getContractAddresses, isTestnet } from '../../config/contracts';
+import { formatCurrency } from '../../utils/currencyUtils';
 import { ActionButtons } from './components/ActionButtons';
 import { SuccessMessage, WarningMessage } from './components/ProcessWarning';
 import styles from './GroupPage.module.css';
@@ -222,7 +223,7 @@ export default function GroupPage() {
             <div className={styles.balanceCard}>
               <h3>Your Balance</h3>
               <div className={`${styles.balance} ${isUserCreditor ? styles.positive : isUserDebtor ? styles.negative : styles.neutral}`}>
-                {isUserCreditor ? '+' : ''}{formatUnits(userBalance, 6)} USDC
+                {isUserCreditor ? '+' : ''}{formatCurrency(userBalance)} USDC
               </div>
               <p className={styles.balanceDescription}>
                 {isUserCreditor ? 'Others owe you money' :

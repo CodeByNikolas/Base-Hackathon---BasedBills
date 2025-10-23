@@ -2,6 +2,7 @@
 
 import { formatUnits } from 'viem';
 import { Bill } from '../../../utils/groupUtils';
+import { formatCurrency } from '../../../utils/currencyUtils';
 import styles from './BillsTab.module.css';
 
 interface BillsTabProps {
@@ -16,7 +17,7 @@ export function BillsTab({ bills }: BillsTabProps) {
           <div key={bill.id} className={styles.billCard}>
             <div className={styles.billHeader}>
               <h4>{bill.description}</h4>
-              <span className={styles.billAmount}>{formatUnits(bill.totalAmount, 6)} USDC</span>
+              <span className={styles.billAmount}>{formatCurrency(bill.totalAmount)} USDC</span>
             </div>
             <div className={styles.billDetails}>
               <span>Payer: {bill.payer.slice(0, 6)}...{bill.payer.slice(-4)}</span>

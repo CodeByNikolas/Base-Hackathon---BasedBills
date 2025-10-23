@@ -3,6 +3,7 @@
 import { formatUnits } from 'viem';
 import { hasCustomName } from '../../../utils/addressBook';
 import { GroupMember } from '../../../utils/groupUtils';
+import { formatCurrency } from '../../../utils/currencyUtils';
 import styles from './MembersTab.module.css';
 
 interface MembersTabProps {
@@ -59,8 +60,9 @@ export function MembersTab({
     <div className={styles.membersTab}>
       <div className={styles.membersList}>
         {members.map((member: GroupMember) => {
-          const balance = formatUnits(member.balance, 6);
           const isPositive = member.balance > 0n;
+          const isNegative = member.balance < 0n;
+          const isZero = member.balance === 0n;
           const isCurrentUser = member.address.toLowerCase() === userAddress?.toLowerCase();
           const hasName = hasCustomName(member.address);
           const displayName = isCurrentUser
@@ -120,8 +122,8 @@ export function MembersTab({
                   </div>
                 )}
               </div>
-              <div className={`${styles.memberBalance} ${isPositive ? styles.positive : styles.negative}`}>
-                {isPositive ? '+' : ''}{balance} USDC
+              <div className={`${styles.memberBalance} ${isPositive ? styles.positive : isNegative ? styles.negative : styles.neutral}`}>
+                {formatCurrency(member.balance)} USDC
               </div>
             </div>
           );
