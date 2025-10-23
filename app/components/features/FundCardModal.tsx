@@ -43,6 +43,9 @@ export function FundCardModal({
   const [error, setError] = useState<string | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [isTestnet, setIsTestnet] = useState<boolean>(false);
+  const [fundCardStatus, setFundCardStatus] = useState<string>("");
+  const [fundCardError, setFundCardError] = useState<string>("");
+  const [fundCardSuccess, setFundCardSuccess] = useState<string>("");
 
   const generateSessionToken = useCallback(async () => {
     if (!address) {
@@ -53,6 +56,10 @@ export function FundCardModal({
     setLoading(true);
     setError(null);
     setSessionToken(null);
+    // Clear FundCard messages when regenerating token
+    setFundCardStatus("");
+    setFundCardError("");
+    setFundCardSuccess("");
 
     try {
       console.log("Generating session token for:", { address, selectedBlockchain });
@@ -246,6 +253,41 @@ export function FundCardModal({
         {/* FundCard Component */}
         {sessionToken && !loading && (
           <div className={styles.fundCardContainer}>
+            {/* External Status/Error Display */}
+            {(fundCardStatus || fundCardError || fundCardSuccess) && (
+              <div className={styles.externalMessages}>
+                <div className={styles.messagesHeader}>
+                  <h4>FundCard Events</h4>
+                  <button
+                    onClick={() => {
+                      setFundCardStatus("");
+                      setFundCardError("");
+                      setFundCardSuccess("");
+                    }}
+                    className={styles.clearButton}
+                  >
+                    Clear
+                  </button>
+                </div>
+                {fundCardStatus && (
+                  <div className={styles.statusMessage}>
+                    <strong>Status:</strong> {fundCardStatus}
+                  </div>
+                )}
+                {fundCardError && (
+                  <div className={styles.errorMessage}>
+                    <strong>Error:</strong> {fundCardError}
+                  </div>
+                )}
+                {fundCardSuccess && (
+                  <div className={styles.successMessage}>
+                    <strong>Success:</strong> {fundCardSuccess}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* FundCard with External Event Handlers */}
             <div className={styles.fundCardWrapper}>
               <FundCard
                 sessionToken={sessionToken}
@@ -259,6 +301,21 @@ export function FundCardModal({
                     ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), "100"]
                     : ["25", "50", "120"]
                 }
+                onStatus={(status) => {
+                  setFundCardStatus(`${status.statusName}${status.statusData ? ` - ${JSON.stringify(status.statusData)}` : ''}`);
+                  setFundCardError("");
+                  setFundCardSuccess("");
+                }}
+                onError={(error) => {
+                  setFundCardError(error ? `${error.errorType}: ${error.debugMessage || error.code || 'Unknown error'}` : '');
+                  setFundCardStatus("");
+                  setFundCardSuccess("");
+                }}
+                onSuccess={(data) => {
+                  setFundCardSuccess(`Transaction successful: ${data.assetSymbol} on ${data.assetName}`);
+                  setFundCardStatus("");
+                  setFundCardError("");
+                }}
               />
             </div>
           </div>

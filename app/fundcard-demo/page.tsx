@@ -29,6 +29,9 @@ export default function FundCardDemo() {
   const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [customAddress, setCustomAddress] = useState<string>("");
   const [isTestnet, setIsTestnet] = useState<boolean>(false);
+  const [fundCardStatus, setFundCardStatus] = useState<string>("");
+  const [fundCardError, setFundCardError] = useState<string>("");
+  const [fundCardSuccess, setFundCardSuccess] = useState<string>("");
 
   // Update custom address when wallet connects
   useEffect(() => {
@@ -40,6 +43,10 @@ export default function FundCardDemo() {
   // Update testnet status when blockchain changes
   useEffect(() => {
     setIsTestnet(selectedBlockchain === "base-sepolia");
+    // Clear FundCard messages when blockchain changes
+    setFundCardStatus("");
+    setFundCardError("");
+    setFundCardSuccess("");
   }, [selectedBlockchain]);
 
   const useConnectedWallet = () => {
@@ -55,9 +62,13 @@ export default function FundCardDemo() {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    setSessionToken(null);
+        setLoading(true);
+        setError(null);
+        setSessionToken(null);
+        // Clear FundCard messages when regenerating token
+        setFundCardStatus("");
+        setFundCardError("");
+        setFundCardSuccess("");
 
     try {
       console.log("Generating session token for:", { targetAddress, selectedBlockchain });
@@ -445,6 +456,42 @@ export default function FundCardDemo() {
 
         <div className={styles.fundCardSection}>
           <h2>FundCard Component</h2>
+
+          {/* External Status/Error Display */}
+          {(fundCardStatus || fundCardError || fundCardSuccess) && (
+            <div className={styles.externalMessages}>
+              <div className={styles.messagesHeader}>
+                <h4>FundCard Events</h4>
+                <button
+                  onClick={() => {
+                    setFundCardStatus("");
+                    setFundCardError("");
+                    setFundCardSuccess("");
+                  }}
+                  className={styles.clearButton}
+                >
+                  Clear
+                </button>
+              </div>
+              {fundCardStatus && (
+                <div className={styles.statusMessage}>
+                  <strong>Status:</strong> {fundCardStatus}
+                </div>
+              )}
+              {fundCardError && (
+                <div className={styles.errorMessage}>
+                  <strong>Error:</strong> {fundCardError}
+                </div>
+              )}
+              {fundCardSuccess && (
+                <div className={styles.successMessage}>
+                  <strong>Success:</strong> {fundCardSuccess}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* FundCard with External Event Handlers */}
           <div className={styles.fundCardWrapper}>
             <FundCard
               sessionToken={sessionToken}
@@ -454,6 +501,21 @@ export default function FundCardDemo() {
               headerText="Fund Your Base Wallet"
               buttonText="Purchase"
               presetAmountInputs={['10', '25', '50']}
+              onStatus={(status) => {
+                setFundCardStatus(`${status.statusName}${status.statusData ? ` - ${JSON.stringify(status.statusData)}` : ''}`);
+                setFundCardError("");
+                setFundCardSuccess("");
+              }}
+              onError={(error) => {
+                setFundCardError(error ? `${error.errorType}: ${error.debugMessage || error.code || 'Unknown error'}` : '');
+                setFundCardStatus("");
+                setFundCardSuccess("");
+              }}
+              onSuccess={(data) => {
+                setFundCardSuccess(`Transaction successful: ${data.assetSymbol} on ${data.assetName}`);
+                setFundCardStatus("");
+                setFundCardError("");
+              }}
             />
           </div>
         </div>

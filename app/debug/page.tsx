@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FundCard } from "@coinbase/onchainkit/fund";
 import styles from "./debug.module.css";
 
 interface JwtResponse {
@@ -58,6 +59,10 @@ export default function DebugPage() {
   const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [customAddress, setCustomAddress] = useState("0x4315d134aCd3221a02dD380ADE3aF39Ce219037c");
   const [isTestnet, setIsTestnet] = useState<boolean>(false);
+  const [manualSessionToken, setManualSessionToken] = useState<string>("");
+  const [fundCardStatus, setFundCardStatus] = useState<string>("");
+  const [fundCardError, setFundCardError] = useState<string>("");
+  const [fundCardSuccess, setFundCardSuccess] = useState<string>("");
 
   // Sample data for testing
   const [addresses, setAddresses] = useState([
@@ -312,6 +317,116 @@ export default function DebugPage() {
             </pre>
           </div>
         )}
+      </div>
+
+      <div className={styles.section}>
+        <h2>FundCard with Manual Session Token</h2>
+        <p className={styles.description}>
+          Test the FundCard component with a manually entered session token
+        </p>
+
+        <div className={styles.manualTokenSection}>
+          <div className={styles.controlGroup}>
+            <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Session Token:</label>
+              <div className={styles.tokenInputGroup}>
+                <input
+                  type="text"
+                  value={manualSessionToken}
+                  onChange={(e) => {
+                    setManualSessionToken(e.target.value);
+                    // Clear messages when token changes
+                    setFundCardStatus("");
+                    setFundCardError("");
+                    setFundCardSuccess("");
+                  }}
+                  className={styles.tokenInput}
+                  placeholder="Paste your session token here..."
+                />
+                <button
+                  onClick={() => {
+                    setManualSessionToken(sessionTokenResponse?.sessionToken || "");
+                    // Clear messages when using generated token
+                    setFundCardStatus("");
+                    setFundCardError("");
+                    setFundCardSuccess("");
+                  }}
+                  disabled={!sessionTokenResponse?.sessionToken}
+                  className={styles.useGeneratedButton}
+                  title="Use the generated session token above"
+                >
+                  Use Generated
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {manualSessionToken && (
+            <div className={styles.fundCardContainer}>
+              {/* External Status/Error Display */}
+              {(fundCardStatus || fundCardError || fundCardSuccess) && (
+                <div className={styles.externalMessages}>
+                  <div className={styles.messagesHeader}>
+                    <h4>FundCard Events</h4>
+                    <button
+                      onClick={() => {
+                        setFundCardStatus("");
+                        setFundCardError("");
+                        setFundCardSuccess("");
+                      }}
+                      className={styles.clearButton}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  {fundCardStatus && (
+                    <div className={styles.statusMessage}>
+                      <strong>Status:</strong> {fundCardStatus}
+                    </div>
+                  )}
+                  {fundCardError && (
+                    <div className={styles.errorMessage}>
+                      <strong>Error:</strong> {fundCardError}
+                    </div>
+                  )}
+                  {fundCardSuccess && (
+                    <div className={styles.successMessage}>
+                      <strong>Success:</strong> {fundCardSuccess}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* FundCard with External Event Handlers */}
+              <div className={styles.fundCardWrapper}>
+                <FundCard
+                  sessionToken={manualSessionToken}
+                  assetSymbol="ETH"
+                  country="US"
+                  currency="USD"
+                  headerText="Fund Your Base Wallet (Debug)"
+                  buttonText="Purchase"
+                  presetAmountInputs={['10', '25', '50']}
+                  onStatus={(status) => {
+                    setFundCardStatus(`${status.statusName}${status.statusData ? ` - ${JSON.stringify(status.statusData)}` : ''}`);
+                    setFundCardError("");
+                    setFundCardSuccess("");
+                  }}
+                  onError={(error) => {
+                    setFundCardError(error ? `${error.errorType}: ${error.debugMessage || error.code || 'Unknown error'}` : '');
+                    setFundCardStatus("");
+                    setFundCardSuccess("");
+                  }}
+                  onSuccess={(data) => {
+                    setFundCardSuccess(`Transaction successful: ${data.assetSymbol} on ${data.assetName}`);
+                    setFundCardStatus("");
+                    setFundCardError("");
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className={styles.info}>
