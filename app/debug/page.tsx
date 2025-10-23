@@ -88,6 +88,10 @@ export default function DebugPage() {
   const handleBlockchainChange = (blockchain: Blockchain) => {
     setSelectedBlockchain(blockchain);
     updateAddresses(blockchain, customAddress);
+    // Clear FundCard messages when network changes
+    setFundCardStatus("");
+    setFundCardError("");
+    setFundCardSuccess("");
   };
 
   const handleAddressChange = (address: string) => {
@@ -328,6 +332,18 @@ export default function DebugPage() {
         <div className={styles.manualTokenSection}>
           <div className={styles.controlGroup}>
             <div className={styles.controlItem}>
+              <label className={styles.controlLabel}>Network:</label>
+              <select
+                value={selectedBlockchain}
+                onChange={(e) => handleBlockchainChange(e.target.value as Blockchain)}
+                className={styles.controlSelect}
+              >
+                <option value="base">🟢 Base (Mainnet) - Recommended</option>
+                <option value="ethereum">🔵 Ethereum (Mainnet)</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Supported via Conversion</option>
+              </select>
+            </div>
+            <div className={styles.controlItem}>
               <label className={styles.controlLabel}>Session Token:</label>
               <div className={styles.tokenInputGroup}>
                 <input
@@ -399,12 +415,15 @@ export default function DebugPage() {
 
               {/* FundCard with External Event Handlers */}
               <div className={styles.fundCardWrapper}>
+                <div className={styles.networkDisplay}>
+                  <strong>Testing Network:</strong> {isTestnet ? "🧪 Base Sepolia (via conversion)" : `🟢 ${selectedBlockchain}`}
+                </div>
                 <FundCard
                   sessionToken={manualSessionToken}
                   assetSymbol="ETH"
                   country="US"
                   currency="USD"
-                  headerText="Fund Your Base Wallet (Debug)"
+                  headerText={`Fund Your ${selectedBlockchain === "ethereum" ? "Ethereum" : "Base"} Wallet (Debug)`}
                   buttonText="Purchase"
                   presetAmountInputs={['10', '25', '50']}
                   onStatus={(status) => {
