@@ -40,7 +40,8 @@ export function FundCardModal({
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
+  const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
+  const [isTestnet, setIsTestnet] = useState<boolean>(false);
 
   const generateSessionToken = useCallback(async () => {
     if (!address) {
@@ -64,7 +65,8 @@ export function FundCardModal({
               blockchains: [selectedBlockchain]
             }
           ],
-          assets: ["ETH", "USDC"]
+          assets: ["ETH", "USDC"],
+          testnet: isTestnet
         }),
       });
 
@@ -76,9 +78,13 @@ export function FundCardModal({
       } else {
         let errorMessage = data.error || "Failed to generate session token";
         if (data.details?.message?.includes("base-sepolia")) {
-          errorMessage += " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
+          errorMessage += isTestnet
+            ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
+            : " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
         } else if (data.details?.message?.includes("not valid for blockchain")) {
-          errorMessage += " 💡 Make sure your address is valid for the selected network. Try switching to Base (Mainnet).";
+          errorMessage += isTestnet
+            ? " 💡 Make sure your wallet address is valid for Base Sepolia testnet."
+            : " 💡 Make sure your address is valid for the selected network. Try switching to Base (Mainnet).";
         }
         setError(errorMessage);
       }
@@ -89,6 +95,11 @@ export function FundCardModal({
 
     setLoading(false);
   }, [address, selectedBlockchain]);
+
+  // Update testnet status when blockchain changes
+  useEffect(() => {
+    setIsTestnet(selectedBlockchain === "base-sepolia");
+  }, [selectedBlockchain]);
 
   // Auto-generate session token when modal opens and wallet is connected
   useEffect(() => {
@@ -126,7 +137,7 @@ export function FundCardModal({
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
-                <option value="base-sepolia">Base Sepolia (Testnet) - Limited Support</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Limited Support</option>
               </select>
             </div>
             <div className={styles.configItem}>
@@ -135,6 +146,35 @@ export function FundCardModal({
             </div>
           </div>
         </div>
+
+        {/* Testnet Warning */}
+        {isTestnet && (
+          <div className={styles.testnetWarning}>
+            <div className={styles.warningIcon}>🧪</div>
+            <div className={styles.warningContent}>
+              <h4>Testnet Mode</h4>
+              <p>You're using Base Sepolia testnet. Make sure your wallet is connected to the correct testnet.</p>
+              <div className={styles.testnetActions}>
+                <a
+                  href="https://faucet.circle.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.testnetButton}
+                >
+                  Get Test USDC
+                </a>
+                <a
+                  href="https://sepoliafaucet.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.testnetButton}
+                >
+                  Get Test ETH
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Instructions */}
         <div className={styles.instructions}>
@@ -157,6 +197,11 @@ export function FundCardModal({
               {presetAmount && (
                 <div className={styles.suggestedAmount}>
                   <strong>Suggested amount:</strong> ${presetAmount} (based on your outstanding bills)
+                </div>
+              )}
+              {isTestnet && (
+                <div className={styles.testnetNote}>
+                  <strong>Testnet Note:</strong> This is for testing only. No real funds will be transferred.
                 </div>
               )}
             </div>
@@ -192,13 +237,17 @@ export function FundCardModal({
             <div className={styles.fundCardWrapper}>
               <FundCard
                 sessionToken={sessionToken}
-                assetSymbol="USDC"
+                assetSymbol={isTestnet ? "USDC" : "USDC"}
                 country="US"
                 currency="USD"
-                headerText={presetAmount ? `Fund $${presetAmount} USDC` : "Add USDC"}
-                buttonText={presetAmount ? `Buy $${presetAmount} USDC` : "Buy USDC"}
+                headerText={isTestnet ? `Fund Testnet $${presetAmount || "25"} USDC` : (presetAmount ? `Fund $${presetAmount} USDC` : "Add USDC")}
+                buttonText={isTestnet ? `Buy Test USDC` : (presetAmount ? `Buy $${presetAmount} USDC` : "Buy USDC")}
                 presetAmountInputs={
-                  presetAmount
+                  isTestnet
+                    ? presetAmount
+                      ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), "10"]
+                      : ["1", "5", "10"]
+                    : presetAmount
                     ? [presetAmount, (parseFloat(presetAmount) * 1.5).toString(), "100"]
                     : ["25", "50", "120"]
                 }

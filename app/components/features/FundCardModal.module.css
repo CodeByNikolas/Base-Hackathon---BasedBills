@@ -250,3 +250,69 @@
     padding-left: 1.25rem;
   }
 }
+
+/* Testnet styles */
+.testnetWarning {
+  background: #fef3cd;
+  border: 1px solid #f6e05e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.warningIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.warningContent h4 {
+  margin: 0 0 0.5rem 0;
+  color: #744210;
+  font-weight: 600;
+}
+
+.warningContent p {
+  margin: 0 0 1rem 0;
+  color: #744210;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.testnetActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.testnetButton {
+  background: #0070f3;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+}
+
+.testnetButton:hover {
+  background: #0051cc;
+}
+
+.testnetNote {
+  background: #e0f2fe;
+  border: 1px solid #0ea5e9;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  color: #0369a1;
+  font-size: 0.875rem;
+}
+
+.testnetNote strong {
+  font-weight: 600;
+}

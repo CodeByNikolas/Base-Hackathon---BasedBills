@@ -27,6 +27,7 @@ export default function FundCardDemo() {
   const [error, setError] = useState<string | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
   const [customAddress, setCustomAddress] = useState<string>("");
+  const [isTestnet, setIsTestnet] = useState<boolean>(false);
 
   // Update custom address when wallet connects
   useEffect(() => {
@@ -34,6 +35,11 @@ export default function FundCardDemo() {
       setCustomAddress(address);
     }
   }, [address, customAddress]);
+
+  // Update testnet status when blockchain changes
+  useEffect(() => {
+    setIsTestnet(selectedBlockchain === "base-sepolia");
+  }, [selectedBlockchain]);
 
   const useConnectedWallet = () => {
     if (address) {
@@ -64,7 +70,8 @@ export default function FundCardDemo() {
               blockchains: [selectedBlockchain]
             }
           ],
-          assets: ["ETH", "USDC"]
+          assets: ["ETH", "USDC"],
+          testnet: isTestnet
         }),
       });
 
@@ -76,9 +83,13 @@ export default function FundCardDemo() {
       } else {
         let errorMessage = data.error || "Failed to generate session token";
         if (data.details?.message?.includes("base-sepolia")) {
-          errorMessage += " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
+          errorMessage += isTestnet
+            ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
+            : " 💡 Try using Base (Mainnet) instead of Base Sepolia, as it has better CDP support.";
         } else if (data.details?.message?.includes("not valid for blockchain")) {
-          errorMessage += " 💡 Make sure your address is valid for the selected network. Try using your connected wallet address or switch to Base (Mainnet).";
+          errorMessage += isTestnet
+            ? " 💡 Make sure your wallet address is valid for Base Sepolia testnet."
+            : " 💡 Make sure your address is valid for the selected network. Try using your connected wallet address or switch to Base (Mainnet).";
         }
         setError(errorMessage);
       }
@@ -236,7 +247,7 @@ export default function FundCardDemo() {
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
-                <option value="base-sepolia">Base Sepolia (Testnet) - Limited Support</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Limited Support</option>
               </select>
             </div>
 
@@ -287,16 +298,43 @@ export default function FundCardDemo() {
         </div>
 
         <div className={styles.fundCardSection}>
-          <h2>FundCard Component</h2>
+          <h2>FundCard Component {isTestnet ? "(Testnet Mode)" : ""}</h2>
+          {isTestnet && (
+            <div className={styles.testnetWarning}>
+              <div className={styles.warningIcon}>⚠️</div>
+              <div className={styles.warningContent}>
+                <h4>Testnet Mode Active</h4>
+                <p>You're using Base Sepolia testnet. Make sure your wallet is connected to the correct testnet and you have test funds available.</p>
+                <div className={styles.testnetActions}>
+                  <a
+                    href="https://faucet.circle.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.testnetButton}
+                  >
+                    Get Test USDC
+                  </a>
+                  <a
+                    href="https://sepoliafaucet.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.testnetButton}
+                  >
+                    Get Test ETH
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
           <div className={styles.fundCardWrapper}>
             <FundCard
               sessionToken={sessionToken}
-              assetSymbol="ETH"
+              assetSymbol={isTestnet ? "USDC" : "ETH"}
               country="US"
               currency="USD"
-              headerText="Fund Your Base Wallet"
+              headerText={isTestnet ? "Fund Your Testnet Wallet" : "Fund Your Base Wallet"}
               buttonText="Purchase"
-              presetAmountInputs={['10', '25', '50']}
+              presetAmountInputs={isTestnet ? ['1', '5', '10'] : ['10', '25', '50']}
             />
           </div>
         </div>
@@ -315,9 +353,21 @@ export default function FundCardDemo() {
             <ul>
               <li><strong>Base (Mainnet):</strong> Fully supported ✅</li>
               <li><strong>Ethereum (Mainnet):</strong> Fully supported ✅</li>
-              <li><strong>Base Sepolia (Testnet):</strong> Limited support - may require testnet addresses</li>
+              <li><strong>Base Sepolia (Testnet):</strong> {isTestnet ? "Active - " : "Limited support - "}may require testnet addresses</li>
             </ul>
-            <p>If Base Sepolia fails, try using <strong>Base (Mainnet)</strong> which has the best CDP support.</p>
+            {isTestnet ? (
+              <div className={styles.testnetInfo}>
+                <p><strong>Testnet Active!</strong> Make sure:</p>
+                <ul>
+                  <li>Your wallet is connected to Base Sepolia testnet</li>
+                  <li>You have test ETH for transaction fees</li>
+                  <li>You have test USDC if purchasing that asset</li>
+                  <li>Visit <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer">Circle Faucet</a> for test USDC</li>
+                </ul>
+              </div>
+            ) : (
+              <p>If Base Sepolia fails, try using <strong>Base (Mainnet)</strong> which has the best CDP support.</p>
+            )}
           </div>
 
           <div className={styles.debugInfo}>

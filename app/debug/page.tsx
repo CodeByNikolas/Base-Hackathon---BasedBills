@@ -21,6 +21,7 @@ interface SessionTokenResponse {
     blockchains: string[];
   }>;
   assets?: string[];
+  testnet?: boolean;
   generatedAt?: string;
   expiresIn?: number;
   error?: string;
@@ -50,6 +51,7 @@ export default function DebugPage() {
   const [loading, setLoading] = useState(false);
   const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base-sepolia");
   const [customAddress, setCustomAddress] = useState("0x4315d134aCd3221a02dD380ADE3aF39Ce219037c");
+  const [isTestnet, setIsTestnet] = useState<boolean>(false);
 
   // Sample data for testing
   const [addresses, setAddresses] = useState([
@@ -59,6 +61,11 @@ export default function DebugPage() {
     }
   ]);
   const [assets] = useState(["ETH", "USDC"]);
+
+  // Update testnet status when blockchain changes
+  useEffect(() => {
+    setIsTestnet(selectedBlockchain === "base-sepolia");
+  }, [selectedBlockchain]);
 
   const updateAddresses = (blockchain: Blockchain, address: string) => {
     setAddresses([{
@@ -117,7 +124,8 @@ export default function DebugPage() {
         },
         body: JSON.stringify({
           addresses,
-          assets
+          assets,
+          testnet: isTestnet
         }),
       });
       const data = await response.json();
@@ -160,7 +168,7 @@ export default function DebugPage() {
       </div>
 
       <div className={styles.section}>
-        <h2>Session Token Generation</h2>
+        <h2>Session Token Generation {isTestnet ? "(Testnet Mode)" : ""}</h2>
         <p className={styles.description}>
           Test session token generation for FundCard component
         </p>
@@ -178,7 +186,7 @@ export default function DebugPage() {
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
                 <option value="ethereum">Ethereum (Mainnet)</option>
-                <option value="base-sepolia">Base Sepolia (Testnet) - Limited Support</option>
+                <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Limited Support</option>
               </select>
             </div>
 
@@ -222,6 +230,40 @@ export default function DebugPage() {
           </div>
         </div>
 
+        {/* Testnet Warning */}
+        {isTestnet && (
+          <div className={styles.testnetWarning}>
+            <div className={styles.warningIcon}>🧪</div>
+            <div className={styles.warningContent}>
+              <h4>Testnet Mode Active</h4>
+              <p>You're testing with Base Sepolia testnet. This requires:</p>
+              <ul>
+                <li>Testnet wallet connection</li>
+                <li>Test ETH for transaction fees</li>
+                <li>Test USDC if purchasing that asset</li>
+              </ul>
+              <div className={styles.testnetActions}>
+                <a
+                  href="https://faucet.circle.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.testnetButton}
+                >
+                  Get Test USDC
+                </a>
+                <a
+                  href="https://sepoliafaucet.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.testnetButton}
+                >
+                  Get Test ETH
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
         <button
           onClick={testSessionTokenGeneration}
           disabled={loading}
@@ -232,7 +274,12 @@ export default function DebugPage() {
 
         {sessionTokenResponse && (
           <div className={`${styles.response} ${sessionTokenResponse.success ? styles.success : styles.error}`}>
-            <h3>Session Token Response:</h3>
+            <h3>Session Token Response {sessionTokenResponse.testnet ? "(Testnet)" : ""}:</h3>
+            {sessionTokenResponse.testnet && (
+              <div className={styles.testnetNote}>
+                <strong>🧪 Testnet Mode:</strong> This session token was generated for testnet use.
+              </div>
+            )}
             <pre className={styles.code}>
               {JSON.stringify(sessionTokenResponse, null, 2)}
             </pre>

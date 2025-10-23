@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const corsHeaders = createCorsHeaders(request);
 
     const body = await request.json();
-    const { addresses, assets } = body;
+    const { addresses, assets, testnet } = body;
 
     // Validate required fields
     if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -100,6 +100,11 @@ export async function POST(request: NextRequest) {
     const hasBaseSepolia = addresses.some(addr =>
       addr.blockchains.includes("base-sepolia")
     );
+
+    // Log testnet usage
+    if (testnet || hasBaseSepolia) {
+      console.log("Testnet mode detected:", { testnet, hasBaseSepolia, blockchains: addresses.map(addr => addr.blockchains) });
+    }
 
     if (hasBaseSepolia) {
       console.log("Warning: Base Sepolia detected - may not be supported by CDP session tokens");
@@ -210,6 +215,7 @@ export async function POST(request: NextRequest) {
       clientIP,
       addresses,
       assets,
+      testnet: testnet || hasBaseSepolia,
       generatedAt: new Date().toISOString(),
       expiresIn: 300 // 5 minutes as per CDP docs
     }, { headers: corsHeaders });
@@ -251,6 +257,9 @@ export async function GET(request: NextRequest) {
       addresses: "Array of address objects with address and blockchains",
       assets: "Array of asset symbols (e.g., ['ETH', 'USDC'])"
     },
+    optionalFields: {
+      testnet: "Boolean flag to indicate testnet mode (auto-detected from blockchain if not provided)"
+    },
     exampleRequest: {
       addresses: [
         {
@@ -258,7 +267,8 @@ export async function GET(request: NextRequest) {
           blockchains: ["ethereum", "base"]
         }
       ],
-      assets: ["ETH", "USDC"]
+      assets: ["ETH", "USDC"],
+      testnet: false
     },
     clientIP: getClientIP(request),
     timestamp: new Date().toISOString()
