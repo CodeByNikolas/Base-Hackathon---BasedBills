@@ -314,30 +314,26 @@
 
 .successContent {
   text-align: center;
-  padding: 32px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  padding: 1rem;
 }
 
 .successIcon {
-  font-size: 4rem;
-  margin-bottom: 24px;
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
   display: block;
 }
 
 .successContent h3 {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   color: #059669;
-  margin: 0 0 16px 0;
+  margin: 0 0 1rem 0;
   font-weight: 700;
 }
 
 .successContent p {
   color: #6b7280;
-  margin: 0 0 32px 0;
-  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+  font-size: 1rem;
   line-height: 1.5;
 }
 
@@ -345,14 +341,14 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 14px 32px;
-  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 16px;
-  min-width: 160px;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  font-size: 1rem;
+  min-width: 140px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .successButton:hover {
@@ -380,27 +376,27 @@
 /* Responsive design for success modal */
 @media (max-width: 768px) {
   .successContent {
-    padding: 24px;
-    margin: 16px;
+    padding: 0.75rem;
   }
 
   .successIcon {
-    font-size: 3rem;
-    margin-bottom: 20px;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
   }
 
   .successContent h3 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .successContent p {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
   }
 
   .successButton {
-    padding: 12px 24px;
-    font-size: 14px;
-    min-width: 140px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    min-width: 120px;
   }
 }
 

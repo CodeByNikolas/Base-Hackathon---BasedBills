@@ -192,6 +192,7 @@
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .fundCardWrapper {
@@ -392,7 +393,6 @@
 }
 
 .fundCardWrapper {
-  border: 2px dashed #6b7280;
   border-radius: 8px;
   padding: 1rem;
   background: #ffffff;

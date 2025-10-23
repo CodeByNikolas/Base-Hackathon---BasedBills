@@ -397,7 +397,7 @@ export default function CreateGroupPage() {
         </main>
 
         {/* Success Modal */}
-        <Modal isOpen={showSuccessModal} onClose={handleGoToGroup} title="Group Created!">
+        <Modal isOpen={showSuccessModal} onClose={handleGoToGroup}>
           <div className={styles.successContent}>
             <div className={styles.successIcon}>🎉</div>
             <h3>Group Created Successfully!</h3>
