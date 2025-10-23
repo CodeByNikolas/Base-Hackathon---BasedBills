@@ -281,7 +281,7 @@ export async function GET(request: NextRequest) {
       addresses: [
         {
           address: "0x4315d134aCd3221a02dD380ADE3aF39Ce219037c",
-          blockchains: ["ethereum", "base"]
+          blockchains: ["base"]
         }
       ],
       assets: ["ETH", "USDC"],

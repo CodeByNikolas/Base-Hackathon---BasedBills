@@ -6,7 +6,7 @@ import { FundCard } from "@coinbase/onchainkit/fund";
 import { Modal } from "../ui/Modal";
 import styles from "./FundCardModal.module.css";
 
-type Blockchain = "base-sepolia" | "base" | "ethereum";
+type Blockchain = "base-sepolia" | "base";
 
 interface SessionTokenData {
   success: boolean;
@@ -147,7 +147,7 @@ export function FundCardModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="large">
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-5 md:space-y-6">
         {/* Network Configuration */}
         <div className={styles.networkConfig}>
           <h4 className={styles.configTitle}>Network Selection</h4>
@@ -160,12 +160,11 @@ export function FundCardModal({
                 className={styles.configSelect}
               >
                 <option value="base">Base (Mainnet) - Recommended</option>
-                <option value="ethereum">Ethereum (Mainnet)</option>
                 <option value="base-sepolia">🧪 Base Sepolia (Testnet) - Supported via Conversion</option>
               </select>
             </div>
             <div className={styles.configItem}>
-              <label className={styles.configLabel}>Address:</label>
+              <label className={styles.configLabel}>Wallet Address:</label>
               <span className={styles.configValue}>{address}</span>
             </div>
           </div>
@@ -202,9 +201,9 @@ export function FundCardModal({
 
         {/* Instructions */}
         <div className={styles.instructions}>
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <div className={styles.instructionsIcon}>
-              <svg className="w-5 h-5 text-white mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -231,7 +230,7 @@ export function FundCardModal({
         {loading && (
           <div className={styles.loadingState}>
             <div className={styles.spinner}></div>
-            <p>Generating secure session token...</p>
+            <p className="text-sm sm:text-base">Generating secure session token...</p>
           </div>
         )}
 
@@ -239,8 +238,8 @@ export function FundCardModal({
         {error && !loading && (
           <div className={styles.errorState}>
             <div className={styles.errorIcon}>⚠️</div>
-            <h4>Error</h4>
-            <p>{error}</p>
+            <h4 className="text-base sm:text-lg">Error</h4>
+            <p className="text-sm sm:text-base mb-4">{error}</p>
             <button
               onClick={generateSessionToken}
               className={styles.retryButton}
@@ -257,7 +256,7 @@ export function FundCardModal({
             {(fundCardStatus || fundCardError || fundCardSuccess) && (
               <div className={styles.externalMessages}>
                 <div className={styles.messagesHeader}>
-                  <h4>FundCard Events</h4>
+                  <h4 className="text-sm sm:text-base">FundCard Events</h4>
                   <button
                     onClick={() => {
                       setFundCardStatus("");

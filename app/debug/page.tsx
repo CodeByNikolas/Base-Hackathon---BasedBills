@@ -20,7 +20,6 @@ interface SessionResponse {
 }
 
 enum Blockchain {
-  ETHEREUM = "ethereum",
   BASE = "base",
   BASE_SEPOLIA = "base-sepolia"
 }
@@ -55,7 +54,7 @@ export default function DebugPage() {
   const [addresses, setAddresses] = useState([
     {
       address: customAddress,
-      blockchains: ["base", "ethereum"]
+      blockchains: ["base"]
     }
   ]);
   const [assets] = useState(["ETH", "USDC"]);
@@ -227,12 +226,11 @@ export default function DebugPage() {
         <div className={styles.controls}>
           <div className={styles.controlGroup}>
             <label className={styles.controlLabel}>Blockchain:</label>
-            <select 
-              value={selectedBlockchain} 
+            <select
+              value={selectedBlockchain}
               onChange={(e) => setSelectedBlockchain(e.target.value as Blockchain)}
               className={styles.controlSelect}
             >
-              <option value={Blockchain.ETHEREUM}>Ethereum</option>
               <option value={Blockchain.BASE}>Base</option>
               <option value={Blockchain.BASE_SEPOLIA}>Base Sepolia</option>
             </select>

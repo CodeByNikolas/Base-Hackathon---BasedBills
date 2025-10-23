@@ -32,6 +32,7 @@
   font-weight: 500;
   color: #4b5563;
   font-size: 0.875rem;
+  min-width: fit-content;
 }
 
 .configSelect {
@@ -42,6 +43,7 @@
   background: white;
   color: #1f2937;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .configSelect:focus {
@@ -58,6 +60,10 @@
   font-size: 0.875rem;
   font-family: monospace;
   color: #1f2937;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  max-width: 100%;
 }
 
 /* Instructions Styles */
@@ -176,6 +182,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  min-height: 44px;
 }
 
 .retryButton:hover {
@@ -218,6 +225,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  min-height: 44px;
 }
 
 .cancelButton:hover {
@@ -230,25 +238,339 @@
   font-weight: 500;
 }
 
-/* Responsive Design */
+/* Responsive Design - Mobile First Approach */
 @media (max-width: 768px) {
+  /* Network Configuration - Mobile */
+  .networkConfig {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .configTitle {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
   .configGroup {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .configItem {
     min-width: auto;
     width: 100%;
+    gap: 0.375rem;
   }
 
-  .fundCardContainer {
+  .configLabel {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    min-width: fit-content;
+    white-space: nowrap;
+  }
+
+  .configSelect {
+    padding: 0.625rem 0.75rem;
+    font-size: 1rem; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+
+  .configValue {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    max-width: 100%;
+  }
+
+  /* Instructions - Mobile */
+  .instructions {
     padding: 1rem;
-    min-height: 300px;
+    border-radius: 12px;
+  }
+
+  .instructionsTitle {
+    font-size: 0.9375rem;
+    margin-bottom: 0.75rem;
   }
 
   .instructionsList {
     padding-left: 1.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .instructionsList li {
+    margin-bottom: 0.625rem;
+    line-height: 1.4;
+  }
+
+  .suggestedAmount {
+    margin-top: 0.75rem;
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+  }
+
+  /* Testnet Warning - Mobile */
+  .testnetWarning {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .warningContent h4 {
+    font-size: 0.9375rem;
+  }
+
+  .warningContent p {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .testnetActions {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .testnetButton {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* FundCard Container - Mobile */
+  .fundCardContainer {
+    padding: 0.75rem;
+    min-height: 280px;
+    border-radius: 12px;
+    margin: 0.5rem 0;
+  }
+
+  .fundCardWrapper {
+    max-width: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+
+  /* External Messages - Mobile */
+  .externalMessages {
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+  }
+
+  .messagesHeader {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .messagesHeader h4 {
+    font-size: 0.9375rem;
+  }
+
+  .clearButton {
+    align-self: flex-end;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .statusMessage,
+  .errorMessage,
+  .successMessage {
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+    border-radius: 6px;
+  }
+
+  /* Action Buttons - Mobile */
+  .actionButtons {
+    padding-top: 0.75rem;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .cancelButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .poweredBy {
+    font-size: 0.8125rem;
+    text-align: center;
+    order: -1;
+  }
+}
+
+/* Extra Small Mobile (320px - 480px) */
+@media (max-width: 480px) {
+  .networkConfig {
+    padding: 0.75rem;
+  }
+
+  .configTitle {
+    font-size: 0.9375rem;
+  }
+
+  .configSelect {
+    font-size: 1rem; /* Prevents zoom on iOS */
+  }
+
+  .configValue {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    max-width: 100%;
+  }
+
+  .instructions {
+    padding: 0.75rem;
+  }
+
+  .instructionsTitle {
+    font-size: 0.875rem;
+  }
+
+  .instructionsList {
+    font-size: 0.75rem;
+    padding-left: 1rem;
+  }
+
+  .suggestedAmount {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .testnetWarning {
+    padding: 0.625rem;
+  }
+
+  .warningContent h4 {
+    font-size: 0.875rem;
+  }
+
+  .warningContent p {
+    font-size: 0.75rem;
+  }
+
+  .testnetButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .fundCardContainer {
+    padding: 0.5rem;
+    min-height: 250px;
+  }
+
+  .externalMessages {
+    padding: 0.625rem;
+  }
+
+  .messagesHeader h4 {
+    font-size: 0.875rem;
+  }
+
+  .statusMessage,
+  .errorMessage,
+  .successMessage {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .cancelButton {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  .poweredBy {
+    font-size: 0.75rem;
+  }
+}
+
+/* Medium Mobile (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .configGroup {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .configItem {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .fundCardContainer {
+    padding: 1rem;
+    min-height: 320px;
+  }
+
+  .instructions {
+    padding: 1.25rem;
+  }
+
+  .testnetWarning {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .testnetActions {
+    flex-direction: row;
+    width: auto;
+    min-width: 200px;
+  }
+
+  .actionButtons {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .poweredBy {
+    order: 0;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (max-width: 768px) {
+  /* Better scrolling */
+  .fundCardContainer,
+  .instructions,
+  .networkConfig,
+  .testnetWarning,
+  .externalMessages {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent text selection on interactive elements */
+  .configSelect,
+  .testnetButton,
+  .clearButton,
+  .retryButton,
+  .cancelButton {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Improve tap highlights */
+  .configSelect,
+  .testnetButton,
+  .clearButton,
+  .retryButton,
+  .cancelButton {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -298,6 +620,7 @@
   font-weight: 500;
   transition: background-color 0.2s ease;
   display: inline-block;
+  min-height: 44px;
 }
 
 .testnetButton:hover {
@@ -356,6 +679,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  min-height: 44px;
 }
 
 .clearButton:hover {
