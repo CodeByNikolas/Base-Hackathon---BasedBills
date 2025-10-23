@@ -19,6 +19,7 @@ import {
   EthBalance,
 } from "@coinbase/onchainkit/identity";
 import { AddressBookManager } from '../features/address-book/AddressBookManager';
+import { NetworkSelector } from './NetworkSelector';
 import styles from "./HeaderBar.module.css";
 
 export function HeaderBar() {
@@ -42,7 +43,9 @@ export function HeaderBar() {
               <span className={styles.addressBookIcon}>📇</span>
               <span className={styles.addressBookText}>Addresses</span>
             </button>
-            
+
+            <NetworkSelector />
+
             <Wallet>
               <ConnectWallet className={styles.walletButton}>
                 <Identity className={styles.walletIdentity}>
