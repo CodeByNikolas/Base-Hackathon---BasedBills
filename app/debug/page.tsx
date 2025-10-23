@@ -162,6 +162,15 @@ export default function DebugPage() {
       const data = await response.json();
       console.log("Debug session token response:", data);
       setSessionTokenResponse(data);
+
+      // Auto-populate the manual session token field and show FundCard
+      if (data.success && data.sessionToken) {
+        setManualSessionToken(data.sessionToken);
+        // Clear any existing FundCard messages when new token is generated
+        setFundCardStatus("");
+        setFundCardError("");
+        setFundCardSuccess("");
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Network error";
       console.error("Debug session token error:", error);
@@ -205,7 +214,7 @@ export default function DebugPage() {
       <div className={styles.section}>
         <h2>Session Token Generation</h2>
         <p className={styles.description}>
-          Test session token generation for FundCard component
+          Test session token generation for FundCard component. The generated token will automatically populate the FundCard below with your selected network.
         </p>
 
         <div className={styles.inputSection}>
@@ -324,10 +333,11 @@ export default function DebugPage() {
       </div>
 
       <div className={styles.section}>
-        <h2>FundCard with Manual Session Token</h2>
-        <p className={styles.description}>
-          Test the FundCard component with a manually entered session token
-        </p>
+          <h2>FundCard Testing</h2>
+          <p className={styles.description}>
+            Generate a session token above and it will automatically populate the FundCard below with the selected network.
+            You can also manually enter a session token to test different scenarios.
+          </p>
 
         <div className={styles.manualTokenSection}>
           <div className={styles.controlGroup}>
@@ -357,7 +367,7 @@ export default function DebugPage() {
                     setFundCardSuccess("");
                   }}
                   className={styles.tokenInput}
-                  placeholder="Paste your session token here..."
+                  placeholder={manualSessionToken ? "Session token auto-populated from generation above" : "Session token will auto-populate when generated above..."}
                 />
                 <button
                   onClick={() => {
@@ -379,6 +389,13 @@ export default function DebugPage() {
 
           {manualSessionToken && (
             <div className={styles.fundCardContainer}>
+              {/* Auto-populated indicator */}
+              {sessionTokenResponse?.success && (
+                <div className={styles.autoPopulatedNote}>
+                  ✅ FundCard auto-populated with generated session token for {isTestnet ? "🧪 Base Sepolia (via conversion)" : `🟢 ${selectedBlockchain}`}
+                </div>
+              )}
+
               {/* External Status/Error Display */}
               {(fundCardStatus || fundCardError || fundCardSuccess) && (
                 <div className={styles.externalMessages}>
