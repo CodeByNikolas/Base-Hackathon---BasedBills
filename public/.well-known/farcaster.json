@@ -12,7 +12,7 @@
       "splashImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
       "splashBackgroundColor": "#eeccff",
       "webhookUrl": "https://base-hackathon-based-bills.vercel.app/api/webhook",
-      "subtitle": "Split bills on Base! 🚀",
+      "subtitle": "Split bills on Base!",
       "description": "Decentralized bill splitting with USDC settlements on Base! Create groups, split expenses, and settle on-chain with friends. Features gamble mode, custom splits, and transparent transactions!",
       "screenshotUrls": [
         "https://base-hackathon-based-bills.vercel.app/screenshot1.png",
@@ -23,7 +23,7 @@
       "tags": ["finance", "defi", "bills", "splitting", "usdc"],
       "heroImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
       "tagline": "Settle on-chain! ⚡",
-      "ogTitle": "💰 BasedBills - Split Bills on Base",
+      "ogTitle": "BasedBills - Split Bills",
       "ogDescription": "Decentralized bill splitting with USDC settlements on Base! 🚀",
       "ogImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
       "noindex": true
