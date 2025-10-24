@@ -3,8 +3,10 @@ import { generateJwt } from "@coinbase/cdp-sdk/auth";
 
 // Helper function to create CORS headers
 function createCorsHeaders(request: NextRequest) {
+  // Get the origin from the request
   const origin = request.headers.get("origin");
 
+  // In production, you should validate against a whitelist of allowed origins
   const allowedOrigins: string[] = [
     "http://localhost:3000",
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
@@ -56,12 +58,6 @@ function getClientIP(request: NextRequest): string {
     return clientIP;
   }
 
-  // Check if we're in development and use a mock public IP for testing
-  // CDP requires public IPs, so we use a mock one for development
-  if (process.env.NODE_ENV === 'development') {
-    return "192.0.2.1"; // This is a mock public IP for testing (TEST-NET-1)
-  }
-
   // Fallback for local development
   // Note: In production with proper proxy setup, this should come from headers
   return "127.0.0.1";
@@ -79,7 +75,7 @@ export async function POST(request: NextRequest) {
     const corsHeaders = createCorsHeaders(request);
 
     const body = await request.json();
-    const { addresses, assets, testnet } = body;
+    const { addresses, assets } = body;
 
     // Validate required fields
     if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
@@ -96,35 +92,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if any addresses contain base-sepolia (which is NOT supported by CDP)
-    const hasBaseSepolia = addresses.some(addr =>
-      addr.blockchains.includes("base-sepolia")
-    );
-
-    // Log testnet usage
-    if (testnet || hasBaseSepolia) {
-      console.log("Testnet mode detected:", { testnet, hasBaseSepolia, blockchains: addresses.map(addr => addr.blockchains) });
-    }
-
-    // Convert Base Sepolia to Base mainnet for session token generation
-    // Session tokens should be generated for mainnet networks, testnet is specified in the onramp URL
-    let modifiedAddresses = addresses.map(addr => ({
-      ...addr,
-      blockchains: addr.blockchains.map((blockchain: string) =>
-        blockchain === "base-sepolia" ? "base" : blockchain
-      )
-    }));
-
-    // Check if we converted any testnet addresses
-    const hadTestnetConversion = addresses.some((addr, index) =>
-      addr.blockchains.includes("base-sepolia") &&
-      !modifiedAddresses[index].blockchains.includes("base-sepolia")
-    );
-
-    if (hadTestnetConversion) {
-      console.log("Converting Base Sepolia to Base mainnet for session token generation");
-    }
-
     // Get environment variables
     const apiKeyId = process.env.CDP_SECRET_API_KEY_ID;
     const apiKeySecret = process.env.CDP_SECRET_API_KEY_PRIVATEKEY;
@@ -136,14 +103,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get client IP first for logging
-    const clientIP = getClientIP(request);
-    console.log("Session token request - Client IP:", clientIP);
-    console.log("Session token request - Addresses:", addresses);
-    console.log("Session token request - Assets:", assets);
-
     // Generate JWT for session token API
-    console.log("Generating JWT for session token API...");
     const jwtToken = await generateJwt({
       apiKeyId,
       apiKeySecret,
@@ -152,17 +112,18 @@ export async function POST(request: NextRequest) {
       requestPath: "/onramp/v1/token",
       expiresIn: 120
     });
-    console.log("JWT generated successfully for session token API");
+
+    // Get client IP
+    const clientIP = getClientIP(request);
 
     // Create session token request payload
     const sessionTokenPayload = {
-      addresses: modifiedAddresses,
+      addresses,
       assets,
       clientIp: clientIP
     };
 
     // Make request to CDP API to generate session token
-    console.log("Making request to CDP API for session token...");
     const response = await fetch("https://api.developer.coinbase.com/onramp/v1/token", {
       method: "POST",
       headers: {
@@ -173,66 +134,27 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(sessionTokenPayload)
     });
 
-    console.log("CDP API response status:", response.status);
-
     if (!response.ok) {
-      let errorData = {};
-      try {
-        const responseText = await response.text();
-        console.log("CDP API error response text:", responseText);
-        try {
-          errorData = JSON.parse(responseText);
-        } catch {
-          errorData = { message: responseText || "Unknown error" };
-        }
-      } catch (e) {
-        console.error("Failed to read CDP API error response:", e);
-        errorData = { message: "Failed to read error response" };
-      }
-
+      const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
         {
-          success: false,
           error: "Failed to create session token",
           details: errorData,
-          status: response.status,
-          clientIP,
-          timestamp: new Date().toISOString()
+          status: response.status
         },
         { status: response.status, headers: corsHeaders }
       );
     }
 
-    let sessionTokenData;
-    try {
-      const responseText = await response.text();
-      console.log("CDP API success response:", responseText);
-      sessionTokenData = JSON.parse(responseText);
-    } catch (e) {
-      console.error("Failed to parse CDP API success response:", e);
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid response from CDP API",
-          details: "Response was not valid JSON",
-          status: response.status,
-          clientIP,
-          timestamp: new Date().toISOString()
-        },
-        { status: 502, headers: corsHeaders }
-      );
-    }
+    const sessionTokenData = await response.json();
 
     return NextResponse.json({
       success: true,
       sessionToken: sessionTokenData.token,
       channelId: sessionTokenData.channel_id,
       clientIP,
-      addresses: modifiedAddresses,
-      originalAddresses: addresses,
+      addresses,
       assets,
-      testnet: testnet || hasBaseSepolia,
-      testnetConverted: hadTestnetConversion,
       generatedAt: new Date().toISOString(),
       expiresIn: 300 // 5 minutes as per CDP docs
     }, { headers: corsHeaders });
@@ -241,16 +163,8 @@ export async function POST(request: NextRequest) {
     console.error("Session token generation error:", error);
     const corsHeaders = createCorsHeaders(request);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const clientIP = getClientIP(request);
-
     return NextResponse.json(
-      {
-        success: false,
-        error: "Internal server error",
-        details: errorMessage,
-        clientIP,
-        timestamp: new Date().toISOString()
-      },
+      { error: "Internal server error", details: errorMessage },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -274,9 +188,6 @@ export async function GET(request: NextRequest) {
       addresses: "Array of address objects with address and blockchains",
       assets: "Array of asset symbols (e.g., ['ETH', 'USDC'])"
     },
-    optionalFields: {
-      testnet: "Boolean flag to indicate testnet mode (auto-detected from blockchain if not provided)"
-    },
     exampleRequest: {
       addresses: [
         {
@@ -284,8 +195,7 @@ export async function GET(request: NextRequest) {
           blockchains: ["ethereum", "base"]
         }
       ],
-      assets: ["ETH", "USDC"],
-      testnet: false
+      assets: ["ETH", "USDC"]
     },
     clientIP: getClientIP(request),
     timestamp: new Date().toISOString()
