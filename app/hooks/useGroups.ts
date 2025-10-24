@@ -1,4 +1,5 @@
 import { useAccount, useReadContract, useReadContracts, useWriteContract, useSwitchChain } from 'wagmi';
+import { base, baseSepolia } from 'wagmi/chains';
 import { useCallback, useMemo } from 'react';
 import {
   getContractAddresses,
@@ -6,6 +7,7 @@ import {
   GROUP_ABI,
   USDC_ABI
 } from '../config/contracts';
+import { useNetworkValidation } from './useNetworkValidation';
 import { GroupData, GroupMember, Bill } from '../utils/groupUtils';
 
 /**
@@ -36,8 +38,27 @@ export function useUserGroups() {
 
   // Check if user is on wrong network or if contract addresses are empty
   const hasValidContracts = contractAddresses && contractAddresses.registry && (contractAddresses.registry as string) !== '';
-  const isOnWrongNetwork = (chainId === 8453 && !hasValidContracts) || (chainId !== 84532 && !hasValidContracts);
-  const correctChainId = 84532; // Base Sepolia
+
+  // Find networks with valid contracts
+  const networksWithContracts = [base.id, baseSepolia.id].filter(networkId => {
+    try {
+      const addresses = getContractAddresses(networkId);
+      return addresses && addresses.registry && (addresses.registry as string) !== '';
+    } catch {
+      return false;
+    }
+  });
+
+  console.log('🔍 Network Debug Info:', {
+    chainId,
+    hasValidContracts,
+    contractAddresses,
+    networksWithContracts,
+    supportedNetworks: networksWithContracts
+  });
+
+  const isOnWrongNetwork = !hasValidContracts && networksWithContracts.length > 0;
+  const correctChainId = networksWithContracts[0] || baseSepolia.id; // Default to Base Sepolia if available
 
   // Function to switch to correct network
   const switchToCorrectNetwork = useCallback(async () => {
@@ -51,7 +72,7 @@ export function useUserGroups() {
   }, [switchChainAsync, correctChainId]);
 
   // Get group addresses for user
-  const {
+  const { 
     data: groupAddresses,
     isLoading: isLoadingAddresses,
     error: addressesError,
@@ -66,6 +87,15 @@ export function useUserGroups() {
       retry: 3,
       retryDelay: 1000,
     },
+  });
+
+  // Log contract call details
+  console.log('📞 Contract call details:', {
+    registryAddress: contractAddresses?.registry,
+    userAddress: address,
+    enabled: !!address && !!contractAddresses?.registry && (contractAddresses.registry as string) !== '',
+    isLoading: isLoadingAddresses,
+    error: addressesError
   });
 
 

@@ -1,10 +1,11 @@
 /* Bills Tab Styles */
 .billsTab {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  color: white;
+  border-radius: 20px;
+  padding: 24px;
+  color: #1f2937;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .billsList {
@@ -14,10 +15,10 @@
 }
 
 .billCard {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(107, 114, 128, 0.2);
 }
 
 .billHeader {
@@ -30,6 +31,7 @@
 .billHeader h4 {
   margin: 0;
   font-size: 1rem;
+  color: #1f2937;
 }
 
 .billAmount {
@@ -41,11 +43,11 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7280;
   margin-bottom: 0.5rem;
 }
 
 .billParticipants {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6b7280;
 }

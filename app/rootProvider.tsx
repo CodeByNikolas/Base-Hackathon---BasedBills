@@ -24,8 +24,8 @@ const wagmiConfig = createConfig({
   ],
   ssr: true,
   transports: {
-    [base.id]: http(),
-    [baseSepolia.id]: http(),
+    [base.id]: http("https://base-mainnet.infura.io/v3/c3ad49663db7498a9eedb4d3c274f463"),
+    [baseSepolia.id]: http("https://base-sepolia.infura.io/v3/c3ad49663db7498a9eedb4d3c274f463"),
   },
 });
 

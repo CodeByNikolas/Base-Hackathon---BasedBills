@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { generateJwt } from "@coinbase/cdp-sdk/auth";
 
 // Helper function to create CORS headers
 function createCorsHeaders(request: NextRequest) {
@@ -35,35 +36,52 @@ export async function GET(request: NextRequest) {
     // For regular requests, get CORS headers
     const corsHeaders = createCorsHeaders(request);
 
-    // Check environment variables on server-side only
-    const cdpSecretApiKeyId = process.env.CDP_SECRET_API_KEY_ID;
-    const cdpSecretApiKeyPrivateKey = process.env.CDP_SECRET_API_KEY_PRIVATEKEY;
-    const nextPublicOnchainkitApiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
+    // Get environment variables
+    const apiKeyId = process.env.CDP_SECRET_API_KEY_ID;
+    const apiKeySecret = process.env.CDP_SECRET_API_KEY_PRIVATEKEY;
+    const requestMethod = "POST";
+    const requestHost = "api.developer.coinbase.com";
+    const requestPath = "/onramp/v1/token";
 
-    // Return safe status information (never expose actual values)
+    // Validate environment variables
+    if (!apiKeyId || !apiKeySecret) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing CDP API credentials",
+          details: "CDP_SECRET_API_KEY_ID and CDP_SECRET_API_KEY_PRIVATEKEY must be configured"
+        },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    // Generate JWT token using CDP SDK
+    const token = await generateJwt({
+      apiKeyId,
+      apiKeySecret,
+      requestMethod,
+      requestHost,
+      requestPath,
+      expiresIn: 120 // 2 minutes
+    });
+
     return NextResponse.json({
-      environmentStatus: {
-        CDP_SECRET_API_KEY_ID: {
-          configured: Boolean(cdpSecretApiKeyId),
-          // Never expose the actual value for security
-        },
-        CDP_SECRET_API_KEY_PRIVATEKEY: {
-          configured: Boolean(cdpSecretApiKeyPrivateKey),
-        },
-        NEXT_PUBLIC_ONCHAINKIT_API_KEY: {
-          configured: Boolean(nextPublicOnchainkitApiKey),
-        },
-      },
-      note: "Environment variables are checked server-side only for security. Actual values are never exposed to the client.",
-      timestamp: new Date().toISOString()
+      success: true,
+      token,
+      expiresIn: 120,
+      generatedAt: new Date().toISOString()
     }, { headers: corsHeaders });
 
   } catch (error) {
-    console.error("Environment status check error:", error);
+    console.error("JWT generation error:", error);
     const corsHeaders = createCorsHeaders(request);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: "Failed to check environment status", details: errorMessage },
+      {
+        success: false,
+        error: "Failed to generate JWT token",
+        details: errorMessage
+      },
       { status: 500, headers: corsHeaders }
     );
   }

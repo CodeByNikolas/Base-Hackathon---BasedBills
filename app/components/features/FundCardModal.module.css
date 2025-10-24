@@ -1,22 +1,147 @@
-/* FundCardModal Styles */
-.modal {
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+/* Shortfall Information Styles */
+.shortfallInfo {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
+.shortfallIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.shortfallContent {
+  flex: 1;
+}
+
+.shortfallTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+.shortfallMessage {
+  color: #78350f;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.shortfallDetails {
+  color: #78350f;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+  .shortfallInfo {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .shortfallTitle {
+    font-size: 0.875rem;
+  }
+
+  .shortfallMessage,
+  .shortfallDetails {
+    font-size: 0.75rem;
+  }
+}
+
+/* Network Configuration Styles */
+.networkConfig {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+  margin-bottom: 1rem;
+}
+
+.configTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.configGroup {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.configItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+  flex: 1;
+}
+
+.configLabel {
+  font-weight: 500;
+  color: #4b5563;
+  font-size: 0.875rem;
+  min-width: fit-content;
+}
+
+.configSelect {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: white;
+  color: #1f2937;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.configSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.configValue {
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: monospace;
+  color: #1f2937;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+/* Instructions Styles */
 .instructions {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 24px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 1.5rem;
 }
 
 .instructionsIcon {
-  width: 24px;
-  height: 24px;
-  margin-right: 12px;
+  background: #3b82f6;
+  border-radius: 50%;
+  padding: 0.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -25,132 +150,633 @@
 }
 
 .instructionsTitle {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 8px;
+  color: #1e40af;
+  margin-bottom: 1rem;
 }
 
 .instructionsList {
-  list-style: decimal;
-  padding-left: 20px;
+  list-style-type: decimal;
+  padding-left: 1.5rem;
   margin: 0;
 }
 
 .instructionsList li {
-  margin-bottom: 4px;
-  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  color: #1e40af;
+  line-height: 1.5;
 }
 
 .suggestedAmount {
-  margin-top: 12px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.2);
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #dbeafe;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+/* Loading and Error States */
+.loadingState {
+  text-align: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingState p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.errorState {
+  text-align: center;
+  padding: 2rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.errorIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.errorState h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #dc2626;
+  margin-bottom: 0.5rem;
+}
+
+.errorState p {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.retryButton {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
 }
 
+.retryButton:hover {
+  background: #b91c1c;
+}
 
+/* FundCard Container */
 .fundCardContainer {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.fundCardWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 300px;
+  min-height: 400px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.fundCardWrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Action Buttons */
 .actionButtons {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
+  padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
 }
 
 .cancelButton {
-  background: none;
+  background: #6b7280;
+  color: white;
   border: none;
-  color: #6b7280;
-  font-size: 14px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
 }
 
 .cancelButton:hover {
-  color: #374151;
+  background: #4b5563;
 }
 
 .poweredBy {
-  font-size: 12px;
-  color: #9ca3af;
+  font-size: 0.875rem;
+  color: #6b7280;
   font-weight: 500;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .modal {
-    background: #1f2937;
-    color: white;
+/* Responsive Design - Mobile First Approach */
+@media (max-width: 768px) {
+  /* Network Configuration - Mobile */
+  .networkConfig {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
   }
 
+  .configTitle {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .configGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .configItem {
+    min-width: auto;
+    width: 100%;
+    gap: 0.375rem;
+  }
+
+  .configLabel {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    min-width: fit-content;
+    white-space: nowrap;
+  }
+
+  .configSelect {
+    padding: 0.625rem 0.75rem;
+    font-size: 1rem; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+
+  .configValue {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    max-width: 100%;
+  }
+
+  /* Instructions - Mobile */
   .instructions {
-    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .instructionsTitle {
+    font-size: 0.9375rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .instructionsList {
+    padding-left: 1.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .instructionsList li {
+    margin-bottom: 0.625rem;
+    line-height: 1.4;
   }
 
   .suggestedAmount {
-    background: rgba(255, 255, 255, 0.15);
+    margin-top: 0.75rem;
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
   }
 
+  /* Testnet Warning - Mobile */
+  .testnetWarning {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
+  .warningContent h4 {
+    font-size: 0.9375rem;
+  }
+
+  .warningContent p {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .testnetActions {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .testnetButton {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* FundCard Container - Mobile */
   .fundCardContainer {
-    background: #374151;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-
-  .actionButtons {
-    border-top-color: #4b5563;
-  }
-
-  .cancelButton {
-    color: #9ca3af;
-  }
-
-  .cancelButton:hover {
-    color: #d1d5db;
-  }
-
-  .poweredBy {
-    color: #6b7280;
-  }
-}
-
-/* Mobile responsive */
-@media (max-width: 640px) {
-  .modal {
-    margin: 10px;
-    max-height: calc(100vh - 20px);
-  }
-
-  .instructions {
-    padding: 16px;
-  }
-
-  .fundCardContainer {
-    padding: 16px;
+    padding: 0.75rem;
+    min-height: 280px;
+    border-radius: 12px;
+    margin: 0.5rem 0;
   }
 
   .fundCardWrapper {
+    max-width: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+
+  /* External Messages - Mobile */
+  .externalMessages {
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+  }
+
+  .messagesHeader {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .messagesHeader h4 {
+    font-size: 0.9375rem;
+  }
+
+  .clearButton {
+    align-self: flex-end;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .statusMessage,
+  .errorMessage,
+  .successMessage {
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+    border-radius: 6px;
+  }
+
+  /* Action Buttons - Mobile */
+  .actionButtons {
+    padding-top: 0.75rem;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .cancelButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .poweredBy {
+    font-size: 0.8125rem;
+    text-align: center;
+    order: -1;
+  }
+}
+
+/* Extra Small Mobile (320px - 480px) */
+@media (max-width: 480px) {
+  .networkConfig {
+    padding: 0.75rem;
+  }
+
+  .configTitle {
+    font-size: 0.9375rem;
+  }
+
+  .configSelect {
+    font-size: 1rem; /* Prevents zoom on iOS */
+  }
+
+  .configValue {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    max-width: 100%;
+  }
+
+  .instructions {
+    padding: 0.75rem;
+  }
+
+  .instructionsTitle {
+    font-size: 0.875rem;
+  }
+
+  .instructionsList {
+    font-size: 0.75rem;
+    padding-left: 1rem;
+  }
+
+  .suggestedAmount {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .testnetWarning {
+    padding: 0.625rem;
+  }
+
+  .warningContent h4 {
+    font-size: 0.875rem;
+  }
+
+  .warningContent p {
+    font-size: 0.75rem;
+  }
+
+  .testnetButton {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .fundCardContainer {
+    padding: 0.5rem;
     min-height: 250px;
   }
 
-  .actionButtons {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
+  .externalMessages {
+    padding: 0.625rem;
   }
+
+  .messagesHeader h4 {
+    font-size: 0.875rem;
+  }
+
+  .statusMessage,
+  .errorMessage,
+  .successMessage {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .cancelButton {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  .poweredBy {
+    font-size: 0.75rem;
+  }
+}
+
+/* Medium Mobile (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .configGroup {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .configItem {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .fundCardContainer {
+    padding: 1rem;
+    min-height: 320px;
+  }
+
+  .instructions {
+    padding: 1.25rem;
+  }
+
+  .testnetWarning {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .testnetActions {
+    flex-direction: row;
+    width: auto;
+    min-width: 200px;
+  }
+
+  .actionButtons {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .poweredBy {
+    order: 0;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (max-width: 768px) {
+  /* Better scrolling */
+  .fundCardContainer,
+  .instructions,
+  .networkConfig,
+  .testnetWarning,
+  .externalMessages {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent text selection on interactive elements */
+  .configSelect,
+  .testnetButton,
+  .clearButton,
+  .retryButton,
+  .cancelButton {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Improve tap highlights */
+  .configSelect,
+  .testnetButton,
+  .clearButton,
+  .retryButton,
+  .cancelButton {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Testnet styles */
+.testnetWarning {
+  background: #fef3cd;
+  border: 1px solid #f6e05e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.warningIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.warningContent h4 {
+  margin: 0 0 0.5rem 0;
+  color: #744210;
+  font-weight: 600;
+}
+
+.warningContent p {
+  margin: 0 0 1rem 0;
+  color: #744210;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.testnetActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.testnetButton {
+  background: #0070f3;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+  min-height: 44px;
+}
+
+.testnetButton:hover {
+  background: #0051cc;
+}
+
+.testnetNote {
+  background: #e0f2fe;
+  border: 1px solid #0ea5e9;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  color: #0369a1;
+  font-size: 0.875rem;
+}
+
+.testnetNote strong {
+  font-weight: 600;
+}
+
+/* External Messages for FundCard */
+.externalMessages {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.messagesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.messagesHeader h4 {
+  margin: 0;
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.clearButton {
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-height: 44px;
+}
+
+.clearButton:hover {
+  background: #4b5563;
+}
+
+.statusMessage {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  color: #1976d2;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.errorMessage {
+  background: #ffebee;
+  border: 1px solid #f44336;
+  color: #d32f2f;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.successMessage {
+  background: #e8f5e8;
+  border: 1px solid #4caf50;
+  color: #2e7d32;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.fundCardWrapper {
+  border-radius: 8px;
+  padding: 1rem;
+  background: #ffffff;
 }

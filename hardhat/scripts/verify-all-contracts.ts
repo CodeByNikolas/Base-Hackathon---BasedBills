@@ -8,7 +8,15 @@ dotenv.config({ path: '../.env' });
 
 const API_KEY = process.env.ETHERSCAN_API_KEY;
 const BASE_SEPOLIA_CHAIN_ID = 84532;
+const BASE_MAINNET_CHAIN_ID = 8453;
 const ETHERSCAN_V2_API_URL = "https://api.etherscan.io/v2/api";
+
+// Network configuration - will be loaded from deployments.json
+let NETWORK_CONFIG = {
+  chainId: BASE_SEPOLIA_CHAIN_ID,
+  networkName: "baseSepolia",
+  explorerUrl: "https://sepolia.basescan.org"
+};
 
 // Contract deployment addresses - loaded dynamically from deployments.json
 let DEPLOYED_ADDRESSES = {
@@ -116,7 +124,7 @@ function createStandardJsonInput(config: ContractConfig): any {
 async function checkVerificationStatus(config: ContractConfig): Promise<boolean> {
   try {
     console.log(`\n🔍 Checking ${config.name} verification status...`);
-    
+
     const params = new URLSearchParams({
       module: 'contract',
       action: 'getsourcecode',
@@ -124,18 +132,18 @@ async function checkVerificationStatus(config: ContractConfig): Promise<boolean>
       apikey: API_KEY || ""
     });
 
-    const apiUrlWithChain = `${ETHERSCAN_V2_API_URL}?chainid=${BASE_SEPOLIA_CHAIN_ID}&${params.toString()}`;
+    const apiUrlWithChain = `${ETHERSCAN_V2_API_URL}?chainid=${NETWORK_CONFIG.chainId}&${params.toString()}`;
     const response = await fetch(apiUrlWithChain);
     const result = await response.json();
 
     if (result.status === '1' && result.result && result.result.length > 0) {
       const contractData = result.result[0];
-      
+
       if (contractData.SourceCode && contractData.SourceCode !== '') {
         console.log(`✅ ${config.name} is VERIFIED on BaseScan`);
         console.log(`   Contract Name: ${contractData.ContractName}`);
         console.log(`   Compiler: ${contractData.CompilerVersion}`);
-        console.log(`   🔗 View: https://sepolia.basescan.org/address/${config.address}#code`);
+        console.log(`   🔗 View: ${NETWORK_CONFIG.explorerUrl}/address/${config.address}#code`);
         return true;
       } else {
         console.log(`❌ ${config.name} is NOT VERIFIED on BaseScan`);
@@ -153,14 +161,14 @@ async function checkVerificationStatus(config: ContractConfig): Promise<boolean>
 
 async function verifyContract(config: ContractConfig): Promise<string | null> {
   console.log(`\n📤 Verifying ${config.name} on BaseScan...`);
-  
+
   try {
     // Generate constructor arguments
     const constructorArgs = await generateConstructorArgs(config);
-    
+
     // Create standard JSON input
     const standardJsonInput = createStandardJsonInput(config);
-    
+
     const formData = new URLSearchParams({
       module: 'contract',
       action: 'verifysourcecode',
@@ -177,8 +185,8 @@ async function verifyContract(config: ContractConfig): Promise<string | null> {
     });
 
     // Chain ID goes in the URL as per the API documentation
-    const apiUrlWithChain = `${ETHERSCAN_V2_API_URL}?chainid=${BASE_SEPOLIA_CHAIN_ID}`;
-    
+    const apiUrlWithChain = `${ETHERSCAN_V2_API_URL}?chainid=${NETWORK_CONFIG.chainId}`;
+
     const response = await fetch(apiUrlWithChain, {
       method: 'POST',
       headers: {
@@ -188,7 +196,7 @@ async function verifyContract(config: ContractConfig): Promise<string | null> {
     });
 
     const result = await response.json();
-    
+
     if (result.status === '1') {
       console.log(`✅ ${config.name} verification submitted successfully!`);
       console.log(`📋 GUID: ${result.result}`);
@@ -207,7 +215,7 @@ async function verifyContract(config: ContractConfig): Promise<string | null> {
 async function checkVerificationStatusByGuid(guid: string, contractName: string): Promise<boolean> {
   try {
     console.log(`\n🔍 Checking verification status for ${contractName} (GUID: ${guid})...`);
-    
+
     const params = new URLSearchParams({
       module: 'contract',
       action: 'checkverifystatus',
@@ -215,7 +223,7 @@ async function checkVerificationStatusByGuid(guid: string, contractName: string)
       apikey: API_KEY || ""
     });
 
-    const apiUrlWithChain = `${ETHERSCAN_V2_API_URL}?chainid=${BASE_SEPOLIA_CHAIN_ID}&${params.toString()}`;
+    const apiUrlWithChain = `${ETHERSCAN_V2_API_URL}?chainid=${NETWORK_CONFIG.chainId}&${params.toString()}`;
     const response = await fetch(apiUrlWithChain);
     const result = await response.json();
 
@@ -273,17 +281,41 @@ function createContractConfigs(): void {
 
 async function loadDeploymentAddresses(): Promise<void> {
   const artifactsPath = path.join(process.cwd(), 'deployments.json');
-  
+
   try {
     if (!fs.existsSync(artifactsPath)) {
       console.log("❌ deployments.json not found!");
-      console.log("💡 Please run 'npm run deploy' first to deploy contracts and generate deployments.json");
+      console.log("💡 Please run 'npm run deploy' or 'npm run deploy-mainnet' first to deploy contracts and generate deployments.json");
       process.exit(1);
     }
 
     const deployments = JSON.parse(fs.readFileSync(artifactsPath, 'utf8'));
     console.log("📋 Loaded deployment addresses from deployments.json");
-    
+
+    // Detect network from deployments.json
+    if (deployments.chainId === BASE_MAINNET_CHAIN_ID) {
+      NETWORK_CONFIG = {
+        chainId: BASE_MAINNET_CHAIN_ID,
+        networkName: "base",
+        explorerUrl: "https://basescan.org"
+      };
+      console.log("🌐 Detected Base Mainnet deployment");
+    } else if (deployments.chainId === BASE_SEPOLIA_CHAIN_ID) {
+      NETWORK_CONFIG = {
+        chainId: BASE_SEPOLIA_CHAIN_ID,
+        networkName: "baseSepolia",
+        explorerUrl: "https://sepolia.basescan.org"
+      };
+      console.log("🌐 Detected Base Sepolia deployment");
+    } else {
+      console.log(`⚠️  Unknown chain ID: ${deployments.chainId}. Defaulting to Base Sepolia.`);
+      NETWORK_CONFIG = {
+        chainId: BASE_SEPOLIA_CHAIN_ID,
+        networkName: "baseSepolia",
+        explorerUrl: "https://sepolia.basescan.org"
+      };
+    }
+
     // Validate and load addresses
     const requiredFields = ['groupLogic', 'registry', 'groupFactory', 'deployer'];
     for (const field of requiredFields) {
@@ -299,7 +331,7 @@ async function loadDeploymentAddresses(): Promise<void> {
     console.log(`   Registry: ${DEPLOYED_ADDRESSES.registry}`);
     console.log(`   GroupFactory: ${DEPLOYED_ADDRESSES.groupFactory}`);
     console.log(`   Deployer: ${DEPLOYED_ADDRESSES.deployer}`);
-    
+
   } catch (error: any) {
     console.log(`❌ Error loading deployments.json: ${error.message}`);
     console.log("💡 Please ensure deployments.json exists and contains valid deployment data");
@@ -313,14 +345,14 @@ async function displayProxyInformation(): Promise<void> {
   console.log("These automatically inherit verification from the Group Logic contract.");
   console.log("\n💡 To verify a specific group instance as a proxy:");
   console.log(`curl -d "address=YOUR_GROUP_INSTANCE_ADDRESS&expectedimplementation=${DEPLOYED_ADDRESSES.groupLogic}" \\`);
-  console.log(`"${ETHERSCAN_V2_API_URL}?chainid=${BASE_SEPOLIA_CHAIN_ID}&module=contract&action=verifyproxycontract&apikey=YOUR_API_KEY"`);
+  console.log(`"${ETHERSCAN_V2_API_URL}?chainid=${NETWORK_CONFIG.chainId}&module=contract&action=verifyproxycontract&apikey=YOUR_API_KEY"`);
 }
 
 async function main() {
   console.log("🔍 BasedBills Universal Contract Verification Script");
-  console.log(`🌐 Base Sepolia Testnet (Chain ID: ${BASE_SEPOLIA_CHAIN_ID})`);
+  console.log(`🌐 Network: ${NETWORK_CONFIG.networkName} (Chain ID: ${NETWORK_CONFIG.chainId})`);
   console.log("📚 Using Etherscan V2 API with dynamic constructor argument generation");
-  
+
   if (!API_KEY) {
     console.log("❌ ETHERSCAN_API_KEY not found in environment variables");
     console.log("💡 Add your Etherscan API key to the .env file:");
@@ -378,14 +410,14 @@ async function main() {
   // Step 4: Final status and summary
   console.log("\n📋 Final Contract Status:");
   CONTRACT_CONFIGS.forEach(config => {
-    console.log(`  ${config.name}: https://sepolia.basescan.org/address/${config.address}`);
+    console.log(`  ${config.name}: ${NETWORK_CONFIG.explorerUrl}/address/${config.address}`);
   });
 
   await displayProxyInformation();
 
   console.log("\n🎯 Verification Summary:");
-  console.log("✅ All contracts deployed on Base Sepolia");
-  console.log("✅ All contracts verified on Blockscout (primary Base explorer)");
+  console.log(`✅ All contracts deployed on ${NETWORK_CONFIG.networkName === 'base' ? 'Base Mainnet' : 'Base Sepolia'}`);
+  console.log("✅ All contracts verified on BaseScan");
   console.log("🔄 BaseScan verification completed");
   console.log("🔗 EIP-1167 clones automatically inherit verification from Group Logic");
   console.log("🛠️ Constructor arguments generated dynamically");

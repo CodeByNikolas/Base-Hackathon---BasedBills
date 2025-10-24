@@ -1,4 +1,6 @@
 import { formatUnits, parseUnits } from 'viem';
+import { formatCurrency } from './currencyUtils';
+import { shortenAddress } from './addressBook';
 
 // Types for our data structures
 export interface Bill {
@@ -46,7 +48,7 @@ export const USDC_DECIMALS = 6;
  * Format USDC amount for display
  */
 export function formatUSDC(amount: bigint): string {
-  return formatUnits(amount, USDC_DECIMALS);
+  return formatCurrency(amount, USDC_DECIMALS);
 }
 
 /**
@@ -60,7 +62,7 @@ export function parseUSDC(amount: string): bigint {
  * Format USDC with currency symbol
  */
 export function formatUSDCWithSymbol(amount: bigint): string {
-  return `$${formatUSDC(amount)}`;
+  return `$${formatCurrency(amount, USDC_DECIMALS)}`;
 }
 
 /**
@@ -109,12 +111,6 @@ export function generateGroupName(members: `0x${string}`[], currentUser?: `0x${s
   return `You & ${otherMembers.length} others`;
 }
 
-/**
- * Shorten an Ethereum address for display
- */
-export function shortenAddress(address: `0x${string}`, chars = 4): string {
-  return `${address.slice(0, 2 + chars)}...${address.slice(-chars)}`;
-}
 
 /**
  * Get settlement breakdown for a group

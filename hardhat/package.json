@@ -7,9 +7,11 @@
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
     "deploy": "npx hardhat run scripts/deploy-simple.ts --network baseSepolia",
+    "deploy-mainnet": "npx hardhat run scripts/deploy-mainnet.ts --network base",
     "test-enhanced": "npx hardhat run scripts/test-enhanced-features.ts --network baseSepolia",
     "test-gamble": "npx hardhat run scripts/test-gamble-feature.ts --network baseSepolia",
     "verify": "npx hardhat run scripts/verify-all-contracts.ts --network baseSepolia",
+    "verify-mainnet": "npx hardhat run scripts/verify-all-contracts.ts",
     "verify-blockscout": "npx hardhat verify --network baseSepolia",
     "encode-args": "npx hardhat run scripts/encode-constructor-args.ts --network baseSepolia"
   },

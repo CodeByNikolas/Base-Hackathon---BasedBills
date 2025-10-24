@@ -2,6 +2,7 @@
 
 import { formatUnits } from 'viem';
 import { GroupData, Bill } from '../../../utils/groupUtils';
+import { formatCurrency } from '../../../utils/currencyUtils';
 import styles from './OverviewTab.module.css';
 
 interface OverviewTabProps {
@@ -20,7 +21,7 @@ export function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames
       <div className={styles.summaryCards}>
         <div className={styles.summaryCard}>
           <h4>Total Owed</h4>
-          <div className={styles.amount}>{formatUnits(groupData.totalOwed, 6)} USDC</div>
+          <div className={styles.amount}>{formatCurrency(groupData.totalOwed)} USDC</div>
         </div>
 
         <div className={styles.summaryCard}>
@@ -48,7 +49,7 @@ export function OverviewTab({ groupData, memberDisplayNames: _memberDisplayNames
                 </span>
               </div>
               <div className={styles.activityAmount}>
-                {formatUnits(bill.totalAmount, 6)} USDC
+                {formatCurrency(bill.totalAmount)} USDC
               </div>
             </div>
           ))}

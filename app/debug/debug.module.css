@@ -1,0 +1,778 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--foreground);
+  text-align: center;
+}
+
+.section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: var(--background);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.description {
+  color: var(--foreground);
+  opacity: 0.7;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.button {
+  background: #0070f3;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: #0051cc;
+}
+
+.button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.response {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.response h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.success {
+  background: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.error {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.code {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: var(--font-source-code-pro), monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.inputSection {
+  margin-bottom: 1.5rem;
+}
+
+.inputSection h4 {
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.controlGroup {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+@media (min-width: 768px) {
+  .controlGroup {
+    flex-direction: row;
+  }
+
+  .controlItem {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.controlItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.controlLabel {
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.8;
+  font-size: 0.875rem;
+}
+
+.controlSelect,
+.controlInput {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: var(--background);
+  color: var(--foreground);
+  transition: border-color 0.2s ease;
+}
+
+.controlSelect:focus,
+.controlInput:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.1);
+}
+
+.addressControl {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.addressControl .controlInput {
+  flex: 1;
+}
+
+.walletButton {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  height: auto;
+}
+
+.walletButton:hover {
+  background: #059669;
+}
+
+.dataDisplay {
+  background: var(--background);
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--foreground);
+}
+
+.dataDisplay strong {
+  color: var(--foreground);
+  opacity: 0.8;
+}
+
+.info {
+  padding: 2rem;
+  background: var(--background);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--foreground);
+}
+
+.info h3 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.envStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.envItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: var(--background);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--foreground);
+}
+
+.envItem span:first-child {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.configured {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.missing {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.note {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(0, 112, 243, 0.1);
+  border-radius: 6px;
+  border-left: 4px solid #0070f3;
+  color: var(--foreground);
+}
+
+.note p {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.875rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 1rem;
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  .controlGroup {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .controlItem {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .addressControl {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .walletButton {
+    width: 100%;
+  }
+
+  .envItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Testnet styles */
+.testnetWarning {
+  background: #fef3cd;
+  border: 1px solid #f6e05e;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.warningIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.warningContent h4 {
+  margin: 0 0 0.5rem 0;
+  color: #744210;
+  font-weight: 600;
+}
+
+.warningContent p {
+  margin: 0 0 1rem 0;
+  color: #744210;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.warningContent ul {
+  margin: 0 0 1rem 0;
+  padding-left: 1.5rem;
+  color: #744210;
+}
+
+.warningContent li {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.testnetActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.testnetButton {
+  background: #0070f3;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+}
+
+.testnetButton:hover {
+  background: #0051cc;
+}
+
+.testnetNote {
+  background: #e0f2fe;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  color: #0369a1;
+  font-size: 0.875rem;
+}
+
+.testnetNote strong {
+  font-weight: 600;
+}
+
+.testnetError {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.testnetError strong {
+  font-weight: 600;
+}
+
+/* Manual Token Section */
+.manualTokenSection {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.tokenInputGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tokenInput {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: white;
+}
+
+.tokenInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.useGeneratedButton {
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.useGeneratedButton:hover:not(:disabled) {
+  background: #059669;
+}
+
+.useGeneratedButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* FundCard Container and External Messages */
+.fundCardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.externalMessages {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statusMessage {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  color: #1976d2;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.errorMessage {
+  background: #ffebee;
+  border: 1px solid #f44336;
+  color: #d32f2f;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.successMessage {
+  background: #e8f5e8;
+  border: 1px solid #4caf50;
+  color: #2e7d32;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.fundCardWrapper {
+  border: 2px dashed #6b7280;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #ffffff;
+}
+
+.networkDisplay {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0369a1;
+  text-align: center;
+}
+
+.autoPopulatedNote {
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #047857;
+  text-align: center;
+}
+
+.messagesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.messagesHeader h4 {
+  margin: 0;
+  color: #374151;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.clearButton {
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clearButton:hover {
+  background: #4b5563;
+}
+
+/* ENS Debugging Styles */
+.ensDebugSection {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.debugDescription {
+  margin: 0.5rem 0 1rem 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.ensDebugSection h3 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.debugInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.debugItem {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.debugItem strong {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.debugItem span {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.valid {
+  color: #059669;
+  font-weight: 600;
+}
+
+.invalid {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.loading {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.neutral {
+  color: #6b7280;
+}
+
+.ensError {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+}
+
+.errorDetails {
+  margin: 0.5rem 0 0 0;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.debugDetails {
+  margin-top: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+}
+
+.debugDetails summary {
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.debugDetails summary:hover {
+  background: #e5e7eb;
+}
+
+.rawDebug {
+  margin: 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0 0 6px 6px;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.debugSection {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.debugSection h4 {
+  margin: 0 0 0.75rem 0;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.testCases {
+  margin: 1rem 0;
+}
+
+.testButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.testButton {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.testButton:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.testButton.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.retryButton {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+  background: #b91c1c;
+}
+
+.validationError {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.supportedDomains {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+}
+
+.domainList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.domainTag {
+  padding: 0.25rem 0.5rem;
+  background: #e0f2fe;
+  border: 1px solid #0ea5e9;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  color: #0c4a6e;
+}

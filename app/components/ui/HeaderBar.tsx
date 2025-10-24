@@ -42,7 +42,7 @@ export function HeaderBar() {
               <span className={styles.addressBookIcon}>📇</span>
               <span className={styles.addressBookText}>Addresses</span>
             </button>
-            
+
             <Wallet>
               <ConnectWallet className={styles.walletButton}>
                 <Identity className={styles.walletIdentity}>

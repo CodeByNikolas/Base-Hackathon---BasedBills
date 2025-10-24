@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { WelcomePage } from "./components/features/WelcomePage";
 import { HeaderBar } from "./components/ui/HeaderBar";
+import { NetworkSelector } from "./components/ui/NetworkSelector";
 import { GroupCard } from "./components/features/cards/GroupCard";
 import { WalletDebug } from "./components/WalletDebug";
 import { FundCardModal } from "./components/features/FundCardModal";
@@ -95,7 +96,7 @@ export default function Home() {
       await switchToCorrectNetwork();
     } catch (error) {
       console.error('Failed to switch network:', error);
-      alert('Failed to switch network. Please manually switch to Base Sepolia in your wallet.');
+      alert(`Failed to switch network. Please manually switch to ${correctChainId === 84532 ? 'Base Sepolia' : 'Base'} in your wallet.`);
     } finally {
       setIsSwitchingNetwork(false);
     }
@@ -114,6 +115,11 @@ export default function Home() {
               <p className={styles.subtitle}>
                 Manage your expense groups and settle bills onchain
               </p>
+            </div>
+
+            {/* Network Selector */}
+            <div className={styles.networkSection}>
+              <NetworkSelector />
             </div>
 
             {/* Overall Balance Summary */}
@@ -162,14 +168,14 @@ export default function Home() {
           {isOnWrongNetwork && (
             <div className={styles.errorState}>
               <div className={styles.errorIcon}>🔗</div>
-              <h3>Wrong Network Detected</h3>
-              <p>You're connected to Base Mainnet, but this app only works on Base Sepolia testnet where the contracts are deployed.</p>
+              <h3>Network Not Supported</h3>
+              <p>This app currently works on networks where the smart contracts are deployed. Please switch to a supported network.</p>
               <button
                 className={styles.retryButton}
                 onClick={handleSwitchNetwork}
                 disabled={isSwitchingNetwork}
               >
-                {isSwitchingNetwork ? 'Switching...' : 'Switch to Base Sepolia'}
+                {isSwitchingNetwork ? 'Switching...' : `Switch to ${correctChainId === 84532 ? 'Base Sepolia' : 'Base'}`}
               </button>
             </div>
           )}
@@ -179,7 +185,7 @@ export default function Home() {
             <div className={styles.errorState}>
               <div className={styles.errorIcon}>⚠️</div>
               <h3>Contracts Not Available</h3>
-              <p>The smart contracts are not properly configured for this network. Please ensure you're on Base Sepolia testnet.</p>
+              <p>The smart contracts are not deployed on this network. Please switch to a supported network where contracts are available.</p>
               <button className={styles.retryButton} onClick={handleRefresh}>
                 Try Again
               </button>
@@ -267,7 +273,7 @@ export default function Home() {
                         onClick={() => setShowFundCardModal(true)}
                         className={styles.onrampButton}
                         disabled={!isConnected}
-                        title={!isConnected ? "Connect your wallet first" : "Add USDC to your wallet with cards, bank transfer, or Coinbase account"}
+                        title={!isConnected ? "Connect your wallet first" : "Add USDC to your wallet"}
                       >
                         <span className={styles.onrampIcon}>💳</span>
                         Add USDC

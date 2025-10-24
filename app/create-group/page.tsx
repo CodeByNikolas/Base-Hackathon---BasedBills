@@ -6,19 +6,12 @@ import { useAccount } from 'wagmi';
 import { WalletGuard } from '../components/features/WalletGuard';
 import { HeaderBar } from '../components/ui/HeaderBar';
 import { Modal } from '../components/ui/Modal';
-import {
-  Transaction,
-  TransactionButton,
-  TransactionSponsor,
-  TransactionStatus,
-  TransactionStatusLabel,
-  TransactionStatusAction
-} from '@coinbase/onchainkit/transaction';
-import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
-import { useAddressBook } from '../hooks/useAddressBook';
+import { NetworkGuard } from '../components/ui/NetworkGuard';
+import { useAddressBook, useBaseEnsResolver } from '../hooks/useAddressBook';
 import { useUserGroups } from '../hooks/useGroups';
+import { useSponsoredTransactions } from '../hooks/useSponsoredTransactions';
 import { GROUP_FACTORY_ABI, getContractAddresses } from '../config/contracts';
-import { isValidAddress } from '../utils/addressBook';
+import { isValidAddress, formatAddress, getDisplayNameForAddress, addToAddressBook } from '../utils/addressBook';
 import styles from './CreateGroup.module.css';
 
 export default function CreateGroupPage() {
@@ -27,6 +20,7 @@ export default function CreateGroupPage() {
   const addressBookData = useAddressBook();
   const { addressBook, isInitialized } = addressBookData;
   const { refetch: refetchGroups } = useUserGroups();
+  const { sendTransaction, isLoading: isTransactionLoading } = useSponsoredTransactions();
 
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState<string[]>([]);
@@ -35,10 +29,11 @@ export default function CreateGroupPage() {
   const [selectedAddressBookMembers, setSelectedAddressBookMembers] = useState<Set<string>>(new Set());
   const [isCreating, setIsCreating] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState<LifecycleStatus | null>(null);
-  const [useGasSponsorship, setUseGasSponsorship] = useState(true);
-  const [, setCreatedGroupAddress] = useState('');
+  const [ensResolvingAddress, setEnsResolvingAddress] = useState<string | null>(null);
+  const [resolvedEnsAddress, setResolvedEnsAddress] = useState<`0x${string}` | null>(null);
 
+  // Base ENS resolution hook (only .base.eth names)
+  const baseEnsResolver = useBaseEnsResolver(ensResolvingAddress || undefined);
   // Initialize with current user as first member
   useEffect(() => {
     if (userAddress && !members.includes(userAddress)) {
@@ -46,46 +41,78 @@ export default function CreateGroupPage() {
     }
   }, [userAddress, members]);
 
-  // Transaction calls for group creation
-  const getTransactionCalls = async () => {
-    const allMembers = getAllMembers();
-    return [{
-      address: getContractAddresses().groupFactory as `0x${string}`,
-      abi: GROUP_FACTORY_ABI,
-      functionName: 'createGroup',
-      args: [allMembers as `0x${string}`[], groupName.trim()],
-    }];
-  };
-
-  // Handle transaction status updates
-  const handleTransactionStatus = (status: LifecycleStatus) => {
-    setTransactionStatus(status);
-
-    if (status.statusName === 'success') {
-      setIsCreating(false);
-      setShowSuccessModal(true);
-      refetchGroups();
-    } else if (status.statusName === 'error') {
-      setIsCreating(false);
-      console.error('Transaction failed:', status.statusData);
-
-      // Check if it's a gas sponsorship issue
-      if (status.statusData?.message?.includes('paymaster') ||
-          status.statusData?.message?.includes('gas') ||
-          status.statusData?.code === '-32000') {
-        alert('Gas sponsorship failed. You can try again with gas sponsorship or proceed with regular transaction (you\'ll need ETH for gas).');
-        // Reset to allow retry without sponsorship
-        setUseGasSponsorship(false);
-      } else {
-        alert('Failed to create group. Please try again.');
+  // Handle Base ENS resolution
+  useEffect(() => {
+    if (ensResolvingAddress) {
+      if (baseEnsResolver.address) {
+        setResolvedEnsAddress(baseEnsResolver.address);
+      } else if (baseEnsResolver.error) {
+        setResolvedEnsAddress(null);
+        console.error('Base ENS resolution failed:', baseEnsResolver.error);
       }
+    } else {
+      setResolvedEnsAddress(null);
+    }
+  }, [ensResolvingAddress, baseEnsResolver.address, baseEnsResolver.error]);
+
+
+  const handleAddMember = async () => {
+    if (!newMemberAddress) return;
+
+    let finalAddress: string;
+
+    // Check if it's a .base.eth name
+    if (newMemberAddress.includes('.base.eth')) {
+      if (baseEnsResolver.isResolving) {
+        // Still resolving, don't add yet
+        return;
+      }
+
+      if (baseEnsResolver.error) {
+        // Try to retry the resolution
+        baseEnsResolver.retry();
+        return;
+      }
+
+      if (!baseEnsResolver.address) {
+        alert('Please wait for Base ENS name to resolve or enter a valid address');
+        return;
+      }
+
+      finalAddress = baseEnsResolver.address;
+      
+      // Auto-add to address book with ENS name as display name
+      addToAddressBook(finalAddress as `0x${string}`, newMemberAddress);
+    } else if (isValidAddress(newMemberAddress)) {
+      finalAddress = newMemberAddress;
+    } else {
+      alert('Please enter a valid address or .base.eth name');
+      return;
+    }
+
+    if (!members.includes(finalAddress)) {
+      setMembers([...members, finalAddress]);
+      setNewMemberAddress('');
+      setEnsResolvingAddress(null);
+      setResolvedEnsAddress(null);
     }
   };
 
-  const handleAddMember = () => {
-    if (newMemberAddress && isValidAddress(newMemberAddress) && !members.includes(newMemberAddress)) {
-      setMembers([...members, newMemberAddress]);
-      setNewMemberAddress('');
+  const handleCancelTransaction = () => {
+    setIsCreating(false);
+  };
+
+  // Handle input changes and trigger Base ENS resolution
+  const handleMemberInputChange = (value: string) => {
+    setNewMemberAddress(value);
+
+    // Reset Base ENS resolution state
+    setEnsResolvingAddress(null);
+    setResolvedEnsAddress(null);
+
+    // If it's a .base.eth name, start resolution
+    if (value && value.includes('.base.eth')) {
+      setEnsResolvingAddress(value);
     }
   };
 
@@ -96,6 +123,26 @@ export default function CreateGroupPage() {
       newSet.delete(address);
       return newSet;
     });
+  };
+
+  // Validation for the Add button with improved error handling
+  const isAddButtonValid = () => {
+    if (!newMemberAddress || isCreating) return false;
+
+    // If it's a .base.eth name, check if it's resolved and not already added
+    if (newMemberAddress.includes('.base.eth')) {
+      return !baseEnsResolver.isResolving &&
+             baseEnsResolver.address !== null &&
+             baseEnsResolver.error === null &&
+             !members.includes(baseEnsResolver.address);
+    }
+
+    // If it's an address, check if it's valid and not already added
+    if (isValidAddress(newMemberAddress)) {
+      return !members.includes(newMemberAddress);
+    }
+
+    return false;
   };
 
   const handleAddressBookToggle = (address: string) => {
@@ -127,23 +174,43 @@ export default function CreateGroupPage() {
     }
 
     const addressBookEntry = addressBook[address.toLowerCase()];
-    return addressBookEntry?.name || `${address.slice(0, 6)}...${address.slice(-4)}`;
+    return getDisplayNameForAddress(address as `0x${string}`, { currentUserAddress: userAddress });
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!groupName.trim() || getAllMembers().length < 2) {
       alert('Please enter a group name and select at least 2 members');
       return;
     }
 
     setIsCreating(true);
-    setTransactionStatus(null);
+
+    try {
+      const allMembers = getAllMembers();
+      const result = await sendTransaction({
+        address: getContractAddresses().groupFactory as `0x${string}`,
+        abi: GROUP_FACTORY_ABI,
+        functionName: 'createGroup',
+        args: [allMembers as `0x${string}`[], groupName.trim()],
+      });
+
+      // Transaction successful
+      setIsCreating(false);
+      setShowSuccessModal(true);
+      refetchGroups();
+
+    } catch (error) {
+      console.error('Error creating group:', error);
+      setIsCreating(false);
+      alert('Failed to create group. Please try again.');
+    }
   };
 
   const handleGoToGroup = () => {
     setShowSuccessModal(false);
     router.push('/');
   };
+
 
   const addressBookEntries = isInitialized ? (Object.values(addressBook) as Array<{address: string, name: string, ensName?: string}>) : [];
 
@@ -186,7 +253,7 @@ export default function CreateGroupPage() {
                 <p>Set up a new expense sharing group with friends</p>
               </div>
 
-              <form className={styles.form} onSubmit={(e) => { e.preventDefault(); handleCreateGroup(); }}>
+              <form className={styles.form}>
                 {/* Group Name */}
                 <div className={styles.formGroup}>
                   <label htmlFor="groupName" className={styles.label}>
@@ -241,7 +308,7 @@ export default function CreateGroupPage() {
                           <div className={styles.addressBookInfo}>
                             <span className={styles.addressBookName}>{entry.name}</span>
                             <span className={styles.addressBookAddress}>
-                              {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
+                              {formatAddress(entry.address as `0x${string}`)}
                             </span>
                           </div>
                         </label>
@@ -253,24 +320,50 @@ export default function CreateGroupPage() {
                 {/* Manual Member Entry */}
                 {!useAddressBookToggle && (
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Add Member Address</label>
+                    <label className={styles.label}>Add Member Address or ENS Name</label>
                     <div className={styles.manualEntry}>
                       <input
                         type="text"
                         value={newMemberAddress}
-                        onChange={(e) => setNewMemberAddress(e.target.value)}
+                        onChange={(e) => handleMemberInputChange(e.target.value)}
                         className={styles.input}
-                        placeholder="0x..."
+                        placeholder="0x... or name.base.eth"
                         disabled={isCreating}
                       />
+
+                      {/* Show Base ENS resolution status */}
+                      {newMemberAddress.includes('.base.eth') && (
+                        <div className={styles.ensStatus}>
+                          {baseEnsResolver.isResolving ? (
+                            <span className={styles.ensResolving}>
+                              Resolving Base ENS name...
+                            </span>
+                          ) : baseEnsResolver.address ? (
+                            <span className={styles.ensResolved}>✓ {formatAddress(baseEnsResolver.address)}</span>
+                          ) : baseEnsResolver.error ? (
+                            <span className={styles.ensError}>
+                              ❌ {baseEnsResolver.error.message}
+                            </span>
+                          ) : (
+                            <span className={styles.ensError}>
+                              Invalid Base ENS name
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <button
                         type="button"
                         onClick={handleAddMember}
                         className={styles.addButton}
-                        disabled={!newMemberAddress || !isValidAddress(newMemberAddress) || members.includes(newMemberAddress)}
+                        disabled={!isAddButtonValid() || isCreating}
                       >
-                        Add
+                        {newMemberAddress.includes('.base.eth') && baseEnsResolver.isResolving ? 'Resolving...' :
+                         baseEnsResolver.error ? 'Retry' : 'Add'}
                       </button>
+                    </div>
+                    <div className={styles.helpText}>
+                      Enter an Ethereum address (0x...) or Base ENS name (name.base.eth)
                     </div>
                   </div>
                 )}
@@ -286,7 +379,7 @@ export default function CreateGroupPage() {
                         return (
                           <div key={member} className={styles.memberItem}>
                             <span className={styles.memberName}>{displayName}</span>
-                            <span className={styles.memberAddress}>{member.slice(0, 6)}...{member.slice(-4)}</span>
+                            <span className={styles.memberAddress}>{formatAddress(member as `0x${string}`)}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveMember(member)}
@@ -314,40 +407,31 @@ export default function CreateGroupPage() {
                       Cancel
                     </button>
                     <button
-                      type="submit"
+                      type="button"
                       className={styles.createButton}
-                      disabled={isCreating || !groupName.trim() || getAllMembers().length < 2}
+                      onClick={handleCreateGroup}
+                      disabled={isCreating || isTransactionLoading || !groupName.trim() || getAllMembers().length < 2}
                     >
-                      {`Create Group (${getAllMembers().length} members)`}
+                      Create Group ({getAllMembers().length} members)
                     </button>
                   </div>
                 ) : (
                   <div className={styles.formActions}>
                     <button
                       type="button"
-                      onClick={() => router.push('/')}
+                      onClick={handleCancelTransaction}
                       className={styles.cancelButton}
                     >
                       Cancel
                     </button>
-                    <div className={styles.transactionWrapper}>
-                      <Transaction
-                        calls={getTransactionCalls()}
-                        onStatus={handleTransactionStatus}
-                        isSponsored={useGasSponsorship}
-                      >
-                        <TransactionButton
-                          className={styles.createButton}
-                          disabled={!groupName.trim() || getAllMembers().length < 2}
-                          text={`Create Group (${getAllMembers().length} members)${useGasSponsorship ? ' - Gas Free!' : ''}`}
-                        />
-                        <TransactionSponsor />
-                        <TransactionStatus>
-                          <TransactionStatusLabel />
-                          <TransactionStatusAction />
-                        </TransactionStatus>
-                      </Transaction>
-                    </div>
+                    <button
+                      type="button"
+                      className={styles.createButton}
+                      onClick={handleCreateGroup}
+                      disabled={isTransactionLoading || !groupName.trim() || getAllMembers().length < 2}
+                    >
+                      {isTransactionLoading ? 'Creating Group...' : 'Create Group (' + getAllMembers().length + ' members)'}
+                    </button>
                   </div>
                 )}
               </form>
@@ -356,7 +440,7 @@ export default function CreateGroupPage() {
         </main>
 
         {/* Success Modal */}
-        <Modal isOpen={showSuccessModal} onClose={handleGoToGroup} title="Group Created!">
+        <Modal isOpen={showSuccessModal} onClose={handleGoToGroup}>
           <div className={styles.successContent}>
             <div className={styles.successIcon}>🎉</div>
             <h3>Group Created Successfully!</h3>

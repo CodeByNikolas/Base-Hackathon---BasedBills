@@ -10,18 +10,14 @@
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.38.4",
-    "@coinbase/onchainkit": "^1.1.1",
+    "@coinbase/onchainkit": "latest",
     "@farcaster/miniapp-sdk": "^0.2.1",
-    "@privy-io/react-auth": "^3.3.0",
-    "@tanstack/react-query": "^5.90.5",
-    "@types/jsonwebtoken": "^9.0.10",
-    "jsonwebtoken": "^9.0.2",
+    "@tanstack/react-query": "^5.81.5",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "viem": "^2.38.3",
-    "wagmi": "^2.18.1",
-    "zod": "^4.1.12"
+    "viem": "^2.31.6",
+    "wagmi": "^2.16.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

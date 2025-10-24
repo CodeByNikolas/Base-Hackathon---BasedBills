@@ -1,10 +1,11 @@
 /* Members Tab Styles */
 .membersTab {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  color: white;
+  border-radius: 20px;
+  padding: 24px;
+  color: #1f2937;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .membersList {
@@ -17,10 +18,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(107, 114, 128, 0.2);
 }
 
 .memberInfo {
@@ -30,11 +31,12 @@
 .memberName {
   font-weight: 500;
   margin-bottom: 0.25rem;
+  color: #1f2937;
 }
 
 .memberAddress {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6b7280;
   font-family: 'Monaco', 'Menlo', monospace;
 }
 
@@ -61,22 +63,22 @@
 .nameInput {
   flex: 1;
   padding: 0.25rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid #d1d5db;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: white;
+  color: #1f2937;
   font-size: 0.8rem;
   font-family: inherit;
 }
 
 .nameInput:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.15);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .nameInput::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #6b7280;
 }
 
 .nameInputActions {
@@ -101,14 +103,14 @@
 }
 
 .addNameButton {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.3);
 }
 
 .addNameButton:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(102, 126, 234, 0.2);
+  color: #5a67d8;
 }
 
 .saveNameButton {
@@ -140,9 +142,9 @@
 }
 
 .positive {
-  color: #4ade80;
+  color: #059669;
 }
 
 .negative {
-  color: #f87171;
+  color: #dc2626;
 }
