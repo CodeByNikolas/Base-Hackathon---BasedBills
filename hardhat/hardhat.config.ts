@@ -6,7 +6,7 @@ import "@nomicfoundation/hardhat-verify";
 import { configVariable } from "hardhat/config";
 
 // Load environment variables from parent directory
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: ".env" });
 
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxViemPlugin],
@@ -46,10 +46,23 @@ const config: HardhatUserConfig = {
       timeout: 60000,
       httpHeaders: {},
     },
+    base: {
+      type: "http",
+      chainType: "op",
+      url: "https://mainnet.base.org",
+      accounts: [
+        ...(process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []),
+        ...(process.env.PRIVATE_KEY2 ? [process.env.PRIVATE_KEY2] : [])
+      ].filter(Boolean),
+      chainId: 8453,
+      timeout: 60000,
+      httpHeaders: {},
+    },
   },
   etherscan: {
     apiKey: {
       baseSepolia: process.env.ETHERSCAN_API_KEY || "",
+      base: process.env.ETHERSCAN_API_KEY || "",
     },
     customChains: [
       {
@@ -59,6 +72,15 @@ const config: HardhatUserConfig = {
           // Using Etherscan V2 API with Base Sepolia chainid
           apiURL: "https://api.etherscan.io/v2/api?chainid=84532",
           browserURL: "https://sepolia.basescan.org/",
+        },
+      },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          // Using Etherscan V2 API with Base mainnet chainid
+          apiURL: "https://api.etherscan.io/v2/api?chainid=8453",
+          browserURL: "https://basescan.org/",
         },
       },
     ],

@@ -1,31 +1,44 @@
 import { base, baseSepolia } from 'wagmi/chains';
 
+// Chain configurations
+const CHAINS = {
+  [base.id]: {
+    name: 'Base',
+    usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
+  },
+  [baseSepolia.id]: {
+    name: 'Base Sepolia',
+    usdc: '0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37', // MockUSDC for testing
+  },
+} as const;
+
+// Contract addresses for current deployment
+const CONTRACTS = {
+  [baseSepolia.id]: {
+    groupFactory: '0x42238a47f2ab7508296c009a0b672770474debe0',
+    registry: '0x97d4e2631aa14c141ebe703efbc00f789329822a',
+    groupLogic: '0x9ebb981e56c90db163bc06ceac0fbb1558956e7f',
+    usdc: '0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37',
+  },
+  [base.id]: {
+    // Mainnet addresses - deployed and verified
+    groupFactory: '0x97191494e97a71a2366e459f49e2c15b61fb4055',
+    registry: '0x071164b35b896bc429d5f518c498695ffc69fe10',
+    groupLogic: '0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa',
+    usdc: CHAINS[base.id].usdc,
+  },
+} as const;
+
 // Network configuration - easily switch between networks
 export const NETWORK_CONFIG = {
   // Change this to switch networks
-  TARGET_CHAIN_ID: baseSepolia.id, // Use base.id for mainnet, baseSepolia.id for testnet
+  TARGET_CHAIN_ID: base.id, // Use base.id for mainnet, baseSepolia.id for testnet
 
   // Chain configurations
-  CHAINS: {
-    [base.id]: {
-      name: 'Base',
-      usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
-    },
-    [baseSepolia.id]: {
-      name: 'Base Sepolia',
-      usdc: '0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37', // MockUSDC for testing
-    },
-  },
+  CHAINS,
 
   // Contract addresses for current deployment
-  CONTRACTS: {
-    [baseSepolia.id]: {
-      groupFactory: '0x42238a47f2ab7508296c009a0b672770474debe0',
-      registry: '0x97d4e2631aa14c141ebe703efbc00f789329822a',
-      groupLogic: '0x9ebb981e56c90db163bc06ceac0fbb1558956e7f',
-      usdc: '0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37',
-    },
-  },
+  CONTRACTS,
 } as const;
 
 // Get contract addresses for the target network
@@ -41,8 +54,7 @@ function getContractAddressesForNetwork() {
 
 // Contract addresses for different networks
 export const CONTRACT_ADDRESSES = {
-  [base.id]: {
-    // Mainnet addresses (to be deployed later)
+  [base.id]: NETWORK_CONFIG.CONTRACTS[base.id] || {
     groupFactory: '',
     registry: '',
     groupLogic: '',
@@ -74,7 +86,7 @@ export function getTargetChain() {
 
 // Check if we're on testnet
 export function isTestnet() {
-  return NETWORK_CONFIG.TARGET_CHAIN_ID === baseSepolia.id;
+  return NETWORK_CONFIG.TARGET_CHAIN_ID === (baseSepolia.id as number);
 }
 
 // Import contract ABIs from separate files for better organization
@@ -85,7 +97,7 @@ export { GROUP_FACTORY_ABI, REGISTRY_ABI, GROUP_ABI, USDC_ABI };
 
 // Network configuration
 export const SUPPORTED_CHAINS = [base, baseSepolia];
-export const DEFAULT_CHAIN = baseSepolia; // Use testnet for development
+export const DEFAULT_CHAIN = base; // Use mainnet for production
 
 // Block explorer URLs
 export const BLOCK_EXPLORER_URLS = {
