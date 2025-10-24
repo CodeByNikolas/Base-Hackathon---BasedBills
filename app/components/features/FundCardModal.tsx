@@ -56,6 +56,7 @@ export function FundCardModal({
   const [fundCardError, setFundCardError] = useState<string>("");
   const [fundCardSuccess, setFundCardSuccess] = useState<string>("");
   const [isApiUnavailable, setIsApiUnavailable] = useState<boolean>(false);
+  const [isLocalhostError, setIsLocalhostError] = useState<boolean>(false);
 
   const generateSessionToken = useCallback(async () => {
     if (!address) {
@@ -94,8 +95,26 @@ export function FundCardModal({
         const errorText = await response.text();
         console.error("Session token API error:", response.status, errorText);
 
-        // Check if this is a permanent API failure (404, 503, etc.)
-        if (response.status === 404 || response.status === 503 || response.status >= 500) {
+        // Check if this is a permanent API failure (404, 503, 500+) or localhost error (400)
+        if (response.status === 404 || response.status === 503 || response.status >= 500 || response.status === 400) {
+          // For 400 errors, also check if it's the localhost error
+          if (response.status === 400) {
+            try {
+              const errorData = JSON.parse(errorText);
+              if (errorData.details?.message?.includes("private IP addresses are not allowed")) {
+                console.log("🔴 Localhost error detected in 400 response:", errorData);
+                setIsApiUnavailable(true);
+                setIsLocalhostError(true);
+                setSessionToken(null);
+                setError("not supported on localhost");
+                setLoading(false); // Make sure loading is cleared
+                return;
+              }
+            } catch (parseError) {
+              // If JSON parsing fails, treat as regular API error
+            }
+          }
+
           setIsApiUnavailable(true);
           setSessionToken(null); // Clear any existing token
           setError("onramp api seems to not work right now. please check back later");
@@ -121,6 +140,19 @@ export function FundCardModal({
         setError(null);
       } else {
         let errorMessage = data.error || "Failed to generate session token";
+
+        // Check for localhost/private IP error
+        if (data.details?.message?.includes("private IP addresses are not allowed") ||
+            data.error?.includes("private IP addresses are not allowed")) {
+          console.log("🔴 Localhost error detected in API response:", data);
+          setIsApiUnavailable(true);
+          setIsLocalhostError(true);
+          setSessionToken(null);
+          setError("not supported on localhost");
+          setLoading(false); // Make sure loading is cleared
+          return;
+        }
+
         if (data.details?.message?.includes("base-sepolia")) {
           errorMessage += isTestnet
             ? " 💡 Make sure your wallet is connected to Base Sepolia testnet and you have test funds available."
@@ -135,6 +167,18 @@ export function FundCardModal({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Network error while generating session token";
       console.error("Session token error:", err);
+
+      // Check for localhost/private IP error in catch block
+      if (errorMessage.includes("private IP addresses are not allowed") ||
+          errorMessage.includes("InvalidRequest: private IP addresses are not allowed")) {
+        console.log("🔴 Localhost error detected in catch block:", errorMessage);
+        setIsApiUnavailable(true);
+        setIsLocalhostError(true);
+        setSessionToken(null); // Clear any existing token
+        setError("not supported on localhost");
+        setLoading(false); // Make sure loading is cleared
+        return;
+      }
 
       // Check if this is a network error or API unavailable error
       if (errorMessage.toLowerCase().includes("fetch") || errorMessage.toLowerCase().includes("network") || !navigator.onLine) {
@@ -167,15 +211,16 @@ export function FundCardModal({
   useEffect(() => {
     if (!isOpen) {
       setIsApiUnavailable(false);
+      setIsLocalhostError(false);
     }
   }, [isOpen]);
 
   // Auto-generate session token when modal opens and wallet is connected
   useEffect(() => {
-    if (isOpen && isConnected && address && !sessionToken && !loading && !isApiUnavailable) {
+    if (isOpen && isConnected && address && !sessionToken && !loading && !isApiUnavailable && !isLocalhostError) {
       generateSessionToken();
     }
-  }, [isOpen, isConnected, address, sessionToken, generateSessionToken, loading, isApiUnavailable]);
+  }, [isOpen, isConnected, address, sessionToken, generateSessionToken, loading, isApiUnavailable, isLocalhostError]);
 
   // Don't render anything if wallet not connected
   if (!isConnected || !address) {
@@ -303,7 +348,9 @@ export function FundCardModal({
         {error && !loading && (
           <div className={`${styles.errorState} ${isApiUnavailable ? styles.apiUnavailable : ''}`}>
             <div className={styles.errorIcon}>{isApiUnavailable ? "🔴" : "⚠️"}</div>
-            <h4 className="text-base sm:text-lg">{isApiUnavailable ? "Service Unavailable" : "Error"}</h4>
+            <h4 className="text-base sm:text-lg">
+              {isLocalhostError ? "Not Supported on Localhost" : isApiUnavailable ? "Service Unavailable" : "Error"}
+            </h4>
             <p className="text-sm sm:text-base mb-4">{error}</p>
             {!isApiUnavailable && (
               <button
