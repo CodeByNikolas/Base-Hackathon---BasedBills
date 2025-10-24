@@ -23,13 +23,13 @@ A decentralized bill splitting application built on Base network with on-chain U
 ## 📸 Screenshots
 
 ### Main Dashboard
-![Main Page](https://base-hackathon-based-bills.vercel.app/Main-Page.png)
+![Main Page](https://raw.githubusercontent.com/CodeByNikolas/Base-Hackathon---BasedBills/main/public/Main-Page.png)
 
 ### Fund USDC Modal
-![Fund Page](https://base-hackathon-based-bills.vercel.app/Fund-Page.png)
+![Fund Page](https://raw.githubusercontent.com/CodeByNikolas/Base-Hackathon---BasedBills/main/public/Fund-Page.png)
 
 ### Group Management
-![Group Page](https://base-hackathon-based-bills.vercel.app/Group-Page.png)
+![Group Page](https://raw.githubusercontent.com/CodeByNikolas/Base-Hackathon---BasedBills/main/public/Group-Page.png)
 
 ## 🚀 Quick Start
 
