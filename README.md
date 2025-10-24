@@ -2,6 +2,12 @@
 
 A decentralized bill splitting application built on Base network with on-chain USDC settlements. Split expenses with friends and settle them transparently on-chain.
 
+## 📹 Demo Videos
+
+[Watch this Loom video](https://www.loom.com/share/ae9880b14b6a456490e533c0f4448f85)
+
+[Watch this YouTube video](https://youtu.be/oGCbtVMy8X0)
+
 ## 🌟 Features
 
 ### Core Functionality
