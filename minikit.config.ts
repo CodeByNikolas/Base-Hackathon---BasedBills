@@ -35,7 +35,7 @@ export const minikitConfig = {
     tagline: "Settle on-chain! ⚡",
     ogTitle: "💰 BasedBills - Split Bills",
     ogDescription: "Decentralized bill splitting with USDC settlements on Base! 🚀",
-    description: "Decentralized bill splitting with USDC settlements on Base! Create groups, split expenses, and settle on-chain with friends. Features gamble mode, custom splits, and transparent transactions!",
+    description: "Decentralized bill splitting with USDC settlements on Base. Create groups, split expenses, and settle on-chain with friends.",
     ogImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
     noindex: true
   },

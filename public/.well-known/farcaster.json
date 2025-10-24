@@ -13,7 +13,7 @@
       "splashBackgroundColor": "#eeccff",
       "webhookUrl": "https://base-hackathon-based-bills.vercel.app/api/webhook",
       "subtitle": "Split bills on Base!",
-      "description": "Decentralized bill splitting with USDC settlements on Base! Create groups, split expenses, and settle on-chain with friends. Features gamble mode, custom splits, and transparent transactions!",
+      "description": "Decentralized bill splitting with USDC settlements on Base. Create groups, split expenses, and settle on-chain with friends.",
       "screenshotUrls": [
         "https://base-hackathon-based-bills.vercel.app/screenshot1.png",
         "https://base-hackathon-based-bills.vercel.app/screenshot2.png",
