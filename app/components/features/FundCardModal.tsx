@@ -90,6 +90,8 @@ export function FundCardModal({
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Session token API error:", response.status, errorText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -124,6 +126,11 @@ export function FundCardModal({
       const errorMessage = err instanceof Error ? err.message : "Network error while generating session token";
       console.error("Session token error:", err);
       setError(errorMessage);
+      
+      // If it's a 404 error, show a helpful message about API configuration
+      if (errorMessage.includes("404")) {
+        setError("Session token API not available. This feature requires proper API configuration. You can still use the app for other features.");
+      }
     } finally {
       setLoading(false);
     }

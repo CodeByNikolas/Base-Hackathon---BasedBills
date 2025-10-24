@@ -71,7 +71,7 @@ export function NetworkSelector() {
         >
           {supportedChains.map((chain) => (
             <option key={chain.id} value={chain.id}>
-              {chain.isTestnet ? '🧪 ' : '🟢 '}{chain.name}
+              {chain.isTestnet ? '🧪 ' : '🔵 '}{chain.name}
               {chainId === chain.id && ' (Current)'}
             </option>
           ))}

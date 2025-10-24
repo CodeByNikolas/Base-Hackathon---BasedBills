@@ -49,6 +49,14 @@ export function useUserGroups() {
     }
   });
 
+  console.log('🔍 Network Debug Info:', {
+    chainId,
+    hasValidContracts,
+    contractAddresses,
+    networksWithContracts,
+    supportedNetworks: networksWithContracts
+  });
+
   const isOnWrongNetwork = !hasValidContracts && networksWithContracts.length > 0;
   const correctChainId = networksWithContracts[0] || baseSepolia.id; // Default to Base Sepolia if available
 

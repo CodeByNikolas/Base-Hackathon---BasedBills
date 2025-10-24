@@ -68,7 +68,7 @@ export function NetworkValidationModal({ isOpen, onClose }: NetworkValidationMod
                 borderRadius: '4px',
                 fontSize: '0.875rem'
               }}>
-                🟢 Base Mainnet (Production)
+                🔵 Base Mainnet (Production)
               </span>
               <span style={{
                 backgroundColor: '#fff3e0',
@@ -116,7 +116,7 @@ export function NetworkValidationModal({ isOpen, onClose }: NetworkValidationMod
                     cursor: 'pointer'
                   }}
                 >
-                  🟢 Base Mainnet
+                  🔵 Base Mainnet
                 </button>
                 <button
                   onClick={() => handleManualSwitch(baseSepolia.id)}

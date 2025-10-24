@@ -42,10 +42,15 @@ export function useNetworkValidation(): NetworkValidationResult & NetworkValidat
     });
   }, []);
 
-  // Determine which network the user should be on based on current contracts config
+  // Determine which network the user should be on - allow any supported network
   const requiredNetwork = useMemo(() => {
-    return supportedNetworks.length > 0 ? supportedNetworks[0] : base; // Default to mainnet
-  }, [supportedNetworks]);
+    // If user is on a supported network, that's the required network
+    if (chainId && supportedNetworks.some(network => network.id === chainId)) {
+      return supportedNetworks.find(network => network.id === chainId) || supportedNetworks[0];
+    }
+    // Otherwise, default to the first supported network (usually mainnet)
+    return supportedNetworks.length > 0 ? supportedNetworks[0] : base;
+  }, [supportedNetworks, chainId]);
 
   // Check if current network has valid contracts
   const hasContracts = useMemo(() => {
@@ -58,10 +63,10 @@ export function useNetworkValidation(): NetworkValidationResult & NetworkValidat
     }
   }, [chainId]);
 
-  // Check if user is on correct network
+  // Check if user is on correct network - any supported network is correct
   const isCorrectNetwork = useMemo(() => {
-    return chainId === requiredNetwork.id;
-  }, [chainId, requiredNetwork.id]);
+    return chainId ? supportedNetworks.some(network => network.id === chainId) : false;
+  }, [chainId, supportedNetworks]);
 
   // Main validation result
   const validationResult = useMemo((): NetworkValidationResult => {
@@ -112,7 +117,7 @@ export function useNetworkValidation(): NetworkValidationResult & NetworkValidat
         hasContracts: true,
         isCorrectNetwork: false,
         needsNetworkSwitch: true,
-        error: `Please switch to ${requiredNetwork.name} to use this application.`
+        error: `Please switch to a supported network (${supportedNetworks.map(n => n.name).join(' or ')}) to use this application.`
       };
     }
 
