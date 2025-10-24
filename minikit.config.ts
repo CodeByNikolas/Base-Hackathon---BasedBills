@@ -41,5 +41,5 @@ export const minikitConfig = {
   },
   baseBuilder: {
     ownerAddress: "0x23F5d0A18DafB06247F47a9C41FF39F483CFe060"
-  }
+  } //ja
 } as const;
