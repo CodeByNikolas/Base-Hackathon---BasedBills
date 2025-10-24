@@ -41,17 +41,6 @@ export const NETWORK_CONFIG = {
   CONTRACTS,
 } as const;
 
-// Get contract addresses for the target network
-function getContractAddressesForNetwork() {
-  const contracts = NETWORK_CONFIG.CONTRACTS[NETWORK_CONFIG.TARGET_CHAIN_ID as keyof typeof NETWORK_CONFIG.CONTRACTS];
-
-  if (!contracts) {
-    throw new Error(`No contract addresses configured for chain ID: ${NETWORK_CONFIG.TARGET_CHAIN_ID}`);
-  }
-
-  return contracts;
-}
-
 // Contract addresses for different networks
 export const CONTRACT_ADDRESSES = {
   [base.id]: NETWORK_CONFIG.CONTRACTS[base.id] || {
@@ -60,17 +49,23 @@ export const CONTRACT_ADDRESSES = {
     groupLogic: '',
     usdc: NETWORK_CONFIG.CHAINS[base.id].usdc,
   },
-  [baseSepolia.id]: getContractAddressesForNetwork(),
+  [baseSepolia.id]: NETWORK_CONFIG.CONTRACTS[baseSepolia.id] || {
+    groupFactory: '',
+    registry: '',
+    groupLogic: '',
+    usdc: NETWORK_CONFIG.CHAINS[baseSepolia.id].usdc,
+  },
 } as const;
 
 // Get contract addresses for current chain or target chain
 export function getContractAddresses(chainId?: number) {
-  // Use target chain if no chainId provided, otherwise use provided chainId
+  // Use provided chainId if available, otherwise use target chain
   const targetChainId = chainId || NETWORK_CONFIG.TARGET_CHAIN_ID;
   const addresses = CONTRACT_ADDRESSES[targetChainId as keyof typeof CONTRACT_ADDRESSES];
   if (!addresses) {
     throw new Error(`Unsupported chain ID: ${targetChainId}`);
   }
+  console.log(`🔗 Loading contract addresses for chain ${targetChainId}:`, addresses);
   return addresses;
 }
 

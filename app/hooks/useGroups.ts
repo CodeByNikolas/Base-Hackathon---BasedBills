@@ -72,7 +72,7 @@ export function useUserGroups() {
   }, [switchChainAsync, correctChainId]);
 
   // Get group addresses for user
-  const {
+  const { 
     data: groupAddresses,
     isLoading: isLoadingAddresses,
     error: addressesError,
@@ -87,6 +87,15 @@ export function useUserGroups() {
       retry: 3,
       retryDelay: 1000,
     },
+  });
+
+  // Log contract call details
+  console.log('📞 Contract call details:', {
+    registryAddress: contractAddresses?.registry,
+    userAddress: address,
+    enabled: !!address && !!contractAddresses?.registry && (contractAddresses.registry as string) !== '',
+    isLoading: isLoadingAddresses,
+    error: addressesError
   });
 
 
