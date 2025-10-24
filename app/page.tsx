@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { WelcomePage } from "./components/features/WelcomePage";
@@ -17,6 +17,8 @@ import {
   sortGroupsByActivity,
   filterGroupsByStatus
 } from "./utils/groupUtils";
+import { USDC_ABI } from "./config/abis";
+import { getContractAddresses } from "./config/contracts";
 
 /**
  * Main page component that shows either the welcome page (for non-connected users)
@@ -57,6 +59,25 @@ export default function Home() {
     error: groupsDataError,
     refetch: refetchGroupsData
   } = useMultipleGroupsData(groupAddresses);
+
+  // Get USDC balance for current user
+  const usdcAddress = getContractAddresses(chainId).usdc;
+  const { data: usdcBalance } = useReadContract({
+    address: usdcAddress as `0x${string}`,
+    abi: USDC_ABI,
+    functionName: 'balanceOf',
+    args: userAddress ? [userAddress] : undefined,
+    query: {
+      enabled: !!userAddress && !!usdcAddress,
+    },
+  });
+
+  // Check if user should see welcome page
+  useEffect(() => {
+    const shouldShowWelcome = isConnected && !hasUserSeenWelcome();
+    setShowWelcome(shouldShowWelcome);
+  }, [isConnected]);
+
 
   // Show welcome page if wallet is not connected or if connected user hasn't seen welcome
   if (!isConnected || showWelcome) {
@@ -123,32 +144,42 @@ export default function Home() {
             </div>
 
             {/* Overall Balance Summary */}
-            {groupsData.length > 0 && (
+            {isConnected && (
               <div className={styles.balanceSummary}>
                 <div className={styles.balanceCard}>
+                  {groupsData.length > 0 && (
+                    <>
+                      <div className={styles.balanceItem}>
+                        <span className={styles.balanceLabel}>You&apos;re owed</span>
+                        <span className={`${styles.balanceValue} ${styles.positive}`}>
+                          {formatUSDCWithSymbol(outstandingBalance.totalOwed)}
+                        </span>
+                      </div>
+                      <div className={styles.balanceItem}>
+                        <span className={styles.balanceLabel}>You owe</span>
+                        <span className={`${styles.balanceValue} ${styles.negative}`}>
+                          {formatUSDCWithSymbol(outstandingBalance.totalOwes)}
+                        </span>
+                      </div>
+                      <div className={styles.balanceItem}>
+                        <span className={styles.balanceLabel}>Net balance</span>
+                        <span className={`${styles.balanceValue} ${
+                          outstandingBalance.netBalance > 0n ? styles.positive :
+                          outstandingBalance.netBalance < 0n ? styles.negative :
+                          styles.neutral
+                        }`}>
+                          {outstandingBalance.netBalance > 0n ? '+' : outstandingBalance.netBalance < 0n ? '-' : ''}
+                          {formatUSDCWithSymbol(outstandingBalance.netBalance < 0n
+                            ? -outstandingBalance.netBalance
+                            : outstandingBalance.netBalance)}
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <div className={styles.balanceItem}>
-                    <span className={styles.balanceLabel}>You&apos;re owed</span>
-                    <span className={`${styles.balanceValue} ${styles.positive}`}>
-                      {formatUSDCWithSymbol(outstandingBalance.totalOwed)}
-                    </span>
-                  </div>
-                  <div className={styles.balanceItem}>
-                    <span className={styles.balanceLabel}>You owe</span>
-                    <span className={`${styles.balanceValue} ${styles.negative}`}>
-                      {formatUSDCWithSymbol(outstandingBalance.totalOwes)}
-                    </span>
-                  </div>
-                  <div className={styles.balanceItem}>
-                    <span className={styles.balanceLabel}>Net balance</span>
-                    <span className={`${styles.balanceValue} ${
-                      outstandingBalance.netBalance > 0n ? styles.positive :
-                      outstandingBalance.netBalance < 0n ? styles.negative :
-                      styles.neutral
-                    }`}>
-                      {outstandingBalance.netBalance > 0n ? '+' : outstandingBalance.netBalance < 0n ? '-' : ''}
-                      {formatUSDCWithSymbol(outstandingBalance.netBalance < 0n
-                        ? -outstandingBalance.netBalance
-                        : outstandingBalance.netBalance)}
+                    <span className={styles.balanceLabel}>USDC Balance</span>
+                    <span className={`${styles.balanceValue} ${styles.neutral}`}>
+                      {usdcBalance !== undefined ? formatUSDCWithSymbol(usdcBalance) : 'Loading...'}
                     </span>
                   </div>
                 </div>
