@@ -61,7 +61,6 @@ export function HeaderBar() {
                   <EthBalance />
                 </Identity>
                 <WalletDropdownBasename />
-                <WalletDropdownFundLink />
                 <WalletDropdownLink
                   icon="wallet"
                   href="https://keys.coinbase.com"
