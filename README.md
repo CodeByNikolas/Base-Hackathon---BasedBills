@@ -20,6 +20,17 @@ A decentralized bill splitting application built on Base network with on-chain U
 - **⚡ Custom Bill Splitting**: Specify exact amounts per participant
 - **🏭 Gas-Efficient Groups**: EIP-1167 minimal proxy pattern for cheap group creation
 
+## 📸 Screenshots
+
+### Main Dashboard
+![Main Page](https://base-hackathon-based-bills.vercel.app/Main-Page.png)
+
+### Fund USDC Modal
+![Fund Page](https://base-hackathon-based-bills.vercel.app/Fund-Page.png)
+
+### Group Management
+![Group Page](https://base-hackathon-based-bills.vercel.app/Group-Page.png)
+
 ## 🚀 Quick Start
 
 ### Frontend Development

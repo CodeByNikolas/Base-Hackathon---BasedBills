@@ -23,9 +23,9 @@ export const minikitConfig = {
     splashBackgroundColor: "#0052ff", //done
     webhookUrl: "https://base-hackathon-based-bills.vercel.app/api/webhook", //done
     screenshotUrls: [
-      "https://base-hackathon-based-bills.vercel.app/screenshot1.png",
-      "https://base-hackathon-based-bills.vercel.app/screenshot2.png",
-      "https://base-hackathon-based-bills.vercel.app/screenshot3.png"
+      "https://base-hackathon-based-bills.vercel.app/Main-Page.png",
+      "https://base-hackathon-based-bills.vercel.app/Fund-Page.png",
+      "https://base-hackathon-based-bills.vercel.app/Group-Page.png"
     ],
     subtitle: "Split bills on Base!", //done
     tags: ["finance", "defi", "bills", "splitting", "usdc"],
