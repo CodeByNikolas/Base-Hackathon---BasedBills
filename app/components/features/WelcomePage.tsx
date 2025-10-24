@@ -18,7 +18,7 @@ export function WelcomePage({ onContinue }: WelcomePageProps) {
       <div className={styles.welcomeContent}>
         <div className={styles.welcomeHeader}>
           <Image
-            src="/basedbills_logo.png"
+            src="/basedbills_logo_copy.png"
             alt="BasedBills Logo"
             width={200}
             height={80}

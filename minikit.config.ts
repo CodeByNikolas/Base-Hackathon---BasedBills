@@ -16,27 +16,27 @@ export const minikitConfig = {
   frame: {
     version: "1",
     name: "💰 BasedBills",
-    homeUrl: "https://base-hackathon-based-bills.vercel.app",
-    iconUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
-    splashImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
-    primaryCategory: "finance",
-    splashBackgroundColor: "#eeccff",
-    webhookUrl: "https://base-hackathon-based-bills.vercel.app/api/webhook",
+    homeUrl: "https://base-hackathon-based-bills.vercel.app", //done
+    iconUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png", //done
+    splashImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png", //done
+    primaryCategory: "finance", //done
+    splashBackgroundColor: "#0052ff", //done
+    webhookUrl: "https://base-hackathon-based-bills.vercel.app/api/webhook", //done
     screenshotUrls: [
       "https://base-hackathon-based-bills.vercel.app/screenshot1.png",
       "https://base-hackathon-based-bills.vercel.app/screenshot2.png",
       "https://base-hackathon-based-bills.vercel.app/screenshot3.png"
     ],
-    subtitle: "Split bills on Base!",
+    subtitle: "Split bills on Base!", //done
     tags: ["finance", "defi", "bills", "splitting", "usdc"],
-    imageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
-    buttonTitle: "Split Bills Now! 💸",
-    heroImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
-    tagline: "Settle on-chain! ⚡",
-    ogTitle: "💰 BasedBills - Split Bills",
-    ogDescription: "Decentralized bill splitting with USDC settlements on Base! 🚀",
-    description: "Decentralized bill splitting with USDC settlements on Base. Create groups, split expenses, and settle on-chain with friends.",
-    ogImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+    imageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png", //done
+    buttonTitle: "Split Bills Now! 💸", //done
+    heroImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png", //done
+    tagline: "Settle on-chain! ⚡", //done
+    ogTitle: "💰 BasedBills - Split Bills", //done
+    ogDescription: "Decentralized bill splitting with USDC settlements on Base! 🚀", //done
+    description: "Decentralized bill splitting with USDC settlements on Base. Create groups, split expenses, and settle on-chain with friends.", //done
+    ogImageUrl: "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png", //done
     noindex: true
   },
   baseBuilder: {

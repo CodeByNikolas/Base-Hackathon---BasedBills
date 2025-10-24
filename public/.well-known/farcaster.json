@@ -10,7 +10,7 @@
       "homeUrl": "https://base-hackathon-based-bills.vercel.app",
       "iconUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
       "splashImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
-      "splashBackgroundColor": "#eeccff",
+      "splashBackgroundColor": "#0052ff",
       "webhookUrl": "https://base-hackathon-based-bills.vercel.app/api/webhook",
       "subtitle": "Split bills on Base!",
       "description": "Decentralized bill splitting with USDC settlements on Base. Create groups, split expenses, and settle on-chain with friends.",
