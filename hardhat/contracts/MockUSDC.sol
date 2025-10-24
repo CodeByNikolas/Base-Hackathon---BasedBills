@@ -58,4 +58,15 @@ contract MockUSDC {
         balanceOf[to] += amount;
         emit Transfer(address(0), to, amount);
     }
+
+    /**
+     * @dev Mint 100 USDC to the caller for testing purposes
+     * Anyone can call this function to get test USDC
+     */
+    function mintForTest() external {
+        uint256 amount = 100 * 10**decimals; // 100 USDC
+        totalSupply += amount;
+        balanceOf[msg.sender] += amount;
+        emit Transfer(address(0), msg.sender, amount);
+    }
 }

@@ -71,7 +71,7 @@ See [hardhat/README.md](./hardhat/README.md) for detailed contract documentation
 
 ## 🔗 Deployed Contracts
 
-### Base Mainnet (Production)
+### Base Mainnet (Production) - **Verified & Ready**
 | Contract | Address | BaseScan |
 |----------|---------|----------|
 | GroupFactory | [`0x97191494e97a71a2366e459f49e2c15b61fb4055`](https://basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055) | [Read Contract](https://basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055#readContract) |
@@ -79,15 +79,17 @@ See [hardhat/README.md](./hardhat/README.md) for detailed contract documentation
 | Group Logic | [`0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa`](https://basescan.org/address/0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa) | [Read Contract](https://basescan.org/address/0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa#readContract) |
 | USDC | [`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`](https://basescan.org/address/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) | [Read Contract](https://basescan.org/address/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913#readContract) |
 
-### Base Sepolia (Testnet)
+### Base Sepolia (Testnet) - **Latest Deployment**
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| GroupFactory | [`0x42238a47f2ab7508296c009a0b672770474debe0`](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0) | [Read Contract](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0#readContract) |
-| Registry | [`0x97d4e2631aa14c141ebe703efbc00f789329822a`](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a) | [Read Contract](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a#readContract) |
-| Group Logic | [`0x9ebb981e56c90db163bc06ceac0fbb1558956e7f`](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f) | [Read Contract](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f#readContract) |
-| MockUSDC | [`0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37`](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37) | [Read Contract](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37#readContract) |
+| GroupFactory | [`0x759dead21af026b4718635bee60487f3a71d25f9`](https://sepolia.basescan.org/address/0x759dead21af026b4718635bee60487f3a71d25f9) | [Read Contract](https://sepolia.basescan.org/address/0x759dead21af026b4718635bee60487f3a71d25f9#readContract) |
+| Registry | [`0x071164b35b896bc429d5f518c498695ffc69fe10`](https://sepolia.basescan.org/address/0x071164b35b896bc429d5f518c498695ffc69fe10) | [Read Contract](https://sepolia.basescan.org/address/0x071164b35b896bc429d5f518c498695ffc69fe10#readContract) |
+| Group Logic | [`0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa`](https://sepolia.basescan.org/address/0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa) | [Read Contract](https://sepolia.basescan.org/address/0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa#readContract) |
+| MockUSDC | [`0x97191494e97a71a2366e459f49e2c15b61fb4055`](https://sepolia.basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055) | [Read Contract](https://sepolia.basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055#readContract) |
 
-All contracts are **verified** and open source on BaseScan. The app automatically switches between networks based on user selection.
+**🆕 New Test Feature**: The MockUSDC contract now includes a `mintForTest()` function that anyone can call to mint 100 USDC for testing purposes!
+
+**✅ All contracts are verified** and open source on BaseScan. The app automatically switches between networks based on user selection.
 
 > 📚 **For detailed smart contract documentation, API reference, and deployment guides, see [`hardhat/README.md`](./hardhat/README.md)**
 
@@ -123,6 +125,18 @@ The smart contracts have been extensively tested with:
 - Complex bill splitting scenarios
 - Settlement process validation
 - USDC integration testing
+
+### 🆕 Test USDC Minting
+
+For testing purposes, the MockUSDC contract includes a `mintForTest()` function:
+- **Anyone can call** this function to get 100 USDC
+- **Perfect for testing** bill splitting and settlement flows
+- **No authentication required** - just connect your wallet and call the function
+
+```solidity
+// In your wallet or frontend:
+mockUSDC.mintForTest() // Mints 100 USDC to your wallet
+```
 
 ## 🔐 Security
 

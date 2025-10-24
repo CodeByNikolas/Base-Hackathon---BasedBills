@@ -8,17 +8,17 @@ const CHAINS = {
   },
   [baseSepolia.id]: {
     name: 'Base Sepolia',
-    usdc: '0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37', // MockUSDC for testing
+    usdc: '0x97191494e97a71a2366e459f49e2c15b61fb4055', // New MockUSDC with mintForTest function
   },
 } as const;
 
 // Contract addresses for current deployment
 const CONTRACTS = {
   [baseSepolia.id]: {
-    groupFactory: '0x42238a47f2ab7508296c009a0b672770474debe0',
-    registry: '0x97d4e2631aa14c141ebe703efbc00f789329822a',
-    groupLogic: '0x9ebb981e56c90db163bc06ceac0fbb1558956e7f',
-    usdc: '0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37',
+    groupFactory: '0x759dead21af026b4718635bee60487f3a71d25f9',
+    registry: '0x071164b35b896bc429d5f518c498695ffc69fe10',
+    groupLogic: '0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa',
+    usdc: '0x97191494e97a71a2366e459f49e2c15b61fb4055', // New MockUSDC with mintForTest function
   },
   [base.id]: {
     // Mainnet addresses - deployed and verified
@@ -32,7 +32,7 @@ const CONTRACTS = {
 // Network configuration - easily switch between networks
 export const NETWORK_CONFIG = {
   // Change this to switch networks
-  TARGET_CHAIN_ID: base.id, // Use base.id for mainnet, baseSepolia.id for testnet
+  TARGET_CHAIN_ID: baseSepolia.id, // Use base.id for mainnet, baseSepolia.id for testnet
 
   // Chain configurations
   CHAINS,
@@ -92,7 +92,7 @@ export { GROUP_FACTORY_ABI, REGISTRY_ABI, GROUP_ABI, USDC_ABI };
 
 // Network configuration
 export const SUPPORTED_CHAINS = [base, baseSepolia];
-export const DEFAULT_CHAIN = base; // Use mainnet for production
+export const DEFAULT_CHAIN = baseSepolia; // Use testnet for development with MockUSDC
 
 // Block explorer URLs
 export const BLOCK_EXPLORER_URLS = {

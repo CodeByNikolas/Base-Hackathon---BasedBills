@@ -47,17 +47,22 @@ The BasedBills smart contract system consists of four main contracts:
 | GroupFactory | [`0x97191494e97a71a2366e459f49e2c15b61fb4055`](https://basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055) | [Read Contract](https://basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055#readContract) |
 | USDC | [`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`](https://basescan.org/address/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) | [Read Contract](https://basescan.org/address/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913#readContract) |
 
-#### Base Sepolia (Testnet)
+#### Base Sepolia (Testnet) - **Latest Deployment (2025-10-24)**
 | Contract | Address | BaseScan |
 |----------|---------|----------|
-| Group Logic | [`0x9ebb981e56c90db163bc06ceac0fbb1558956e7f`](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f) | [Read Contract](https://sepolia.basescan.org/address/0x9ebb981e56c90db163bc06ceac0fbb1558956e7f#readContract) |
-| Registry | [`0x97d4e2631aa14c141ebe703efbc00f789329822a`](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a) | [Read Contract](https://sepolia.basescan.org/address/0x97d4e2631aa14c141ebe703efbc00f789329822a#readContract) |
-| GroupFactory | [`0x42238a47f2ab7508296c009a0b672770474debe0`](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0) | [Read Contract](https://sepolia.basescan.org/address/0x42238a47f2ab7508296c009a0b672770474debe0#readContract) |
-| MockUSDC | [`0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37`](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37) | [Read Contract](https://sepolia.basescan.org/address/0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37#readContract) |
+| Group Logic | [`0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa`](https://sepolia.basescan.org/address/0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa) | [Read Contract](https://sepolia.basescan.org/address/0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa#readContract) |
+| Registry | [`0x071164b35b896bc429d5f518c498695ffc69fe10`](https://sepolia.basescan.org/address/0x071164b35b896bc429d5f518c498695ffc69fe10) | [Read Contract](https://sepolia.basescan.org/address/0x071164b35b896bc429d5f518c498695ffc69fe10#readContract) |
+| GroupFactory | [`0x759dead21af026b4718635bee60487f3a71d25f9`](https://sepolia.basescan.org/address/0x759dead21af026b4718635bee60487f3a71d25f9) | [Read Contract](https://sepolia.basescan.org/address/0x759dead21af026b4718635bee60487f3a71d25f9#readContract) |
+| MockUSDC | [`0x97191494e97a71a2366e459f49e2c15b61fb4055`](https://sepolia.basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055) | [Read Contract](https://sepolia.basescan.org/address/0x97191494e97a71a2366e459f49e2c15b61fb4055#readContract) |
 
-All contracts are verified on [BaseScan](https://basescan.org/) and [Base Sepolia](https://sepolia.basescan.org/).
+**🆕 Enhanced MockUSDC Features:**
+- Added `mintForTest()` function - anyone can mint 100 USDC for testing
+- Perfect for testing bill splitting and settlement flows
+- No authentication required - just connect wallet and call the function
 
-### ✨ Latest Features (v2.0)
+**✅ All contracts are verified** on [BaseScan](https://basescan.org/) and [Base Sepolia](https://sepolia.basescan.org/).
+
+### ✨ Latest Features (v2.1)
 - **Group Names**: Groups now have custom names instead of generated ones
 - **Address Book Suggestions**: Frontend suggests addresses from groups
 - **Enhanced Bill Splitting**: Custom amounts per participant
@@ -65,6 +70,8 @@ All contracts are verified on [BaseScan](https://basescan.org/) and [Base Sepoli
 - **Settlement Rejection**: Cancel settlements before approval/deposit (bills remain unsettled)
 - **Settlement Tracking**: Complete history of settlements
 - **Auto-deployment**: `deployments.json` automatically updated on deploy
+- **🆕 Test USDC Minting**: `mintForTest()` function in MockUSDC for easy testing
+- **🆕 Smart Error Handling**: No more infinite API retries - shows clear error messages
 
 ### Universal Verification Script
 

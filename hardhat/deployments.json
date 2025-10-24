@@ -1,35 +1,12 @@
-[
 {
   "network": "baseSepolia",
   "chainId": 84532,
-  "groupLogic": "0x9ebb981e56c90db163bc06ceac0fbb1558956e7f",
-  "registry": "0x97d4e2631aa14c141ebe703efbc00f789329822a",
-  "groupFactory": "0x42238a47f2ab7508296c009a0b672770474debe0",
-  "mockUSDC": "0x1253ceb0a7b27b002c59ad2240fb6a884fdb2b37",
-  "deployer": "0x21750fc30922badd61c2f1e48b94683071dfbcaa",
-  "deployedAt": "2025-10-20T11:14:58.794Z",
-  "verified": {
-    "blockscout": false,
-    "basescan": false
-  },
-  "features": [
-    "Group Names",
-    "Address Book Suggestions",
-    "Enhanced Bill Splitting",
-    "Gamble Feature",
-    "Settlement Tracking",
-    "MockUSDC for Testing"
-  ]
-},
-{
-  "network": "base",
-  "chainId": 8453,
   "groupLogic": "0xb2a71877fbd3ea1a21ae894c7299b6f0b625a8aa",
   "registry": "0x071164b35b896bc429d5f518c498695ffc69fe10",
-  "groupFactory": "0x97191494e97a71a2366e459f49e2c15b61fb4055",
-  "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "groupFactory": "0x759dead21af026b4718635bee60487f3a71d25f9",
+  "mockUSDC": "0x97191494e97a71a2366e459f49e2c15b61fb4055",
   "deployer": "0xaeef419fff93f504c36009034e1dd26472d0ef29",
-  "deployedAt": "2025-10-24T08:27:04.333Z",
+  "deployedAt": "2025-10-24T12:40:02.453Z",
   "verified": {
     "blockscout": false,
     "basescan": true
@@ -40,7 +17,6 @@
     "Enhanced Bill Splitting",
     "Gamble Feature",
     "Settlement Tracking",
-    "Real USDC on Base Mainnet"
+    "MockUSDC for Testing"
   ]
 }
-]
