@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 import { HeaderBar } from '../../components/ui/HeaderBar';
 import { AddBillModal } from '../../components/features/modals/AddBillModal';
 import { FundCardModal } from '../../components/features/FundCardModal';
@@ -42,7 +42,7 @@ export default function GroupPage() {
   const usdcAddress = groupData?.usdcAddress || getContractAddresses().usdc;
 
   // USDC balance check - use correct USDC address from group
-  const { data: usdcBalance } = useReadContract({
+  const { data: usdcBalance, refetch: refetchBalance } = useReadContract({
     address: usdcAddress as `0x${string}`,
     abi: USDC_ABI,
     functionName: 'balanceOf',
@@ -54,7 +54,7 @@ export default function GroupPage() {
   });
 
   // USDC approval check - use correct USDC address from group
-  const { data: usdcAllowance } = useReadContract({
+  const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
     address: usdcAddress as `0x${string}`,
     abi: USDC_ABI,
     functionName: 'allowance',
@@ -66,7 +66,7 @@ export default function GroupPage() {
   });
 
   // Check if user has already approved settlement (for creditors)
-  const { data: hasUserApproved } = useReadContract({
+  const { data: hasUserApproved, refetch: refetchApproved } = useReadContract({
     address: groupAddress,
     abi: GROUP_ABI,
     functionName: 'hasApproved',
@@ -77,7 +77,7 @@ export default function GroupPage() {
   });
 
   // Check if user has already funded settlement (for debtors)
-  const { data: hasUserFunded } = useReadContract({
+  const { data: hasUserFunded, refetch: refetchFunded } = useReadContract({
     address: groupAddress,
     abi: GROUP_ABI,
     functionName: 'hasFunded',
@@ -95,23 +95,36 @@ export default function GroupPage() {
   const memberDisplayNames = useBatchDisplayNames(membersAddresses, refreshTrigger);
   const { addAddress } = useAddressBook();
 
+  // Monitor transaction completion and auto-refresh when confirmed
+  const { data: txReceipt } = useWaitForTransactionReceipt({
+    hash: latestTxHash as `0x${string}`,
+    query: {
+      enabled: !!latestTxHash,
+    },
+  });
+
   const handleNameAdded = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  /**
+   * Comprehensive data refresh function that updates all relevant queries
+   * Used after transactions complete or when manual refresh is needed
+   */
   const refreshAllData = () => {
-    refetchGroupData();
-    setRefreshTrigger(prev => prev + 1);
+    console.log('Refreshing all data after transaction...');
+    refetchGroupData();     // Group contract state (balances, members, etc.)
+    refetchBalance();       // USDC balance
+    refetchAllowance();     // USDC allowance
+    refetchApproved();      // Settlement approval status
+    refetchFunded();        // Settlement funding status
+    setRefreshTrigger(prev => prev + 1); // Trigger UI re-renders
   };
 
   const handleTransactionStarted = (txHash: `0x${string}`) => {
     setLatestTxHash(txHash);
     setIsTxPending(true);
-    // Clear pending state after a delay (in a real app, you'd wait for confirmation)
-    setTimeout(() => {
-      setIsTxPending(false);
-      setLatestTxHash(null);
-    }, 5000);
+    // Don't clear pending state automatically - wait for actual confirmation
   };
 
   const handleShowFundCard = (amountOwed: bigint, currentBalance: bigint) => {
@@ -140,6 +153,33 @@ export default function GroupPage() {
     console.error('FundCard error:', error);
     // Keep modal open on error so user can retry
   };
+
+  // Auto-refresh data when transaction is confirmed
+  // This ensures the UI updates immediately when a transaction completes
+  useEffect(() => {
+    if (txReceipt && latestTxHash) {
+      console.log('Transaction confirmed:', txReceipt);
+      setIsTxPending(false);
+      setLatestTxHash(null);
+      // Refresh all data immediately after transaction confirmation
+      refreshAllData();
+    }
+  }, [txReceipt, latestTxHash, refreshAllData]);
+
+  // Handle transaction timeout/failure - clear pending state after 30 seconds
+  useEffect(() => {
+    if (latestTxHash && isTxPending) {
+      const timeout = setTimeout(() => {
+        console.warn('Transaction timeout - clearing pending state');
+        setIsTxPending(false);
+        setLatestTxHash(null);
+        // Still refresh data in case transaction went through but wasn't detected
+        refreshAllData();
+      }, 30000); // 30 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [latestTxHash, isTxPending, refreshAllData]);
 
   // Error logging effect - must be before any conditional returns
   useEffect(() => {

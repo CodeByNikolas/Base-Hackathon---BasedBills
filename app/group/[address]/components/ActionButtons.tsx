@@ -158,6 +158,10 @@ export function ActionButtons({
               args: [groupAddress, UNLIMITED_APPROVAL_AMOUNT],
             });
 
+            if (approvalResult.hash) {
+              onTransactionStarted?.(approvalResult.hash);
+            }
+
             if (approvalResult.isSponsored) {
               ErrorHandler.showSuccess('USDC approval completed successfully!');
             }
