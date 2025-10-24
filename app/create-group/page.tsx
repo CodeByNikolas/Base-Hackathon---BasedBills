@@ -6,6 +6,7 @@ import { useAccount } from 'wagmi';
 import { WalletGuard } from '../components/features/WalletGuard';
 import { HeaderBar } from '../components/ui/HeaderBar';
 import { Modal } from '../components/ui/Modal';
+import { NetworkGuard } from '../components/ui/NetworkGuard';
 import { useAddressBook, useBaseEnsResolver } from '../hooks/useAddressBook';
 import { useUserGroups } from '../hooks/useGroups';
 import { useSponsoredTransactions } from '../hooks/useSponsoredTransactions';

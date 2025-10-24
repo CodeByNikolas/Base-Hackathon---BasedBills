@@ -2,14 +2,24 @@
 
 import { useAccount, useSwitchChain, useChains } from 'wagmi';
 import { base, baseSepolia } from 'wagmi/chains';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { getContractAddresses } from '../../config/contracts';
+import { useNetworkValidation } from '../../hooks/useNetworkValidation';
+import { NetworkValidationModal } from './NetworkValidationModal';
 import styles from './NetworkSelector.module.css';
 
 export function NetworkSelector() {
   const { chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
-  const chains = useChains();
+  const validation = useNetworkValidation();
+  const [showValidationModal, setShowValidationModal] = useState(false);
+
+  // Check if we should show validation modal on network change
+  useEffect(() => {
+    if (isConnected && validation.needsNetworkSwitch) {
+      setShowValidationModal(true);
+    }
+  }, [isConnected, validation.needsNetworkSwitch]);
 
   const supportedChains = useMemo(() => {
     return [
@@ -25,15 +35,19 @@ export function NetworkSelector() {
     });
   }, []);
 
-  const currentChain = supportedChains.find(chain => chain.id === chainId);
-  const hasValidContracts = supportedChains.some(chain => chain.id === chainId);
-  const isWrongNetwork = isConnected && !hasValidContracts;
-
   const handleNetworkSwitch = async (targetChainId: number) => {
     try {
       await switchChainAsync({ chainId: targetChainId });
+      setShowValidationModal(false); // Close modal on successful switch
     } catch (error) {
       console.error('Failed to switch network:', error);
+      setShowValidationModal(true); // Show modal on failure
+    }
+  };
+
+  const handleNetworkSelectorClick = () => {
+    if (validation.needsNetworkSwitch) {
+      setShowValidationModal(true);
     }
   };
 
@@ -42,24 +56,36 @@ export function NetworkSelector() {
   }
 
   return (
-    <div className={styles.networkSelector}>
-      <select
-        value={chainId || ''}
-        onChange={(e) => handleNetworkSwitch(parseInt(e.target.value))}
-        className={`${styles.select} ${isWrongNetwork ? styles.warning : ''}`}
-        title={isWrongNetwork ? 'Currently on unsupported network - switch to a network with deployed contracts' : 'Select network'}
-      >
-        {supportedChains.map((chain) => (
-          <option key={chain.id} value={chain.id}>
-            {chain.isTestnet ? '🧪 ' : '🟢 '}{chain.name}
-            {chainId === chain.id && ' (Current)'}
-          </option>
-        ))}
-      </select>
+    <>
+      <div className={styles.networkSelector}>
+        <select
+          value={chainId || ''}
+          onChange={(e) => handleNetworkSwitch(parseInt(e.target.value))}
+          onClick={handleNetworkSelectorClick}
+          className={`${styles.select} ${validation.needsNetworkSwitch ? styles.warning : ''}`}
+          title={
+            validation.needsNetworkSwitch
+              ? `Currently on ${validation.currentNetwork}. Click to switch to ${validation.requiredNetwork}.`
+              : 'Select network'
+          }
+        >
+          {supportedChains.map((chain) => (
+            <option key={chain.id} value={chain.id}>
+              {chain.isTestnet ? '🧪 ' : '🟢 '}{chain.name}
+              {chainId === chain.id && ' (Current)'}
+            </option>
+          ))}
+        </select>
 
-      {isWrongNetwork && (
-        <div className={styles.warningIndicator}>!</div>
-      )}
-    </div>
+        {validation.needsNetworkSwitch && (
+          <div className={styles.warningIndicator}>!</div>
+        )}
+      </div>
+
+      <NetworkValidationModal
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+      />
+    </>
   );
 }

@@ -7,6 +7,7 @@ import {
   GROUP_ABI,
   USDC_ABI
 } from '../config/contracts';
+import { useNetworkValidation } from './useNetworkValidation';
 import { GroupData, GroupMember, Bill } from '../utils/groupUtils';
 
 /**
