@@ -62,7 +62,15 @@ The BasedBills smart contract system consists of four main contracts:
 
 **✅ All contracts are verified** on [BaseScan](https://basescan.org/) and [Base Sepolia](https://sepolia.basescan.org/).
 
-### ✨ Latest Features (v2.1)
+**🌐 Network Default**: The frontend now defaults to **Base Sepolia (Testnet)** for development, with **Base Mainnet** available as an alternative option.
+
+**🟠 Smart Network Guidance**: The app provides helpful orange messages to guide users:
+- On **Base Mainnet**: Suggests switching to Base Sepolia for easier testing without funds
+- On **Base Sepolia**: Encourages using the `mintForTest()` function to get 100 USDC instantly for testing
+
+The messages are displayed in attractive orange boxes with proper line breaks for better readability.
+
+### ✨ Latest Features (v2.2)
 - **Group Names**: Groups now have custom names instead of generated ones
 - **Address Book Suggestions**: Frontend suggests addresses from groups
 - **Enhanced Bill Splitting**: Custom amounts per participant
@@ -72,6 +80,7 @@ The BasedBills smart contract system consists of four main contracts:
 - **Auto-deployment**: `deployments.json` automatically updated on deploy
 - **🆕 Test USDC Minting**: `mintForTest()` function in MockUSDC for easy testing
 - **🆕 Smart Error Handling**: No more infinite API retries - shows clear error messages
+- **🆕 Smart Network Guidance**: Orange messages guide users between networks and testing features
 
 ### Universal Verification Script
 

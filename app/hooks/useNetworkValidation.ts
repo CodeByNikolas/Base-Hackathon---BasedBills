@@ -29,9 +29,9 @@ export function useNetworkValidation(): NetworkValidationResult & NetworkValidat
   const { chainId, isConnected } = useAccount();
   const { switchChainAsync } = useSwitchChain();
 
-  // Get all networks that have deployed contracts
+  // Get all networks that have deployed contracts (Base Sepolia first for default)
   const supportedNetworks = useMemo(() => {
-    const networks = [base, baseSepolia];
+    const networks = [baseSepolia, base]; // Testnet first (default), mainnet second
     return networks.filter(network => {
       try {
         const addresses = getContractAddresses(network.id);
@@ -48,8 +48,8 @@ export function useNetworkValidation(): NetworkValidationResult & NetworkValidat
     if (chainId && supportedNetworks.some(network => network.id === chainId)) {
       return supportedNetworks.find(network => network.id === chainId) || supportedNetworks[0];
     }
-    // Otherwise, default to the first supported network (usually mainnet)
-    return supportedNetworks.length > 0 ? supportedNetworks[0] : base;
+    // Otherwise, default to the first supported network (Base Sepolia - testnet)
+    return supportedNetworks.length > 0 ? supportedNetworks[0] : baseSepolia;
   }, [supportedNetworks, chainId]);
 
   // Check if current network has valid contracts

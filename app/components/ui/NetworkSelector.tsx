@@ -23,8 +23,8 @@ export function NetworkSelector() {
 
   const supportedChains = useMemo(() => {
     return [
-      { id: base.id, name: 'Base', isTestnet: false },
-      { id: baseSepolia.id, name: 'Base Sepolia', isTestnet: true },
+      { id: baseSepolia.id, name: 'Base Sepolia', isTestnet: true }, // Testnet first (default)
+      { id: base.id, name: 'Base', isTestnet: false }, // Mainnet second (available option)
     ].filter(chain => {
       try {
         const addresses = getContractAddresses(chain.id);
@@ -55,8 +55,11 @@ export function NetworkSelector() {
     return null;
   }
 
+  const isOnMainnet = chainId === base.id;
+  const isOnTestnet = chainId === baseSepolia.id;
+
   return (
-    <>
+    <div className={styles.networkSelectorContainer}>
       <div className={styles.networkSelector}>
         <select
           value={chainId || ''}
@@ -82,10 +85,35 @@ export function NetworkSelector() {
         )}
       </div>
 
+      {/* Helpful Network Messages */}
+      {isOnMainnet && (
+        <div className={styles.networkMessage}>
+          <div className={styles.networkMessageContent}>
+            <div className={styles.networkMessageIcon}>🧪</div>
+            <p>
+              <strong>For easier testing without funds:</strong><br />
+              Switch to Base Sepolia testnet where you can use the <code>mintForTest()</code> function to get 100 USDC instantly!
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isOnTestnet && (
+        <div className={styles.networkMessage}>
+          <div className={styles.networkMessageContent}>
+            <div className={styles.networkMessageIcon}>💰</div>
+            <p>
+              <strong>Ready for testing!</strong><br />
+              Use the <code>mintForTest()</code> function on the MockUSDC contract to get 100 USDC for testing bill splitting.
+            </p>
+          </div>
+        </div>
+      )}
+
       <NetworkValidationModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
       />
-    </>
+    </div>
   );
 }

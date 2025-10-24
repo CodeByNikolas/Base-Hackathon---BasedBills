@@ -46,8 +46,8 @@
 
 /* Network Selector Section */
 .networkSection {
-  display: flex;
-  justify-content: center;
+  display: block;
+  width: 100%;
   margin-bottom: 24px;
 }
 

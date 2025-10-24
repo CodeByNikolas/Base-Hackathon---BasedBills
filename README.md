@@ -89,7 +89,13 @@ See [hardhat/README.md](./hardhat/README.md) for detailed contract documentation
 
 **🆕 New Test Feature**: The MockUSDC contract now includes a `mintForTest()` function that anyone can call to mint 100 USDC for testing purposes!
 
-**✅ All contracts are verified** and open source on BaseScan. The app automatically switches between networks based on user selection.
+**✅ All contracts are verified** and open source on BaseScan. The app defaults to **Base Sepolia (Testnet)** for development but users can switch to **Base Mainnet** for production use.
+
+**🟠 Smart Network Guidance**: The app shows helpful orange messages guiding users:
+- On **Base Mainnet**: Suggests switching to Base Sepolia for easier testing without funds
+- On **Base Sepolia**: Encourages using the `mintForTest()` function to get 100 USDC instantly
+
+The messages are displayed in attractive orange boxes with proper line breaks for better readability.
 
 > 📚 **For detailed smart contract documentation, API reference, and deployment guides, see [`hardhat/README.md`](./hardhat/README.md)**
 

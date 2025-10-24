@@ -63,20 +63,20 @@ export function NetworkValidationModal({ isOpen, onClose }: NetworkValidationMod
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <span style={{
+                backgroundColor: '#fff3e0',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.875rem'
+              }}>
+                🧪 Base Sepolia (Testnet) - Recommended
+              </span>
+              <span style={{
                 backgroundColor: '#e3f2fd',
                 padding: '0.25rem 0.5rem',
                 borderRadius: '4px',
                 fontSize: '0.875rem'
               }}>
                 🔵 Base Mainnet (Production)
-              </span>
-              <span style={{
-                backgroundColor: '#fff3e0',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.875rem'
-              }}>
-                🧪 Base Sepolia (Testnet)
               </span>
             </div>
           </div>
@@ -105,6 +105,20 @@ export function NetworkValidationModal({ isOpen, onClose }: NetworkValidationMod
               </p>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
+                  onClick={() => handleManualSwitch(baseSepolia.id)}
+                  style={{
+                    backgroundColor: baseSepolia.id === validation.requiredNetwork.id ? '#1976d2' : '#f5f5f5',
+                    color: baseSepolia.id === validation.requiredNetwork.id ? 'white' : '#333',
+                    padding: '0.5rem 1rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🧪 Base Sepolia (Recommended)
+                </button>
+                <button
                   onClick={() => handleManualSwitch(base.id)}
                   style={{
                     backgroundColor: base.id === validation.requiredNetwork.id ? '#1976d2' : '#f5f5f5',
@@ -117,20 +131,6 @@ export function NetworkValidationModal({ isOpen, onClose }: NetworkValidationMod
                   }}
                 >
                   🔵 Base Mainnet
-                </button>
-                <button
-                  onClick={() => handleManualSwitch(baseSepolia.id)}
-                  style={{
-                    backgroundColor: baseSepolia.id === validation.requiredNetwork.id ? '#1976d2' : '#f5f5f5',
-                    color: baseSepolia.id === validation.requiredNetwork.id ? 'white' : '#333',
-                    padding: '0.5rem 1rem',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '0.875rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🧪 Base Sepolia
                 </button>
               </div>
             </div>
