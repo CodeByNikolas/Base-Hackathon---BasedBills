@@ -5,6 +5,10 @@ import { useAccount } from "wagmi";
 import { FundCard } from "@coinbase/onchainkit/fund";
 import { Modal } from "../ui/Modal";
 import { formatCurrency } from "../../utils/currencyUtils";
+import { useSponsoredTransactions } from "../../hooks/useSponsoredTransactions";
+import { SPONSORED_FUNCTIONS } from "../../utils/sponsoredTransactions";
+import { USDC_ABI } from "../../config/abis";
+import { getContractAddresses } from "../../config/contracts";
 import styles from "./FundCardModal.module.css";
 
 type Blockchain = "base-sepolia" | "base";
@@ -30,6 +34,7 @@ interface FundCardModalProps {
   shortfallAmount?: bigint; // Amount user is short in wei
   currentBalance?: bigint; // Current USDC balance in wei
   title?: string;
+  onBalanceUpdate?: () => void; // Callback to refresh balance after mint
 }
 
 /**
@@ -44,10 +49,47 @@ export function FundCardModal({
   presetAmount,
   shortfallAmount,
   currentBalance,
-  title = shortfallAmount && shortfallAmount > 0n ? "Fund Your Wallet for Settlement" : "Add USDC to Your Wallet"
+  title = shortfallAmount && shortfallAmount > 0n ? "Fund Your Wallet for Settlement" : "Add USDC to Your Wallet",
+  onBalanceUpdate
 }: FundCardModalProps) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  
+  // Mint USDC functionality using sponsored transactions with graceful fallback
+  const { sendTransaction, isLoading: isMinting, isSponsoredSupported } = useSponsoredTransactions();
+  
+  const handleMintUSDC = async () => {
+    if (!address || !chainId) return;
+
+    const usdcAddress = getContractAddresses(chainId).usdc;
+    if (!usdcAddress) return;
+
+    try {
+      // Cast ABI to any to avoid deep type instantiation issues (same pattern as ActionButtons)
+      const USDC_ABI_CAST = USDC_ABI as any;
+
+      const result = await sendTransaction({
+        address: usdcAddress as `0x${string}`,
+        abi: USDC_ABI_CAST,
+        functionName: SPONSORED_FUNCTIONS.USDC.mintForTest,
+        args: [],
+      });
+
+      if (result.hash) {
+        // Trigger balance update after successful mint
+        if (onBalanceUpdate) {
+          onBalanceUpdate();
+        }
+        // Close modal and show success
+        onSuccess?.();
+        onClose();
+      }
+    } catch (error) {
+      console.error('Failed to mint USDC:', error);
+      onError?.(`Failed to mint USDC: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<Blockchain>("base");
@@ -284,14 +326,14 @@ export function FundCardModal({
               <h4>Base Sepolia Testnet Mode</h4>
               <p>✅ Session token successfully generated via conversion (Base Sepolia → Base mainnet). Make sure your wallet is connected to Base Sepolia testnet.</p>
               <div className={styles.testnetActions}>
-                <a
-                  href="https://faucet.circle.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={handleMintUSDC}
+                  disabled={isMinting}
                   className={styles.testnetButton}
+                  title={isMinting ? 'Minting...' : isSponsoredSupported ? 'Gas fees will be sponsored!' : 'Regular transaction (gas fees required)'}
                 >
-                  Get Test USDC
-                </a>
+                  {isMinting ? 'Minting...' : isSponsoredSupported ? '🟢 Mint 100 USDC (Sponsored)' : '🟢 Mint 100 USDC (Regular)'}
+                </button>
                 <a
                   href="https://sepoliafaucet.com"
                   target="_blank"

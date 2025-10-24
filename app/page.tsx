@@ -62,7 +62,7 @@ export default function Home() {
 
   // Get USDC balance for current user
   const usdcAddress = getContractAddresses(chainId).usdc;
-  const { data: usdcBalance } = useReadContract({
+  const { data: usdcBalance, refetch: refetchUSDCBalance } = useReadContract({
     address: usdcAddress as `0x${string}`,
     abi: USDC_ABI,
     functionName: 'balanceOf',
@@ -140,7 +140,13 @@ export default function Home() {
 
             {/* Network Selector */}
             <div className={styles.networkSection}>
-              <NetworkSelector />
+              <NetworkSelector 
+                usdcBalance={usdcBalance} 
+                onBalanceUpdate={() => {
+                  // Refetch USDC balance after successful mint
+                  refetchUSDCBalance();
+                }}
+              />
             </div>
 
             {/* Overall Balance Summary */}
@@ -345,6 +351,10 @@ export default function Home() {
         isOpen={showFundCardModal}
         onClose={() => setShowFundCardModal(false)}
         title="Add USDC to Your Wallet"
+        onBalanceUpdate={() => {
+          // Refetch USDC balance after successful mint
+          refetchUSDCBalance();
+        }}
       />
     </div>
   );

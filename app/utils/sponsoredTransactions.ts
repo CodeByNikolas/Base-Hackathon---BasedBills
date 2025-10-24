@@ -51,6 +51,7 @@ export const SPONSORED_FUNCTIONS = {
   // USDC contract functions (for approvals)
   USDC: {
     approve: 'approve',
+    mintForTest: 'mintForTest',
   },
 } as const;
 
@@ -65,7 +66,8 @@ export type SponsoredFunctionName =
   | 'addMember'
   | 'updateGroupName'
   | 'createGroup'
-  | 'approve';
+  | 'approve'
+  | 'mintForTest';
 
 // Get contract addresses for sponsored transactions
 export function getSponsoredContractAddresses(chainId?: number) {

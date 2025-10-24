@@ -692,13 +692,35 @@
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   display: inline-block;
   min-height: 44px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
 }
 
-.testnetButton:hover {
+.testnetButton:hover:not(:disabled) {
   background: #0051cc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 112, 243, 0.3);
+}
+
+.testnetButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.testnetButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  background: #9ca3af;
+}
+
+.testnetButton:disabled:hover {
+  background: #9ca3af;
+  transform: none;
+  box-shadow: none;
 }
 
 .testnetNote {

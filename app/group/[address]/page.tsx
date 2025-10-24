@@ -413,6 +413,10 @@ export default function GroupPage() {
           presetAmount={fundingAmount}
           shortfallAmount={shortfallAmount}
           currentBalance={currentBalance}
+          onBalanceUpdate={() => {
+            // Refetch group data to update balances
+            refetchGroupData();
+          }}
         />
       </div>
     </WalletGuard>

@@ -168,6 +168,65 @@
   }
 }
 
+/* Mint Button Styles */
+.mintButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.mintButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.mintButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.mintButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.mintButton:disabled:hover {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  transform: none;
+  box-shadow: 0 2px 4px rgba(156, 163, 175, 0.2);
+}
+
+/* Dark mode support for mint button */
+@media (prefers-color-scheme: dark) {
+  .mintButton {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 2px 4px rgba(52, 211, 153, 0.2);
+  }
+
+  .mintButton:hover:not(:disabled) {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 8px rgba(52, 211, 153, 0.3);
+  }
+
+  .mintButton:disabled {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  }
+
+  .mintButton:disabled:hover {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  }
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .networkSelectorContainer {
@@ -206,5 +265,11 @@
 
   .networkMessageContent p {
     line-height: 1.4;
+  }
+
+  .mintButton {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+    width: 100%;
   }
 }

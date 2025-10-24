@@ -2,17 +2,28 @@
 
 import { useAccount, useSwitchChain, useChains } from 'wagmi';
 import { base, baseSepolia } from 'wagmi/chains';
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getContractAddresses } from '../../config/contracts';
 import { useNetworkValidation } from '../../hooks/useNetworkValidation';
 import { NetworkValidationModal } from './NetworkValidationModal';
+import { useSponsoredTransactions } from '../../hooks/useSponsoredTransactions';
+import { SPONSORED_FUNCTIONS } from '../../utils/sponsoredTransactions';
+import { USDC_ABI } from '../../config/abis';
 import styles from './NetworkSelector.module.css';
 
-export function NetworkSelector() {
-  const { chainId, isConnected } = useAccount();
+interface NetworkSelectorProps {
+  usdcBalance?: bigint;
+  onBalanceUpdate?: () => void;
+}
+
+export function NetworkSelector({ usdcBalance, onBalanceUpdate }: NetworkSelectorProps) {
+  const { chainId, isConnected, address: userAddress } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const validation = useNetworkValidation();
   const [showValidationModal, setShowValidationModal] = useState(false);
+
+  // Mint USDC functionality using sponsored transactions with graceful fallback
+  const { sendTransaction, isLoading: isMinting, isSponsoredSupported } = useSponsoredTransactions();
 
   // Check if we should show validation modal on network change
   useEffect(() => {
@@ -25,7 +36,7 @@ export function NetworkSelector() {
     return [
       { id: baseSepolia.id, name: 'Base Sepolia', isTestnet: true }, // Testnet first (default)
       { id: base.id, name: 'Base', isTestnet: false }, // Mainnet second (available option)
-    ].filter(chain => {
+    ].filter((chain: { id: number; name: string; isTestnet: boolean }) => {
       try {
         const addresses = getContractAddresses(chain.id);
         return addresses && addresses.registry && (addresses.registry as string) !== '';
@@ -50,6 +61,38 @@ export function NetworkSelector() {
       setShowValidationModal(true);
     }
   };
+
+  const handleMintUSDC = async () => {
+    if (!isOnTestnet || !userAddress) return;
+
+    const usdcAddress = getContractAddresses(chainId).usdc;
+    if (!usdcAddress) return;
+
+    try {
+      // Cast ABI to any to avoid deep type instantiation issues (same pattern as ActionButtons)
+      const USDC_ABI_CAST = USDC_ABI as any;
+
+      const result = await sendTransaction({
+        address: usdcAddress as `0x${string}`,
+        abi: USDC_ABI_CAST,
+        functionName: SPONSORED_FUNCTIONS.USDC.mintForTest,
+        args: [],
+      });
+
+      if (result.hash) {
+        // Trigger balance update after successful mint
+        if (onBalanceUpdate) {
+          onBalanceUpdate();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to mint USDC:', error);
+      alert(`Failed to mint USDC: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  // Check if balance is less than 100 USDC (100 * 10^6)
+  const hasLowBalance = usdcBalance !== undefined && usdcBalance < 100000000n; // 100 USDC in smallest units
 
   if (!isConnected) {
     return null;
@@ -98,17 +141,31 @@ export function NetworkSelector() {
         </div>
       )}
 
-      {isOnTestnet && (
+      {isOnTestnet && hasLowBalance && (
         <div className={styles.networkMessage}>
-          <div className={styles.networkMessageContent}>
-            <div className={styles.networkMessageIcon}>💰</div>
-            <p>
-              <strong>Ready for testing!</strong><br />
-              Use the <code>mintForTest()</code> function on the MockUSDC contract to get 100 USDC for testing bill splitting.
-            </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+              <div className={styles.networkMessageIcon}>💰</div>
+              <div style={{ flex: 1 }}>
+                <p>
+                  <strong>Your USDC balance is low!</strong><br />
+                  Get 100 USDC for testing by clicking the mint button below.
+                  {isSponsoredSupported ? ' (Gas fees will be sponsored!)' : ' (Will use regular transaction if sponsored not available)'}
+                </p>
+              </div>
+            </div>
+              <button
+                onClick={handleMintUSDC}
+                disabled={isMinting}
+                className={styles.mintButton}
+                title={isMinting ? 'Transaction in progress...' : isSponsoredSupported ? 'Gas fees will be sponsored!' : 'Regular transaction (gas fees required)'}
+              >
+                {isMinting ? 'Minting...' : isSponsoredSupported ? '🟢 Mint 100 USDC (Sponsored)' : '🟢 Mint 100 USDC (Regular)'}
+              </button>
           </div>
         </div>
       )}
+
 
       <NetworkValidationModal
         isOpen={showValidationModal}
