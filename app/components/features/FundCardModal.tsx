@@ -55,6 +55,7 @@ export function FundCardModal({
   const [fundCardStatus, setFundCardStatus] = useState<string>("");
   const [fundCardError, setFundCardError] = useState<string>("");
   const [fundCardSuccess, setFundCardSuccess] = useState<string>("");
+  const [isApiUnavailable, setIsApiUnavailable] = useState<boolean>(false);
 
   const generateSessionToken = useCallback(async () => {
     if (!address) {
@@ -92,6 +93,15 @@ export function FundCardModal({
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Session token API error:", response.status, errorText);
+
+        // Check if this is a permanent API failure (404, 503, etc.)
+        if (response.status === 404 || response.status === 503 || response.status >= 500) {
+          setIsApiUnavailable(true);
+          setSessionToken(null); // Clear any existing token
+          setError("onramp api seems to not work right now. please check back later");
+          return;
+        }
+
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -125,12 +135,24 @@ export function FundCardModal({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Network error while generating session token";
       console.error("Session token error:", err);
-      setError(errorMessage);
-      
+
+      // Check if this is a network error or API unavailable error
+      if (errorMessage.toLowerCase().includes("fetch") || errorMessage.toLowerCase().includes("network") || !navigator.onLine) {
+        setIsApiUnavailable(true);
+        setSessionToken(null); // Clear any existing token
+        setError("onramp api seems to not work right now. please check back later");
+        return;
+      }
+
       // If it's a 404 error, show a helpful message about API configuration
       if (errorMessage.includes("404")) {
-        setError("Session token API not available. This feature requires proper API configuration. You can still use the app for other features.");
+        setIsApiUnavailable(true);
+        setSessionToken(null); // Clear any existing token
+        setError("onramp api seems to not work right now. please check back later");
+        return;
       }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -141,12 +163,19 @@ export function FundCardModal({
     setIsTestnet(selectedBlockchain === "base-sepolia");
   }, [selectedBlockchain]);
 
+  // Reset API unavailable state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsApiUnavailable(false);
+    }
+  }, [isOpen]);
+
   // Auto-generate session token when modal opens and wallet is connected
   useEffect(() => {
-    if (isOpen && isConnected && address && !sessionToken && !loading) {
+    if (isOpen && isConnected && address && !sessionToken && !loading && !isApiUnavailable) {
       generateSessionToken();
     }
-  }, [isOpen, isConnected, address, sessionToken, generateSessionToken, loading]);
+  }, [isOpen, isConnected, address, sessionToken, generateSessionToken, loading, isApiUnavailable]);
 
   // Don't render anything if wallet not connected
   if (!isConnected || !address) {
@@ -272,16 +301,18 @@ export function FundCardModal({
 
         {/* Error State */}
         {error && !loading && (
-          <div className={styles.errorState}>
-            <div className={styles.errorIcon}>⚠️</div>
-            <h4 className="text-base sm:text-lg">Error</h4>
+          <div className={`${styles.errorState} ${isApiUnavailable ? styles.apiUnavailable : ''}`}>
+            <div className={styles.errorIcon}>{isApiUnavailable ? "🔴" : "⚠️"}</div>
+            <h4 className="text-base sm:text-lg">{isApiUnavailable ? "Service Unavailable" : "Error"}</h4>
             <p className="text-sm sm:text-base mb-4">{error}</p>
-            <button
-              onClick={generateSessionToken}
-              className={styles.retryButton}
-            >
-              Retry
-            </button>
+            {!isApiUnavailable && (
+              <button
+                onClick={generateSessionToken}
+                className={styles.retryButton}
+              >
+                Retry
+              </button>
+            )}
           </div>
         )}
 

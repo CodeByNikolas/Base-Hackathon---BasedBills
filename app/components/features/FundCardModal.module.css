@@ -214,6 +214,21 @@
   border-radius: 8px;
 }
 
+.errorState.apiUnavailable {
+  background: #dc2626;
+  border: 1px solid #b91c1c;
+  color: white;
+}
+
+.errorState.apiUnavailable .errorIcon {
+  filter: brightness(0) invert(1); /* Make emoji white */
+}
+
+.errorState.apiUnavailable h4,
+.errorState.apiUnavailable p {
+  color: white;
+}
+
 .errorIcon {
   font-size: 2rem;
   margin-bottom: 1rem;
