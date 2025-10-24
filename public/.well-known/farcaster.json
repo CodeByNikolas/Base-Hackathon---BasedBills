@@ -1,34 +1,34 @@
 {
     "accountAssociation": {
-      "header": "",
-      "payload": "",
-      "signature": ""
+      "header": "eyJmaWQiOjEzOTQ1NTksInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgyZUYwMjdjZjg0RDc1MjM1NTY2YjEwNzYzMWE2QkY3OEM4ODAxQTQ1In0",
+      "payload": "eyJkb21haW4iOiJiYXNlLWhhY2thdGhvbi1iYXNlZC1iaWxscy52ZXJjZWwuYXBwIn0",
+      "signature": "2p0gPbn0t2/J+Iuyz3KRcEmzapxoA+cCMLi0HV+et5c/BrzTMt4ixNvFnKjbLKva8L5882PDqZXO0rrAHRIV6xw="
     },
     "miniapp": {
       "version": "1",
-      "name": "Example Mini App",
-      "homeUrl": "https://ex.co",
-      "iconUrl": "https://ex.co/i.png",
-      "splashImageUrl": "https://ex.co/l.png",
-      "splashBackgroundColor": "#000000",
-      "webhookUrl": "https://ex.co/api/webhook",
-      "subtitle": "Fast, fun, social",
-      "description": "A fast, fun way to challenge friends in real time.",
+      "name": "💰 BasedBills",
+      "homeUrl": "https://base-hackathon-based-bills.vercel.app",
+      "iconUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+      "splashImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+      "splashBackgroundColor": "#eeccff",
+      "webhookUrl": "https://base-hackathon-based-bills.vercel.app/api/webhook",
+      "subtitle": "Split bills on Base! 🚀",
+      "description": "Decentralized bill splitting with USDC settlements on Base! Create groups, split expenses, and settle on-chain with friends. Features gamble mode, custom splits, and transparent transactions!",
       "screenshotUrls": [
-        "https://ex.co/s1.png",
-        "https://ex.co/s2.png",
-        "https://ex.co/s3.png"
+        "https://base-hackathon-based-bills.vercel.app/screenshot1.png",
+        "https://base-hackathon-based-bills.vercel.app/screenshot2.png",
+        "https://base-hackathon-based-bills.vercel.app/screenshot3.png"
       ],
-      "primaryCategory": "social",
-      "tags": ["example", "miniapp", "baseapp"],
-      "heroImageUrl": "https://ex.co/og.png",
-      "tagline": "Play instantly",
-      "ogTitle": "Example Mini App",
-      "ogDescription": "Challenge friends in real time.",
-      "ogImageUrl": "https://ex.co/og.png",
+      "primaryCategory": "finance",
+      "tags": ["finance", "defi", "bills", "splitting", "usdc"],
+      "heroImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
+      "tagline": "Settle on-chain! ⚡",
+      "ogTitle": "💰 BasedBills - Split Bills on Base",
+      "ogDescription": "Decentralized bill splitting with USDC settlements on Base! 🚀",
+      "ogImageUrl": "https://base-hackathon-based-bills.vercel.app/basedbills_logo.png",
       "noindex": true
     },
     "baseBuilder": {
-      "ownerAddress": "0x23F5d0A18DafB06247F47a9C41FF39F483CFe060"
+      "allowedAddresses": ["0x23F5d0A18DafB06247F47a9C41FF39F483CFe060"]
     }
 }
