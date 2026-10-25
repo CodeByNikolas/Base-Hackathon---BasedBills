@@ -2,3 +2,9 @@
 overrides:
   'postcss@>=8.0.0 <8.5.23': '8.5.23'
   'ws@>=8.0.0 <8.21.0': '8.22.0'
+# These optional native accelerators have working JavaScript/prebuilt alternatives.
+allowBuilds:
+  bufferutil: false
+  keccak: false
+  unrs-resolver: false
+  utf-8-validate: false
