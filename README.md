@@ -182,8 +182,8 @@ Built with ❤️ on [Base](https://base.org) using [OnchainKit](https://onchain
 ## Dependency maintenance
 
 The frontend uses a committed pnpm lockfile. Keep Next.js and its ESLint packages
-on the same patched release line. OnchainKit and the Coinbase SDK are pinned to
-preserve their existing APIs and bundling behavior. The workspace overrides update pinned PostCSS and WebSocket
+on the same patched release line. OnchainKit, wagmi and the Coinbase SDK are pinned
+to preserve their existing APIs and bundling behavior. The workspace overrides update pinned PostCSS and WebSocket
 dependencies within their compatible major versions.
 
 Run `pnpm audit`, `pnpm exec tsc --noEmit`, and `pnpm build` after dependency
