@@ -9,24 +9,26 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@coinbase/cdp-sdk": "^1.38.4",
-    "@coinbase/onchainkit": "latest",
-    "@farcaster/miniapp-sdk": "^0.2.1",
-    "@tanstack/react-query": "^5.81.5",
-    "next": "15.3.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.31.6",
-    "wagmi": "^2.16.3"
+    "@coinbase/cdp-sdk": "1.38.4",
+    "@coinbase/onchainkit": "1.1.1",
+    "@farcaster/miniapp-sdk": "^0.2.3",
+    "@tanstack/react-query": "^5.104.5",
+    "next": "15.5.28",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "viem": "^2.57.11",
+    "wagmi": "^2.19.5",
+    "zod": "4.6.6"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@next/eslint-plugin-next": "^15.3.4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.4",
-    "typescript": "^5"
-  }
+    "@eslint/eslintrc": "^3.3.7",
+    "@next/eslint-plugin-next": "15.5.28",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "15.5.28",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@11.3.0"
 }

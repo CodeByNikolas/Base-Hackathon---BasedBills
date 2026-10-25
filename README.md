@@ -42,11 +42,11 @@ A decentralized bill splitting application built on Base network with on-chain U
 ### Frontend Development
 
 ```bash
-# Install dependencies
-npm install
+# Install frontend dependencies
+pnpm install --frozen-lockfile
 
 # Run development server
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
@@ -179,3 +179,14 @@ This project was built for the Base hackathon. Feel free to fork and improve!
 ---
 
 Built with ❤️ on [Base](https://base.org) using [OnchainKit](https://onchainkit.xyz)
+## Dependency maintenance
+
+The frontend uses a committed pnpm lockfile. Keep Next.js and its ESLint packages
+on the same patched release line. OnchainKit and the Coinbase SDK are pinned to
+preserve their existing APIs and bundling behavior. The workspace overrides update pinned PostCSS and WebSocket
+dependencies within their compatible major versions.
+
+Run `pnpm audit`, `pnpm exec tsc --noEmit`, and `pnpm build` after dependency
+updates. Some upstream Web3 packages still depend on Zod 3, UUID 8/9,
+stream-json 1, or decode-uri-component 0.2. Do not force incompatible major
+versions across these packages to silence audit findings.
